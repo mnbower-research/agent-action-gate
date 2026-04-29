@@ -4,6 +4,7 @@
   "description": "Pre-execution safety gate for AI agents.",
   "main": "index.js",
   "scripts": {
+    "dev": "tsx src/server.ts",
     "test": "echo \"Error: no test specified\" && exit 1",
     "typecheck": "tsc --noEmit",
     "eval:action-gate": "tsx src/actionGate/evals/runActionGateEvals.ts"
