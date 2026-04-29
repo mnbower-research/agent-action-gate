@@ -73,9 +73,7 @@ export const detectWrongTarget: GateDetector = (
     severity,
     evidence,
     recommendedDecision: triggered
-      ? severity === "critical"
-        ? "block"
-        : "revise_action"
+      ? "block"
       : "allow",
   };
 };

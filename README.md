@@ -135,7 +135,7 @@ Agent Action Gate runs seven heuristic detectors:
 
 ```txt
 TypeScript compile: passing
-Baseline evals: 10/10 passing
+Baseline evals: 11/11 passing
 GET /health: working
 POST /evaluate: working
 ```

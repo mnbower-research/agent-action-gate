@@ -88,7 +88,7 @@ export const detectToolMismatch: GateDetector = (
     evidence: [
       `Action type \`${input.proposedAction.actionType}\` expects an ${expectation.description}, but proposed tool is \`${tool}\`.`,
     ],
-    recommendedDecision: severity === "critical" ? "block" : "revise_action",
+    recommendedDecision: "revise_action",
   };
 };
 

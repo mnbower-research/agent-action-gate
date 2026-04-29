@@ -21,8 +21,6 @@ export const detectUnauthorizedScope: GateDetector = (
   const actionText = getActionText(input);
   const evidence: string[] = [];
   let severity: GateSeverity = "low";
-  let recommendedDecision: GateDetectorResult["recommendedDecision"] =
-    "revise_action";
 
   for (const rule of input.sourceProfile?.nonNegotiables ?? []) {
     if (violatesNonNegotiable(rule, input)) {
@@ -30,7 +28,6 @@ export const detectUnauthorizedScope: GateDetector = (
         `Source profile non-negotiable \`${rule}\` conflicts with the proposed action.`,
       );
       severity = "critical";
-      recommendedDecision = "block";
     }
   }
 
@@ -63,7 +60,7 @@ export const detectUnauthorizedScope: GateDetector = (
     confidence: triggered ? getConfidence(severity, evidence.length) : 0,
     severity: triggered ? severity : "low",
     evidence,
-    recommendedDecision: triggered ? recommendedDecision : "allow",
+    recommendedDecision: triggered ? "revise_action" : "allow",
   };
 };
 

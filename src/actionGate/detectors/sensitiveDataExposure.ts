@@ -60,7 +60,7 @@ export const detectSensitiveDataExposure: GateDetector = (
     confidence: triggered ? Math.min(0.99, 0.88 + evidence.length * 0.03) : 0,
     severity: triggered && hasSecret ? "critical" : triggered ? "high" : "low",
     evidence,
-    recommendedDecision: triggered && hasSecret ? "block" : "require_approval",
+    recommendedDecision: triggered ? "block" : "allow",
   };
 };
 
