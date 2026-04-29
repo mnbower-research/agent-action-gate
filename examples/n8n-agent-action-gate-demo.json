@@ -1,4 +1,4 @@
-{
+﻿{
   "name": "Agent Action Gate - n8n Demo",
   "nodes": [
     {
@@ -28,7 +28,7 @@
     {
       "parameters": {
         "method": "POST",
-        "url": "https://upset-ears-rush.loca.lt/evaluate",
+        "url": "http://localhost:3333/evaluate",
         "sendBody": true,
         "specifyBody": "json",
         "jsonBody": "={{ $json }}",
