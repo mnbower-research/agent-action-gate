@@ -119,6 +119,53 @@ HTTP responses:
 - `404` for unknown routes.
 - `405` for unsupported methods on known routes.
 
+## n8n demo workflow
+
+The repo includes a working n8n demo workflow at:
+
+```txt
+examples/n8n-agent-action-gate-demo.json
+```
+
+The demo shows Agent Action Gate sitting between an AI or automation agent and tool execution. It includes:
+
+- Manual test trigger
+- Proposed Action node
+- Agent Action Gate HTTP request
+- Route Gate Decision switch
+- Four outcome branches:
+  - `allow` -> Continue Action
+  - `require_approval` -> Require Human Approval
+  - `revise_action` -> Revise Proposed Action
+  - `block` -> Block Action
+
+Import it in n8n:
+
+1. Open n8n.
+2. Choose Import from File.
+3. Select `examples/n8n-agent-action-gate-demo.json`.
+4. Update the Agent Action Gate HTTP Request node URL to point at your running API endpoint.
+
+Start the local API:
+
+```bash
+npm run dev
+```
+
+For n8n Cloud, you can use a temporary tunnel:
+
+```bash
+npx localtunnel --port 3333 --local-host 127.0.0.1
+```
+
+Then replace the HTTP Request URL in n8n with:
+
+```txt
+https://YOUR-TUNNEL-URL/evaluate
+```
+
+The included workflow may contain a temporary localtunnel URL from development. Replace it before running.
+
 ## Detectors
 
 Agent Action Gate runs seven heuristic detectors:
@@ -142,7 +189,7 @@ POST /evaluate: working
 
 ## Roadmap
 
-- n8n integration example
+- Additional n8n integration examples
 - Persistent action logs
 - Approval workflow examples
 - Additional eval cases
