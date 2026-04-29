@@ -1,7 +1,7 @@
 {
-  "name": "agentactiongate",
+  "name": "agent-action-gate",
   "version": "1.0.0",
-  "description": "",
+  "description": "Pre-execution safety gate for AI agents.",
   "main": "index.js",
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1",
@@ -9,8 +9,8 @@
     "eval:action-gate": "tsx src/actionGate/evals/runActionGateEvals.ts"
   },
   "keywords": [],
-  "author": "",
-  "license": "ISC",
+  "author": "Michael Bower",
+  "license": "MIT",
   "type": "commonjs",
   "devDependencies": {
     "@types/node": "^25.6.0",

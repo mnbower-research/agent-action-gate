@@ -24,7 +24,7 @@ Before an agent executes an action, you pass the proposed action through the gat
 
 ```txt
 
-proposed action â†’ Agent Action Gate â†’ allow | require_approval | revise_action | block
+proposed action -> Agent Action Gate -> allow | require_approval | revise_action | block
 
 ```
 
@@ -648,25 +648,25 @@ HTTP request to Agent Action Gate
 
 If decision = allow
 
-   â†’ execute action
+   -> execute action
 
 
 
 If decision = require_approval
 
-   â†’ pause and ask for human approval
+   -> pause and ask for human approval
 
 
 
 If decision = revise_action
 
-   â†’ send correction back to agent
+   -> send correction back to agent
 
 
 
 If decision = block
 
-   â†’ stop workflow and log reason
+   -> stop workflow and log reason
 
 ```
 
@@ -775,5 +775,6 @@ The structural logic behind both layers comes from \[AlignmentTheory.org](https:
 
 
 MIT
+
 
 
