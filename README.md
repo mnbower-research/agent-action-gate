@@ -10,7 +10,7 @@ Pre-execution safety gate for AI agents. Evaluates proposed actions and returns 
 
 
 
-AI agents can execute actions â€” sending emails, deleting files, calling APIs, modifying databases, deploying code, publishing content, and exposing data.
+AI agents can execute actions - sending emails, deleting files, calling APIs, modifying databases, deploying code, publishing content, and exposing data.
 
 
 
@@ -600,15 +600,15 @@ Agent Action Gate is designed to sit between an agent and the tools it wants to 
 
 User request
 
-   â†“
+   -
 
 AI agent proposes an action
 
-   â†“
+   -
 
 Agent Action Gate evaluates the proposed action
 
-   â†“
+   -
 
 Decision:
 
@@ -620,7 +620,7 @@ Decision:
 
    - block
 
-   â†“
+   -
 
 Only allowed or approved actions execute
 
@@ -636,15 +636,15 @@ Example automation flow:
 
 n8n trigger
 
-   â†“
+   -
 
 AI agent creates proposed action
 
-   â†“
+   -
 
 HTTP request to Agent Action Gate
 
-   â†“
+   -
 
 If decision = allow
 
@@ -676,7 +676,7 @@ If decision = block
 
 
 
-\*\*v0.1.0 â€” prototype\*\*
+\*\*v0.1.0 - prototype\*\*
 
 
 
@@ -762,7 +762,7 @@ Agent Action Gate is the pre-execution action-control layer of a broader behavio
 
 
 
-The companion layer â€” post-output behavioral drift detection â€” evaluates what AI systems \*say\* across repeated interactions: whether outputs are drifting from intended objectives, collapsing user agency, or exhibiting false authority.
+The companion layer - post-output behavioral drift detection - evaluates what AI systems \*say\* across repeated interactions: whether outputs are drifting from intended objectives, collapsing user agency, or exhibiting false authority.
 
 
 
@@ -775,6 +775,7 @@ The structural logic behind both layers comes from \[AlignmentTheory.org](https:
 
 
 MIT
+
 
 
 
