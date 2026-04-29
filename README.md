@@ -18,6 +18,8 @@ AI agents can send emails, delete files, call APIs, modify data, deploy code, pu
 ## Quick Start
 
 ```bash
+git clone https://github.com/mnbower-research/agent-action-gate.git
+cd agent-action-gate
 npm install
 npm run typecheck
 npm run eval:action-gate
@@ -131,10 +133,12 @@ Agent Action Gate runs seven heuristic detectors:
 
 ## Validation Status
 
-- TypeScript compile: passing
-- Baseline evals: 10/10 passing
-- `GET /health`: working
-- `POST /evaluate`: working
+```txt
+TypeScript compile: passing
+Baseline evals: 10/10 passing
+GET /health: working
+POST /evaluate: working
+```
 
 ## Roadmap
 
