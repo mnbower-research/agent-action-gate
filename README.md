@@ -104,15 +104,23 @@ console.log(result.decision);
 
 console.log(result.primaryIssue);
 
-// "missing_approval"
+// "irreversible_action"
 
 
 
 console.log(result.evidence);
 
-// \[
+// [
 
-//   "The proposed action requires approval before execution."
+//   "Proposed action explicitly sets `reversible` to `false`.",
+
+//   "The proposed action is external-facing. No user approval is recorded.",
+
+//   "The proposed action is marked as not reversible. No user approval is recorded.",
+
+//   "The proposed action targets the production environment. No user approval is recorded.",
+
+//   "The action contains approval-sensitive operation `send`. No user approval is recorded."
 
 // ]
 
@@ -130,21 +138,29 @@ Example result shape:
 
    "decision": "require_approval",
 
-   "riskLevel": "medium",
+   "riskLevel": "critical",
 
-   "primaryIssue": "missing_approval",
+   "primaryIssue": "irreversible_action",
 
-   "confidence": 0.85,
+   "confidence": 0.89,
 
-   "evidence": \[
+   "evidence": [
 
-     "The proposed action requires approval before execution."
+     "Proposed action explicitly sets `reversible` to `false`.",
+
+     "The proposed action is external-facing. No user approval is recorded.",
+
+     "The proposed action is marked as not reversible. No user approval is recorded.",
+
+     "The proposed action targets the production environment. No user approval is recorded.",
+
+     "The action contains approval-sensitive operation `send`. No user approval is recorded."
 
    ],
 
-   "recommendedAction": "Request human approval before executing this action.",
+   "recommendedAction": "Request explicit user approval before execution; primary issue: irreversible_action.",
 
-   "detectorResults": \[]
+   "detectorResults": []
 
 }
 
@@ -540,11 +556,27 @@ type ActionGateResult = {
 
 
 
-A minimal local HTTP API for n8n and other automation tools is planned next.
+A minimal local HTTP API for n8n and other automation tools is implemented.
 
 
 
-Target routes:
+Run it locally:
+
+
+
+```bash
+
+npm run dev
+
+```
+
+
+
+The server listens on port `3333` by default. Set `PORT` to use a different port.
+
+
+
+Routes:
 
 
 
@@ -558,33 +590,66 @@ POST /evaluate
 
 
 
-Planned behavior:
+`GET /health` returns:
 
 
 
-- `GET /health` returns a basic service health response.
+```json
 
-- `POST /evaluate` accepts an `ActionGateInput` JSON object.
-
-- The server passes the input into `evaluateAction()`.
-
-- The server returns an `ActionGateResult` JSON object.
-
-
-
-Planned local command:
-
-
-
-```bash
-
-npm run dev
+{ "ok": true, "service": "agent-action-gate" }
 
 ```
 
 
 
-This section will be updated once `src/server.ts` is implemented.
+`POST /evaluate` accepts an `ActionGateInput` JSON object and returns an `ActionGateResult`.
+
+
+
+PowerShell example:
+
+
+
+```powershell
+
+$body = @{
+  userRequest = "Send a refund confirmation email to customer@example.com."
+  proposedAction = @{
+    tool = "gmail"
+    actionType = "send_email"
+    target = "customer@example.com"
+    payload = @{
+      subject = "Your refund has been processed"
+      body = "Your refund has been processed."
+    }
+    reversible = $false
+    externalFacing = $true
+  }
+  context = @{
+    userApproved = $false
+    environment = "production"
+  }
+} | ConvertTo-Json -Depth 10
+
+Invoke-RestMethod `
+  -Method Post `
+  -Uri "http://localhost:3333/evaluate" `
+  -ContentType "application/json" `
+  -Body $body
+
+```
+
+
+
+Responses:
+
+
+
+- `400` for invalid JSON or invalid request shape.
+
+- `404` for unknown routes.
+
+- `405` for unsupported methods on known routes.
 
 
 
@@ -690,7 +755,7 @@ TypeScript compile: passing
 
 Baseline evals: 10/10 passing
 
-HTTP API: planned next
+HTTP API: implemented
 
 npm package: not published
 
@@ -716,13 +781,13 @@ Implemented:
 
 - Eval runner
 
+- Local HTTP API
+
 
 
 Planned:
 
 
-
-- Local HTTP server
 
 - n8n integration example
 
