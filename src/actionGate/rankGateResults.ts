@@ -1,25 +1,10 @@
-import type {
-  GateDecision,
-  GateDetectorResult,
-  GateDetectorType,
-  GateSeverity,
-} from "./types";
+import type { GateDecision, GateDetectorResult, GateSeverity } from "./types";
 
 const decisionRank: Record<GateDecision, number> = {
   block: 4,
   require_approval: 3,
   revise_action: 2,
   allow: 1,
-};
-
-const detectorDecision: Record<GateDetectorType, GateDecision> = {
-  sensitive_data_exposure: "block",
-  wrong_target: "block",
-  missing_approval: "require_approval",
-  irreversible_action: "require_approval",
-  unauthorized_scope: "revise_action",
-  tool_mismatch: "revise_action",
-  objective_drift: "revise_action",
 };
 
 const severityRank: Record<GateSeverity, number> = {
@@ -55,9 +40,12 @@ export function rankGateResults(
 }
 
 export function getDetectorDecision(
-  detectorResult: Pick<GateDetectorResult, "triggered" | "type">,
+  detectorResult: Pick<
+    GateDetectorResult,
+    "triggered" | "recommendedDecision"
+  >,
 ): GateDecision {
   return detectorResult.triggered
-    ? detectorDecision[detectorResult.type]
+    ? detectorResult.recommendedDecision
     : "allow";
 }

@@ -1,6 +1,9 @@
 # Agent Action Gate
 
-Pre-execution safety gate for AI agents that evaluates proposed actions and returns a structured decision before execution.
+Agent Action Gate is a pre-execution control layer for AI agents. It checks proposed tool actions before they run and returns a structured decision: `allow`, `require_approval`, `revise_action`, or `block`.
+
+**Current version:** v0.2.0  
+**Status:** TypeScript compile passing, 19/19 evals passing
 
 ## Why It Exists
 
@@ -119,6 +122,19 @@ HTTP responses:
 - `404` for unknown routes.
 - `405` for unsupported methods on known routes.
 
+## Cyber-capable agent protection
+
+Agent Action Gate does not replace model safety. It acts as a pre-execution control layer before tools run, evaluating the concrete tool action an agent proposes and returning `allow`, `require_approval`, `revise_action`, or `block`.
+
+The cyber-capable layer adds detectors for risky command and infrastructure behavior, including:
+
+- Credential access, such as reading `.env` files, API keys, tokens, SSH keys, or private keys.
+- Unauthorized scanning, recon, exploitation, or other cyber-like actions outside `context.authorizedTargets`.
+- Data exfiltration, such as dumping a database and posting it to an external endpoint.
+- CI/CD, dependency, package, deployment, or build-chain modification.
+- Privilege escalation through user, role, permission, root, admin, or capability changes.
+- Destructive commands, such as recursive deletion, database drops, infrastructure destroy, or disk wipes.
+
 ## n8n demo workflow
 
 The repo includes a working n8n demo workflow at:
@@ -164,11 +180,11 @@ Then replace the HTTP Request URL in n8n with:
 https://YOUR-TUNNEL-URL/evaluate
 ```
 
-The included workflow may contain a temporary localtunnel URL from development. Replace it before running.
+The included workflow defaults to `http://localhost:3333/evaluate`. If you use n8n Cloud, replace it with your own tunnel or hosted endpoint.
 
 ## Detectors
 
-Agent Action Gate runs seven heuristic detectors:
+Agent Action Gate runs heuristic detectors:
 
 - `wrong_target`: action targets the wrong recipient, file, endpoint, account, or record.
 - `unauthorized_scope`: action is broader than the user requested.
@@ -177,12 +193,19 @@ Agent Action Gate runs seven heuristic detectors:
 - `sensitive_data_exposure`: action may expose credentials, personal data, or confidential information.
 - `tool_mismatch`: action uses a tool that does not fit the requested operation.
 - `objective_drift`: action no longer serves the original user request or objective.
+- `unauthorized_cyber_scope`: cyber-capable action targets systems outside the authorized context.
+- `credential_access`: action accesses secrets, tokens, `.env` files, SSH keys, or credential-like material.
+- `data_exfiltration`: action dumps, archives, uploads, posts, or transfers data in a suspicious way.
+- `privilege_escalation`: action escalates users, roles, permissions, root access, or admin capabilities.
+- `supply_chain_modification`: action modifies CI/CD, dependencies, packages, deployment, or build-chain config.
+- `destructive_cyber_action`: action runs destructive command patterns such as drops, wipes, or infrastructure destroy.
+- `unapproved_command_execution`: terminal-like command execution is proposed without recorded user approval.
 
 ## Validation Status
 
 ```txt
 TypeScript compile: passing
-Baseline evals: 11/11 passing
+Baseline and cyber evals: 19/19 passing
 GET /health: working
 POST /evaluate: working
 ```

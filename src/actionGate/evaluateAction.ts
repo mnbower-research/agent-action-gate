@@ -8,17 +8,31 @@ import type {
 } from "./types";
 import { decideGateAction } from "./decideGateAction";
 import { rankGateResults } from "./rankGateResults";
+import { detectCredentialAccess } from "./detectors/credentialAccess";
+import { detectDataExfiltration } from "./detectors/dataExfiltration";
+import { detectDestructiveCyberAction } from "./detectors/destructiveCyberAction";
 import { detectIrreversibleAction } from "./detectors/irreversibleAction";
 import { detectMissingApproval } from "./detectors/missingApproval";
 import { detectObjectiveDrift } from "./detectors/objectiveDrift";
+import { detectPrivilegeEscalation } from "./detectors/privilegeEscalation";
 import { detectSensitiveDataExposure } from "./detectors/sensitiveDataExposure";
+import { detectSupplyChainModification } from "./detectors/supplyChainModification";
 import { detectToolMismatch } from "./detectors/toolMismatch";
+import { detectUnauthorizedCyberScope } from "./detectors/unauthorizedCyberScope";
 import { detectUnauthorizedScope } from "./detectors/unauthorizedScope";
+import { detectUnapprovedCommandExecution } from "./detectors/unapprovedCommandExecution";
 import { detectWrongTarget } from "./detectors/wrongTarget";
 
 export const actionGateDetectors: GateDetector[] = [
   detectWrongTarget,
   detectUnauthorizedScope,
+  detectUnauthorizedCyberScope,
+  detectCredentialAccess,
+  detectDataExfiltration,
+  detectPrivilegeEscalation,
+  detectSupplyChainModification,
+  detectDestructiveCyberAction,
+  detectUnapprovedCommandExecution,
   detectMissingApproval,
   detectIrreversibleAction,
   detectSensitiveDataExposure,

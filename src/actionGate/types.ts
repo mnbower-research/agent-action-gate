@@ -17,7 +17,14 @@ export type GateDetectorType =
   | "irreversible_action"
   | "sensitive_data_exposure"
   | "tool_mismatch"
-  | "objective_drift";
+  | "objective_drift"
+  | "unauthorized_cyber_scope"
+  | "credential_access"
+  | "data_exfiltration"
+  | "privilege_escalation"
+  | "supply_chain_modification"
+  | "destructive_cyber_action"
+  | "unapproved_command_execution";
 
 export type GateSeverity = "low" | "medium" | "high" | "critical";
 
@@ -41,6 +48,8 @@ export type ActionGateInput = {
     userApproved?: boolean;
     environment?: "dev" | "staging" | "production";
     workflowId?: string;
+    authorizedTargets?: string[];
+    authorizedActionTypes?: string[];
   };
 };
 
