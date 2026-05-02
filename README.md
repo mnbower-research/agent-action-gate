@@ -21,9 +21,7 @@ decision: block
 primaryIssue: unauthorized_cyber_scope
 ```
 
-![Agent Action Gate n8n demo](docs/assets/n8n-defensive-demo.png)
-
-Screenshot/GIF note: add the n8n defensive demo capture later at `docs/assets/n8n-defensive-demo.png`.
+![Defensive n8n demo showing Agent Action Gate routing an out-of-scope terminal-like action to Block Action](docs/assets/n8n-defensive-demo.png)
 
 ## Why It Exists
 
