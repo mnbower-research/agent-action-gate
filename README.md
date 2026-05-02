@@ -2,7 +2,7 @@
 
 Agent Action Gate is a pre-execution control layer for AI agents. It checks proposed tool actions before they run and returns a structured decision: `allow`, `require_approval`, `revise_action`, or `block`.
 
-**Current version:** v0.2.1  
+**Current version:** v0.3.0  
 **Status:** TypeScript compile passing, 19/19 evals passing
 
 ## Why It Exists
@@ -121,6 +121,57 @@ HTTP responses:
 - `400` for invalid JSON or invalid request shape.
 - `404` for unknown routes.
 - `405` for unsupported methods on known routes.
+
+## Decision logging
+
+v0.3.0 writes append-only JSONL receipts for successful `POST /evaluate` calls. Logs are local by default at:
+
+```txt
+logs/action-gate-decisions.jsonl
+```
+
+Payloads are summarized and redacted before logging. Raw payloads are not written to the decision log, and credential-like values such as secrets, tokens, passwords, private keys, `.env` content, authorization headers, cookies, SSH keys, and long credential-like strings are redacted.
+
+Disable decision logging:
+
+```bash
+AAG_DISABLE_DECISION_LOGS=true
+```
+
+Set a custom log path:
+
+```bash
+AAG_DECISION_LOG_PATH=some/path/file.jsonl
+```
+
+Example log entry:
+
+```json
+{
+  "timestamp": "2026-05-02T12:00:00.000Z",
+  "decision": "block",
+  "riskLevel": "critical",
+  "primaryIssue": "unauthorized_cyber_scope",
+  "confidence": 0.93,
+  "tool": "terminal",
+  "actionType": "run_command",
+  "target": "external-subnet",
+  "reversible": false,
+  "externalFacing": true,
+  "environment": "dev",
+  "userApproved": false,
+  "recommendedAction": "Do not execute this action; primary issue: unauthorized_cyber_scope.",
+  "evidence": [
+    "Proposed cyber-capable action targets a system outside `context.authorizedTargets`."
+  ],
+  "triggeredDetectors": [
+    "unauthorized_cyber_scope"
+  ],
+  "payloadSummary": {
+    "command": "network scan command placeholder"
+  }
+}
+```
 
 ## Cyber-capable agent protection
 

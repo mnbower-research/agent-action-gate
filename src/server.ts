@@ -2,6 +2,7 @@
 
 import { createServer, type IncomingMessage, type ServerResponse } from "node:http";
 import { evaluateAction } from "./actionGate/evaluateAction";
+import { logDecision } from "./actionGate/logging/decisionLogger";
 import type { ActionGateInput } from "./actionGate/types";
 
 const serviceName = "agent-action-gate";
@@ -84,7 +85,15 @@ async function handleEvaluate(
     return;
   }
 
-  sendJson(response, 200, evaluateAction(parsedBody));
+  const result = evaluateAction(parsedBody);
+
+  try {
+    logDecision(parsedBody, result);
+  } catch (error) {
+    console.warn("Failed to write Agent Action Gate decision log.", error);
+  }
+
+  sendJson(response, 200, result);
 }
 
 async function readRequestBody(request: IncomingMessage): Promise<string> {
