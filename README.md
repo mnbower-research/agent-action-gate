@@ -1,13 +1,52 @@
 # Agent Action Gate
 
-Agent Action Gate is a pre-execution control layer for AI agents. It checks proposed tool actions before they run and returns a structured decision: `allow`, `require_approval`, `revise_action`, or `block`.
+Agent Action Gate is a TypeScript pre-execution control layer for AI agents. It checks proposed tool actions before they run and returns a structured decision: `allow`, `require_approval`, `revise_action`, or `block`.
 
 **Current version:** v0.3.0  
-**Status:** TypeScript compile passing, 19/19 evals passing
+**Status:** TypeScript compile passing, 19/19 evals passing, logging smoke test passing
+
+```txt
+Agent proposes a tool action
+-> Agent Action Gate evaluates it
+-> Action is routed to allow / require approval / revise / block
+-> v0.3.0 writes a local JSONL decision receipt
+```
+
+## Quick demo
+
+The defensive n8n demo shows Agent Action Gate reviewing a terminal-like action that targets an external subnet outside the authorized target scope. The expected gate result is:
+
+```txt
+decision: block
+primaryIssue: unauthorized_cyber_scope
+```
+
+![Agent Action Gate n8n demo](docs/assets/n8n-defensive-demo.png)
+
+Screenshot/GIF note: add the n8n defensive demo capture later at `docs/assets/n8n-defensive-demo.png`.
 
 ## Why It Exists
 
 AI agents can send emails, delete files, call APIs, modify data, deploy code, publish content, and expose sensitive information. Agent Action Gate checks what an agent is about to do, so automation tools can allow, pause, revise, or block the action before it runs.
+
+## Where it fits
+
+```txt
+AI agent / automation workflow
+-> proposed tool action
+-> Agent Action Gate
+-> allow / approval / revise / block
+-> optional execution
+-> local decision receipt
+```
+
+Agent Action Gate can sit in front of:
+
+- n8n workflows
+- coding agents
+- browser agents
+- internal automations
+- API/tool-calling agents
 
 ## Decisions
 
@@ -26,49 +65,11 @@ cd agent-action-gate
 npm install
 npm run typecheck
 npm run eval:action-gate
+npm run test:logging
 npm run dev
 ```
 
 The local HTTP API runs on port `3333` by default.
-
-## TypeScript Usage
-
-```typescript
-import { evaluateAction } from "./src/actionGate/evaluateAction";
-
-const result = evaluateAction({
-  userRequest: "Send a refund confirmation email to customer@example.com.",
-  proposedAction: {
-    tool: "gmail",
-    actionType: "send_email",
-    target: "customer@example.com",
-    payload: {
-      subject: "Your refund has been processed",
-      body: "Your refund has been processed.",
-    },
-    reversible: false,
-    externalFacing: true,
-  },
-  context: {
-    userApproved: false,
-    environment: "production",
-  },
-});
-
-console.log(result);
-```
-
-Example result:
-
-```json
-{
-  "decision": "require_approval",
-  "riskLevel": "critical",
-  "primaryIssue": "irreversible_action",
-  "confidence": 0.89,
-  "recommendedAction": "Request explicit user approval before execution; primary issue: irreversible_action."
-}
-```
 
 ## HTTP API
 
@@ -122,9 +123,50 @@ HTTP responses:
 - `404` for unknown routes.
 - `405` for unsupported methods on known routes.
 
+## TypeScript Usage
+
+```typescript
+import { evaluateAction } from "./src/actionGate/evaluateAction";
+
+const result = evaluateAction({
+  userRequest: "Send a refund confirmation email to customer@example.com.",
+  proposedAction: {
+    tool: "gmail",
+    actionType: "send_email",
+    target: "customer@example.com",
+    payload: {
+      subject: "Your refund has been processed",
+      body: "Your refund has been processed.",
+    },
+    reversible: false,
+    externalFacing: true,
+  },
+  context: {
+    userApproved: false,
+    environment: "production",
+  },
+});
+
+console.log(result);
+```
+
+Example result:
+
+```json
+{
+  "decision": "require_approval",
+  "riskLevel": "critical",
+  "primaryIssue": "irreversible_action",
+  "confidence": 0.89,
+  "recommendedAction": "Request explicit user approval before execution; primary issue: irreversible_action."
+}
+```
+
 ## Decision logging
 
-v0.3.0 writes append-only JSONL receipts for successful `POST /evaluate` calls. Logs are local by default at:
+v0.3.0 writes append-only JSONL receipts for successful `POST /evaluate` calls. Logs are local by default and ignored by git.
+
+Default path:
 
 ```txt
 logs/action-gate-decisions.jsonl
@@ -144,7 +186,7 @@ Set a custom log path:
 AAG_DECISION_LOG_PATH=some/path/file.jsonl
 ```
 
-Example log entry:
+Compact sample log entry:
 
 ```json
 {
@@ -156,17 +198,9 @@ Example log entry:
   "tool": "terminal",
   "actionType": "run_command",
   "target": "external-subnet",
-  "reversible": false,
-  "externalFacing": true,
   "environment": "dev",
   "userApproved": false,
-  "recommendedAction": "Do not execute this action; primary issue: unauthorized_cyber_scope.",
-  "evidence": [
-    "Proposed cyber-capable action targets a system outside `context.authorizedTargets`."
-  ],
-  "triggeredDetectors": [
-    "unauthorized_cyber_scope"
-  ],
+  "triggeredDetectors": ["unauthorized_cyber_scope"],
   "payloadSummary": {
     "command": "network scan command placeholder"
   }
@@ -188,7 +222,7 @@ The cyber-capable layer adds detectors for risky command and infrastructure beha
 
 ## n8n demo workflows
 
-The repo includes two working n8n demo workflows:
+The repo includes two importable n8n demo workflows:
 
 ```txt
 examples/n8n-agent-action-gate-demo.json
@@ -216,7 +250,7 @@ Import one in n8n:
 
 ### Defensive n8n demo
 
-`examples/n8n-agent-action-gate-defensive-demo.json` demonstrates the v0.2 defensive pre-execution review layer. It sends a terminal-like action outside the authorized target scope. The expected result is `block` with `primaryIssue: unauthorized_cyber_scope`.
+`examples/n8n-agent-action-gate-defensive-demo.json` demonstrates defensive pre-execution review for the cyber-capable layer. It sends a terminal-like action outside the authorized target scope. The expected result is `block` with `primaryIssue: unauthorized_cyber_scope`.
 
 Start the local API:
 
@@ -257,23 +291,44 @@ Agent Action Gate runs heuristic detectors:
 - `destructive_cyber_action`: action runs destructive command patterns such as drops, wipes, or infrastructure destroy.
 - `unapproved_command_execution`: terminal-like command execution is proposed without recorded user approval.
 
+## Release progression
+
+| Version | Focus | Proof |
+|---|---|---|
+| v0.1.0 | Basic pre-execution gate | 11/11 evals passing |
+| v0.2.0 | Cyber-capable agent protection | 19/19 evals passing |
+| v0.2.1 | Defensive n8n demo workflow | Routes unauthorized cyber-scope action to block |
+| v0.3.0 | Decision logging | POST /evaluate writes JSONL decision receipts |
+
 ## Validation Status
 
 ```txt
 TypeScript compile: passing
 Baseline and cyber evals: 19/19 passing
+Logging smoke test: passing
 GET /health: working
 POST /evaluate: working
 ```
 
+## What this is not
+
+Agent Action Gate is not:
+
+- a replacement for IAM
+- a replacement for sandboxing
+- a replacement for least-privilege credentials
+- a legal compliance guarantee
+- a model safety replacement
+
+It is a pre-execution control layer that evaluates proposed tool actions before they run.
+
 ## Roadmap
 
-- Additional n8n integration examples
-- Persistent action logs
-- Approval workflow examples
-- Additional eval cases
-- Dashboard or review UI
-- npm package publishing
+- v0.4.0: Human approval workflow example
+- v0.5.0: Review/report UI for decision logs
+- v0.6.0: Policy profiles
+- v0.7.0: Indirect prompt injection / untrusted-content boundary examples
+- v1.0.0: Stable API, npm package, documented integration path
 
 ## Compliance Note
 
