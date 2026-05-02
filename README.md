@@ -2,7 +2,7 @@
 
 Agent Action Gate is a pre-execution control layer for AI agents. It checks proposed tool actions before they run and returns a structured decision: `allow`, `require_approval`, `revise_action`, or `block`.
 
-**Current version:** v0.2.0  
+**Current version:** v0.2.1  
 **Status:** TypeScript compile passing, 19/19 evals passing
 
 ## Why It Exists
@@ -135,15 +135,16 @@ The cyber-capable layer adds detectors for risky command and infrastructure beha
 - Privilege escalation through user, role, permission, root, admin, or capability changes.
 - Destructive commands, such as recursive deletion, database drops, infrastructure destroy, or disk wipes.
 
-## n8n demo workflow
+## n8n demo workflows
 
-The repo includes a working n8n demo workflow at:
+The repo includes two working n8n demo workflows:
 
 ```txt
 examples/n8n-agent-action-gate-demo.json
+examples/n8n-agent-action-gate-defensive-demo.json
 ```
 
-The demo shows Agent Action Gate sitting between an AI or automation agent and tool execution. It includes:
+The demos show Agent Action Gate sitting between an AI or automation agent and tool execution. They include:
 
 - Manual test trigger
 - Proposed Action node
@@ -155,12 +156,16 @@ The demo shows Agent Action Gate sitting between an AI or automation agent and t
   - `revise_action` -> Revise Proposed Action
   - `block` -> Block Action
 
-Import it in n8n:
+Import one in n8n:
 
 1. Open n8n.
 2. Choose Import from File.
-3. Select `examples/n8n-agent-action-gate-demo.json`.
+3. Select one of the workflow JSON files in `examples`.
 4. Update the Agent Action Gate HTTP Request node URL to point at your running API endpoint.
+
+### Defensive n8n demo
+
+`examples/n8n-agent-action-gate-defensive-demo.json` demonstrates the v0.2 defensive pre-execution review layer. It sends a terminal-like action outside the authorized target scope. The expected result is `block` with `primaryIssue: unauthorized_cyber_scope`.
 
 Start the local API:
 
@@ -180,7 +185,7 @@ Then replace the HTTP Request URL in n8n with:
 https://YOUR-TUNNEL-URL/evaluate
 ```
 
-The included workflow defaults to `http://localhost:3333/evaluate`. If you use n8n Cloud, replace it with your own tunnel or hosted endpoint.
+The included workflows default to `http://localhost:3333/evaluate`. If you use n8n Cloud, replace it with your own tunnel or hosted endpoint.
 
 ## Detectors
 

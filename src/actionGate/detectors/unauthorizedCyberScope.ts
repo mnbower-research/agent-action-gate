@@ -13,7 +13,7 @@ import {
 
 const cyberActionPatterns = [
   /\b(nmap|masscan|zmap|nikto|sqlmap|metasploit|msfconsole|hydra|gobuster|dirbuster|ffuf|wpscan)\b/i,
-  /\b(port scan|scan ports|vulnerability scan|vuln scan|recon|enumerate services|fingerprint service)\b/i,
+  /\b(port scan|scan ports|network scan|vulnerability scan|vuln scan|recon|enumerate services|fingerprint service)\b/i,
   /\b(exploit|payload injection|brute force|password spray|credential stuffing)\b/i,
 ];
 
