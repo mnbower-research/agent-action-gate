@@ -275,7 +275,7 @@ decision: require_approval
 primaryIssue: missing_approval
 ```
 
-![Human approval n8n demo showing Agent Action Gate routing an approval-required action through review to Rejected Stop](docs/assets/n8n-human-approval-demo.png)
+![Human approval n8n demo showing Agent Action Gate routing an approval-required action through review to Rejected Stop](docs/assets/n8n-human-approval-demo-v2.png)
 
 Start the local API:
 
