@@ -1,0 +1,428 @@
+{
+  "name": "Agent Action Gate - Human Approval Demo",
+  "nodes": [
+    {
+      "parameters": {},
+      "type": "n8n-nodes-base.manualTrigger",
+      "typeVersion": 1,
+      "position": [
+        0,
+        0
+      ],
+      "id": "c9ec64f4-113f-4d68-8358-91fd1c4a07f7",
+      "name": "Manual Test Trigger"
+    },
+    {
+      "parameters": {
+        "jsCode": "return [\n  {\n    json: {\n      userRequest: \"Send the approved customer update email.\",\n      proposedAction: {\n        tool: \"email\",\n        actionType: \"send_email\",\n        target: \"customer_list\",\n        payload: {\n          subject: \"Product update\",\n          body: \"Short customer update draft.\"\n        },\n        reversible: true,\n        externalFacing: true\n      },\n      context: {\n        userApproved: false,\n        environment: \"production\",\n        authorizedTargets: [\"customer_list\"],\n        authorizedActionTypes: [\"send_email\"]\n      }\n    }\n  }\n];"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        208,
+        0
+      ],
+      "id": "434f06cf-906b-4653-9e4a-3e7978b5cd26",
+      "name": "Proposed Production Action"
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "http://localhost:3333/evaluate",
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={{ $json }}",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.4,
+      "position": [
+        416,
+        0
+      ],
+      "id": "ff9cd4f2-4d27-4a26-9b31-c71e4645f9ad",
+      "name": "Agent Action Gate"
+    },
+    {
+      "parameters": {
+        "rules": {
+          "values": [
+            {
+              "conditions": {
+                "options": {
+                  "caseSensitive": true,
+                  "leftValue": "",
+                  "typeValidation": "strict",
+                  "version": 3
+                },
+                "conditions": [
+                  {
+                    "id": "b4ce9ef6-a676-448b-9488-c4c434369c16",
+                    "leftValue": "={{ $json[\"decision\"] }}",
+                    "rightValue": "allow",
+                    "operator": {
+                      "type": "string",
+                      "operation": "equals",
+                      "name": "filter.operator.equals"
+                    }
+                  }
+                ],
+                "combinator": "and"
+              }
+            },
+            {
+              "conditions": {
+                "options": {
+                  "caseSensitive": true,
+                  "leftValue": "",
+                  "typeValidation": "strict",
+                  "version": 3
+                },
+                "conditions": [
+                  {
+                    "id": "fb63331c-33c3-4229-a30f-91ed07a1dd26",
+                    "leftValue": "={{ $json[\"decision\"] }}",
+                    "rightValue": "require_approval",
+                    "operator": {
+                      "type": "string",
+                      "operation": "equals",
+                      "name": "filter.operator.equals"
+                    }
+                  }
+                ],
+                "combinator": "and"
+              }
+            },
+            {
+              "conditions": {
+                "options": {
+                  "caseSensitive": true,
+                  "leftValue": "",
+                  "typeValidation": "strict",
+                  "version": 3
+                },
+                "conditions": [
+                  {
+                    "id": "a18ec49c-a407-4fdf-8941-b521db420753",
+                    "leftValue": "={{ $json[\"decision\"] }}",
+                    "rightValue": "revise_action",
+                    "operator": {
+                      "type": "string",
+                      "operation": "equals",
+                      "name": "filter.operator.equals"
+                    }
+                  }
+                ],
+                "combinator": "and"
+              }
+            },
+            {
+              "conditions": {
+                "options": {
+                  "caseSensitive": true,
+                  "leftValue": "",
+                  "typeValidation": "strict",
+                  "version": 3
+                },
+                "conditions": [
+                  {
+                    "id": "d7ba285f-3844-4f34-9f7a-02a9f116d117",
+                    "leftValue": "={{ $json[\"decision\"] }}",
+                    "rightValue": "block",
+                    "operator": {
+                      "type": "string",
+                      "operation": "equals",
+                      "name": "filter.operator.equals"
+                    }
+                  }
+                ],
+                "combinator": "and"
+              }
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.switch",
+      "typeVersion": 3.4,
+      "position": [
+        624,
+        -32
+      ],
+      "id": "f5e5c901-3350-4290-9c8f-292e164160ed",
+      "name": "Route Gate Decision"
+    },
+    {
+      "parameters": {
+        "jsCode": "return [\n  {\n    json: {\n      gateOutcome: \"allow\",\n      nextStep: \"Continue to execute the proposed action.\",\n      message: \"Agent Action Gate allowed this action.\"\n    }\n  }\n];"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        880,
+        -256
+      ],
+      "id": "5c01a91c-232a-44ad-a2f5-f87620f04335",
+      "name": "Continue Action"
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "21e39f35-19e6-4fd7-a5a6-18a19efe2c29",
+              "name": "humanApproved",
+              "value": false,
+              "type": "boolean"
+            },
+            {
+              "id": "abdcf09d-e410-4b69-a492-09bf1e2d7a7d",
+              "name": "approver",
+              "value": "demo-reviewer",
+              "type": "string"
+            },
+            {
+              "id": "510085cc-0aa7-46bf-965d-7218965f8468",
+              "name": "approvalNote",
+              "value": "Demo rejection: production action requires explicit review before execution.",
+              "type": "string"
+            }
+          ]
+        },
+        "includeOtherFields": true,
+        "options": {}
+      },
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [
+        880,
+        -64
+      ],
+      "id": "ad72bf8f-f1e9-482d-b901-e3c401a2825f",
+      "name": "Human Approval Required"
+    },
+    {
+      "parameters": {
+        "rules": {
+          "values": [
+            {
+              "conditions": {
+                "options": {
+                  "caseSensitive": true,
+                  "leftValue": "",
+                  "typeValidation": "strict",
+                  "version": 3
+                },
+                "conditions": [
+                  {
+                    "id": "3e73045c-c946-41e6-bec2-3d4e4e4ba9b4",
+                    "leftValue": "={{ $json[\"humanApproved\"] ? \"true\" : \"false\" }}",
+                    "rightValue": "true",
+                    "operator": {
+                      "type": "string",
+                      "operation": "equals",
+                      "name": "filter.operator.equals"
+                    }
+                  }
+                ],
+                "combinator": "and"
+              }
+            },
+            {
+              "conditions": {
+                "options": {
+                  "caseSensitive": true,
+                  "leftValue": "",
+                  "typeValidation": "strict",
+                  "version": 3
+                },
+                "conditions": [
+                  {
+                    "id": "d64c693c-28b2-4ee9-a1c1-2cb23184dc40",
+                    "leftValue": "={{ $json[\"humanApproved\"] ? \"true\" : \"false\" }}",
+                    "rightValue": "false",
+                    "operator": {
+                      "type": "string",
+                      "operation": "equals",
+                      "name": "filter.operator.equals"
+                    }
+                  }
+                ],
+                "combinator": "and"
+              }
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.switch",
+      "typeVersion": 3.4,
+      "position": [
+        1120,
+        -64
+      ],
+      "id": "c3c2a269-46f5-4e8c-afab-72331f43364c",
+      "name": "Approval Decision"
+    },
+    {
+      "parameters": {
+        "jsCode": "return [\n  {\n    json: {\n      gateOutcome: \"require_approval\",\n      humanApproved: true,\n      nextStep: \"Continue after explicit human approval.\",\n      message: \"The proposed action was approved by a human reviewer and may continue.\"\n    }\n  }\n];"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        1360,
+        -144
+      ],
+      "id": "fb460e2d-d95f-4d67-bb09-270ec7ca3f14",
+      "name": "Approved Continue"
+    },
+    {
+      "parameters": {
+        "jsCode": "return [\n  {\n    json: {\n      gateOutcome: \"require_approval\",\n      humanApproved: false,\n      expectedDecision: \"require_approval\",\n      expectedPrimaryIssue: \"missing_approval\",\n      nextStep: \"Stop the workflow without executing the proposed action.\",\n      message: \"The simulated human reviewer rejected this action, so execution stops safely.\"\n    }\n  }\n];"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        1360,
+        16
+      ],
+      "id": "577243b9-fdc3-437d-96c8-5c0aee2e730c",
+      "name": "Rejected Stop"
+    },
+    {
+      "parameters": {
+        "jsCode": "return [\n  {\n    json: {\n      gateOutcome: \"revise_action\",\n      nextStep: \"Send the proposed action back for correction.\",\n      message: \"Agent Action Gate found a fixable issue. The action should be revised before execution.\"\n    }\n  }\n];"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        880,
+        128
+      ],
+      "id": "d89ba8a2-ed37-44b6-88cc-47dbeb378807",
+      "name": "Revise Proposed Action"
+    },
+    {
+      "parameters": {
+        "jsCode": "return [\n  {\n    json: {\n      gateOutcome: \"block\",\n      nextStep: \"Stop the workflow and log the reason.\",\n      message: \"Agent Action Gate blocked this action. It should not execute.\"\n    }\n  }\n];"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        880,
+        288
+      ],
+      "id": "d4a85716-6160-459d-b7ed-b91591f66c22",
+      "name": "Block Action"
+    }
+  ],
+  "pinData": {},
+  "connections": {
+    "Manual Test Trigger": {
+      "main": [
+        [
+          {
+            "node": "Proposed Production Action",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Proposed Production Action": {
+      "main": [
+        [
+          {
+            "node": "Agent Action Gate",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Agent Action Gate": {
+      "main": [
+        [
+          {
+            "node": "Route Gate Decision",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Route Gate Decision": {
+      "main": [
+        [
+          {
+            "node": "Continue Action",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Human Approval Required",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Revise Proposed Action",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Block Action",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Human Approval Required": {
+      "main": [
+        [
+          {
+            "node": "Approval Decision",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Approval Decision": {
+      "main": [
+        [
+          {
+            "node": "Approved Continue",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Rejected Stop",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "active": false,
+  "settings": {
+    "executionOrder": "v1",
+    "binaryMode": "separate"
+  },
+  "versionId": "4f351e93-98c7-4661-9ae9-1e3722a25e16",
+  "meta": {
+    "instanceId": "55873c08ec28a38a11ab40cb3523ec14256fa2dd7f6ddc5a95a9dcee3b0e42a2"
+  },
+  "id": "Spn4XsjNsN8sD040",
+  "tags": []
+}

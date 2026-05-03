@@ -2,14 +2,14 @@
 
 Agent Action Gate is a TypeScript pre-execution control layer for AI agents. It checks proposed tool actions before they run and returns a structured decision: `allow`, `require_approval`, `revise_action`, or `block`.
 
-**Current version:** v0.3.0  
+**Current version:** v0.4.0  
 **Status:** TypeScript compile passing, 19/19 evals passing, logging smoke test passing
 
 ```txt
 Agent proposes a tool action
 -> Agent Action Gate evaluates it
 -> Action is routed to allow / require approval / revise / block
--> v0.3.0 writes a local JSONL decision receipt
+-> POST /evaluate writes a local JSONL decision receipt
 ```
 
 ## Quick demo
@@ -220,11 +220,12 @@ The cyber-capable layer adds detectors for risky command and infrastructure beha
 
 ## n8n demo workflows
 
-The repo includes two importable n8n demo workflows:
+The repo includes three importable n8n demo workflows:
 
 ```txt
 examples/n8n-agent-action-gate-demo.json
 examples/n8n-agent-action-gate-defensive-demo.json
+examples/n8n-agent-action-gate-human-approval-demo.json
 ```
 
 The demos show Agent Action Gate sitting between an AI or automation agent and tool execution. They include:
@@ -235,7 +236,7 @@ The demos show Agent Action Gate sitting between an AI or automation agent and t
 - Route Gate Decision switch
 - Four outcome branches:
   - `allow` -> Continue Action
-  - `require_approval` -> Require Human Approval
+  - `require_approval` -> Human Approval Required
   - `revise_action` -> Revise Proposed Action
   - `block` -> Block Action
 
@@ -249,6 +250,19 @@ Import one in n8n:
 ### Defensive n8n demo
 
 `examples/n8n-agent-action-gate-defensive-demo.json` demonstrates defensive pre-execution review for the cyber-capable layer. It sends a terminal-like action outside the authorized target scope. The expected result is `block` with `primaryIssue: unauthorized_cyber_scope`.
+
+### Human approval n8n demo
+
+`examples/n8n-agent-action-gate-human-approval-demo.json` demonstrates the `require_approval` route. It shows how a proposed production or external-facing action can be paused for human review before execution.
+
+The default path is safe: the simulated human review sets `humanApproved: false`, then the workflow routes to Rejected Stop.
+
+Expected gate result:
+
+```txt
+decision: require_approval
+primaryIssue: missing_approval
+```
 
 Start the local API:
 
@@ -297,6 +311,7 @@ Agent Action Gate runs heuristic detectors:
 | v0.2.0 | Cyber-capable agent protection | 19/19 evals passing |
 | v0.2.1 | Defensive n8n demo workflow | Routes unauthorized cyber-scope action to block |
 | v0.3.0 | Decision logging | POST /evaluate writes JSONL decision receipts |
+| v0.4.0 | Human approval workflow | Routes approval-required actions to human review before execution |
 
 ## Validation Status
 
@@ -322,10 +337,10 @@ It is a pre-execution control layer that evaluates proposed tool actions before 
 
 ## Roadmap
 
-- v0.4.0: Human approval workflow example
-- v0.5.0: Review/report UI for decision logs
-- v0.6.0: Policy profiles
-- v0.7.0: Indirect prompt injection / untrusted-content boundary examples
+- v0.5.0: Runtime-controlled launch copilot demo
+- v0.6.0: Review/report UI for decision logs
+- v0.7.0: Policy profiles
+- v0.8.0: Indirect prompt injection / untrusted-content boundary examples
 - v1.0.0: Stable API, npm package, documented integration path
 
 ## Compliance Note
