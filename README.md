@@ -257,12 +257,25 @@ Import one in n8n:
 
 The default path is safe: the simulated human review sets `humanApproved: false`, then the workflow routes to Rejected Stop.
 
+Default flow:
+
+```txt
+Proposed Production Action
+-> Agent Action Gate
+-> Route Gate Decision
+-> Human Approval Required
+-> Approval Decision
+-> Rejected Stop
+```
+
 Expected gate result:
 
 ```txt
 decision: require_approval
 primaryIssue: missing_approval
 ```
+
+![Human approval n8n demo showing Agent Action Gate routing an approval-required action through review to Rejected Stop](docs/assets/n8n-human-approval-demo.png)
 
 Start the local API:
 
