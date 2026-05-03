@@ -350,7 +350,7 @@ It is a pre-execution control layer that evaluates proposed tool actions before 
 
 ## Roadmap
 
-- v0.5.0: Runtime-controlled launch copilot demo
+- v0.5.0: Runtime-Controlled Launch Copilot demo
 - v0.6.0: Review/report UI for decision logs
 - v0.7.0: Policy profiles
 - v0.8.0: Indirect prompt injection / untrusted-content boundary examples
@@ -362,7 +362,9 @@ Agent Action Gate can support human-approval workflows for AI agent actions, esp
 
 ## Research Lineage
 
-Agent Action Gate is the pre-execution action-control layer of Aletheon, a broader alignment architecture. Related research is available at [AlignmentTheory.org](https://alignmenttheory.org).
+Agent Runtime Alignment is the practical business category: translating company values, policies, permissions, approval rules, and risk boundaries into runtime controls for AI agents.
+
+Alignment Theory remains the research framework. Agent Action Gate is the open-source pre-execution control implementation. Related research is available at [AlignmentTheory.org](https://alignmenttheory.org).
 
 ## License
 
