@@ -32,6 +32,35 @@ primaryIssue: unauthorized_cyber_scope
 
 AI agents can send emails, delete files, call APIs, modify data, deploy code, publish content, and expose sensitive information. Agent Action Gate checks what an agent is about to do, so automation tools can allow, pause, revise, or block the action before it runs.
 
+## Why now
+
+Agentic AI is moving from answers to actions.
+
+As agents gain access to tools, files, APIs, email, databases, workflows, code, customer data, and public communication channels, the key safety question changes from:
+
+```txt
+Is this output correct?
+```
+
+to:
+
+```txt
+Should this action be allowed before it affects the world?
+```
+
+GitHub Agentic Workflows show this safety pattern inside repository automation: read-only defaults, constrained write paths, reviewable outputs, and explicit approval before write operations.
+
+Agent Action Gate explores the same control pattern as a general-purpose pre-execution oversight layer for AI-agent workflows outside GitHub-specific repository automation.
+
+AAG evaluates proposed agent actions and returns:
+
+- `allow`
+- `require_approval`
+- `revise_action`
+- `block`
+
+before external effects occur.
+
 ## Where it fits
 
 ```txt
