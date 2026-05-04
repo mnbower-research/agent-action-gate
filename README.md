@@ -302,6 +302,19 @@ https://YOUR-TUNNEL-URL/evaluate
 
 The included workflows default to `http://localhost:3333/evaluate`. If you use n8n Cloud, replace it with your own tunnel or hosted endpoint.
 
+## Launch Copilot Demo
+
+The [Launch Copilot demo](examples/launch-copilot/README.md) shows AAG governing a simulated business-development agent.
+
+It demonstrates:
+
+- internal drafting actions can be allowed
+- external outreach requires approval
+- public posting requires approval
+- destructive lead deletion is blocked
+- private lead export is blocked
+- audit-style evidence is created
+
 ## Detectors
 
 Agent Action Gate runs heuristic detectors:
