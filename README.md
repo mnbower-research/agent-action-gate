@@ -2,20 +2,39 @@
 
 Agent Action Gate is a TypeScript pre-execution control layer for AI agents. It checks proposed tool actions before they run and returns a structured decision: `allow`, `require_approval`, `revise_action`, or `block`.
 
-**Current version:** v0.4.0  
-**Status:** TypeScript compile passing, 19/19 evals passing, logging smoke test passing
+**Current version:** v0.5.0  
+**Status:** TypeScript compile passing, 19/19 evals passing, logging smoke test passing, Launch Copilot demo passing
 
 ```txt
 Agent proposes a tool action
 -> Agent Action Gate evaluates it
--> Action is routed to allow / require approval / revise / block
--> POST /evaluate writes a local JSONL decision receipt
+-> Action is allowed / requires approval / revised / blocked
+-> Decision is logged as an audit-style receipt
 ```
 
 ## Core Concepts
 
 - [Integration Bypass](docs/INTEGRATION_BYPASS.md) - the failure mode where an AI agent closes an action loop before meaningful human review can occur.
 - [Article 14 Oversight](docs/ARTICLE_14_OVERSIGHT.md) - how Agent Action Gate can support Article 14-style human oversight without claiming to guarantee legal compliance.
+
+## Launch Copilot Demo
+
+The [Launch Copilot Demo](examples/launch-copilot/README.md) shows AAG governing a simulated business-development agent.
+
+It demonstrates:
+
+- internal drafting actions can be allowed
+- external outreach requires approval
+- public posting requires approval
+- destructive lead deletion is blocked
+- private lead export is blocked
+- audit-style evidence is created
+
+Run it with:
+
+```bash
+npx tsx examples/launch-copilot/run-demo.ts
+```
 
 ## Quick demo
 
@@ -330,19 +349,6 @@ https://YOUR-TUNNEL-URL/evaluate
 ```
 
 The included workflows default to `http://localhost:3333/evaluate`. If you use n8n Cloud, replace it with your own tunnel or hosted endpoint.
-
-## Launch Copilot Demo
-
-The [Launch Copilot demo](examples/launch-copilot/README.md) shows AAG governing a simulated business-development agent.
-
-It demonstrates:
-
-- internal drafting actions can be allowed
-- external outreach requires approval
-- public posting requires approval
-- destructive lead deletion is blocked
-- private lead export is blocked
-- audit-style evidence is created
 
 ## Detectors
 
