@@ -12,6 +12,11 @@ Agent proposes a tool action
 -> POST /evaluate writes a local JSONL decision receipt
 ```
 
+## Core Concepts
+
+- [Integration Bypass](docs/INTEGRATION_BYPASS.md) - the failure mode where an AI agent closes an action loop before meaningful human review can occur.
+- [Article 14 Oversight](docs/ARTICLE_14_OVERSIGHT.md) - how Agent Action Gate can support Article 14-style human oversight without claiming to guarantee legal compliance.
+
 ## Quick demo
 
 The defensive n8n demo shows Agent Action Gate reviewing a terminal-like action that targets an external subnet outside the authorized target scope. The expected gate result is:
