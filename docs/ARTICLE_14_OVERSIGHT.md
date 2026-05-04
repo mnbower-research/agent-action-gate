@@ -291,43 +291,21 @@ Export customer list -> require_approval or block
 
 This turns written company policy into runtime action governance.
 
-## Recommended Claim Language
+## Recommended Positioning
 
-Use:
+The following language is appropriate when describing Agent Action Gate:
 
-```txt
-Agent Action Gate supports Article 14-style human oversight by enforcing pre-execution review for high-impact AI-agent actions.
-```
+- Agent Action Gate supports Article 14-style human oversight by enforcing pre-execution review for high-impact AI-agent actions.
+- Agent Action Gate provides technical evidence that human oversight occurred before external effects.
+- Agent Action Gate is human oversight infrastructure for agentic AI workflows.
 
-Use:
+Avoid stronger compliance claims such as:
 
-```txt
-Agent Action Gate provides technical evidence that human oversight occurred before external effects.
-```
+- Agent Action Gate guarantees EU AI Act compliance.
+- Agent Action Gate makes any AI system legally compliant.
+- Agent Action Gate satisfies Article 14 by itself.
 
-Use:
-
-```txt
-Agent Action Gate is human oversight infrastructure for agentic AI workflows.
-```
-
-Do not use:
-
-```txt
-Agent Action Gate guarantees EU AI Act compliance.
-```
-
-Do not use:
-
-```txt
-Agent Action Gate makes any AI system legally compliant.
-```
-
-Do not use:
-
-```txt
-Agent Action Gate satisfies Article 14 by itself.
-```
+Agent Action Gate is a technical control layer. It can support governance, documentation, and oversight processes, but it does not replace legal review, organizational accountability, security review, privacy review, or a full compliance program.
 
 ## Summary
 
