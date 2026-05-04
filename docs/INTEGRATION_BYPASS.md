@@ -214,9 +214,21 @@ Agent Action Gate does not make AI systems safe or compliant by itself. It is a 
 
 ## Relationship to PCPI
 
-PCPI stands for Participation in Cognition-Action Process Index.
+PCPI stands for **Participatory Capacity Preservation Index**.
 
-PCPI asks whether human participation is meaningful or merely symbolic.
+PCPI is a measurement framework for evaluating whether AI systems preserve or erode human understanding, judgment, choice, verification, learning, and agency.
+
+Within Agent Action Gate, PCPI is applied to the cognition-action loop:
+
+```txt
+AI proposes an action
+-> human reviewer receives context
+-> human understands the action and risk
+-> human approves, revises, rejects, or escalates
+-> action executes only if cleared
+```
+
+PCPI is broader than Agent Action Gate; AAG applies PCPI to the specific moment where AI cognition becomes external action.
 
 A basic approval workflow asks:
 
@@ -234,7 +246,7 @@ This matters because a human can technically be "in the loop" while still rubber
 
 Agent Action Gate enforces the checkpoint.
 
-PCPI measures whether the checkpoint preserves real participation.
+PCPI measures whether the checkpoint preserves real participatory capacity.
 
 ## Summary
 

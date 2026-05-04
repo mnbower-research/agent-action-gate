@@ -242,9 +242,11 @@ proposed action
 
 ### 4. PCPI Metrics
 
-PCPI can measure whether oversight is meaningful.
+PCPI stands for **Participatory Capacity Preservation Index**.
 
-Example signals:
+PCPI can help measure whether oversight is meaningful rather than symbolic.
+
+In the AAG context, PCPI can track signals such as:
 
 - approval latency
 - approval rate
@@ -254,8 +256,9 @@ Example signals:
 - repeated one-click approvals
 - high-risk actions approved too quickly
 - whether reviewers meaningfully interact with the action summary
+- whether human reviewers still understand the workflow they are approving
 
-This helps detect rubber-stamping and automation bias.
+This helps detect rubber-stamping, automation bias, and capacity erosion.
 
 ### 5. Policy Version History
 
