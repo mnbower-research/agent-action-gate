@@ -5,6 +5,8 @@ Agent Action Gate is a TypeScript pre-execution control layer for AI agents. It 
 **Current version:** v0.5.0  
 **Status:** TypeScript compile passing, 19/19 evals passing, logging smoke test passing, Launch Copilot demo passing
 
+▶️ Watch the v0.5.0 Launch Copilot demo: https://youtu.be/YpEOIQ_v15Q
+
 ```txt
 Agent proposes a tool action
 -> Agent Action Gate evaluates it
@@ -20,6 +22,8 @@ Agent proposes a tool action
 ## Launch Copilot Demo
 
 The [Launch Copilot Demo](examples/launch-copilot/README.md) shows AAG governing a simulated business-development agent.
+
+▶️ Watch the demo: https://youtu.be/YpEOIQ_v15Q
 
 It demonstrates:
 
