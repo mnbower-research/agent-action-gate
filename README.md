@@ -2,8 +2,8 @@
 
 Agent Action Gate is a TypeScript pre-execution control layer for AI agents. It checks proposed tool actions before they run and returns a structured decision: `allow`, `require_approval`, `revise_action`, or `block`.
 
-**Current version:** v0.5.0  
-**Status:** TypeScript compile passing, 19/19 evals passing, logging smoke test passing, Launch Copilot demo passing
+**Current version:** v0.6.0  
+**Status:** TypeScript compile passing, 19/19 evals passing, logging smoke test passing, Launch Copilot demo passing, Review Packets included
 
 ▶️ Watch the v0.5.0 Launch Copilot demo: https://youtu.be/YpEOIQ_v15Q
 
@@ -19,6 +19,23 @@ Agent proposes a tool action
 - [Integration Bypass](docs/INTEGRATION_BYPASS.md) - the failure mode where an AI agent closes an action loop before meaningful human review can occur.
 - [Article 14 Oversight](docs/ARTICLE_14_OVERSIGHT.md) - how Agent Action Gate can support Article 14-style human oversight without claiming to guarantee legal compliance.
 
+## Review Packets
+
+`require_approval` without context is approval theater.
+
+Review Packets make the proposed action, scope, preview/diff, rollback path, risk reason, and reviewer question visible before a human approves, revises, or rejects an action.
+
+v0.6.0 adds Review Packets to the Launch Copilot demo so approval requests show what is actually being approved before execution.
+
+Reviewer questions change by decision type:
+
+| Decision | Reviewer question purpose |
+|---|---|
+| `allow` | What was allowed, and why was it low risk? |
+| `require_approval` | Do you approve this exact action with this scope and consequence? |
+| `revise_action` | What must change before this can be approved? |
+| `block` | What safer alternative should the agent propose instead? |
+
 ## Launch Copilot Demo
 
 The [Launch Copilot Demo](examples/launch-copilot/README.md) shows AAG governing a simulated business-development agent.
@@ -32,6 +49,7 @@ It demonstrates:
 - public posting requires approval
 - destructive lead deletion is blocked
 - private lead export is blocked
+- review packets show the proposed action, scope, preview/diff, rollback path, risk reason, and reviewer question
 - audit-style evidence is created
 
 Run it with:
@@ -382,6 +400,8 @@ Agent Action Gate runs heuristic detectors:
 | v0.2.1 | Defensive n8n demo workflow | Routes unauthorized cyber-scope action to block |
 | v0.3.0 | Decision logging | POST /evaluate writes JSONL decision receipts |
 | v0.4.0 | Human approval workflow | Routes approval-required actions to human review before execution |
+| v0.5.0 | Runtime-Controlled Launch Copilot demo | Shows AAG governing launch workflow actions |
+| v0.6.0 | Review Packets | Shows approval context before risky write actions |
 
 ## Validation Status
 
@@ -407,8 +427,6 @@ It is a pre-execution control layer that evaluates proposed tool actions before 
 
 ## Roadmap
 
-- v0.5.0: Runtime-Controlled Launch Copilot demo
-- v0.6.0: Review/report UI for decision logs
 - v0.7.0: Policy profiles
 - v0.8.0: Indirect prompt injection / untrusted-content boundary examples
 - v1.0.0: Stable API, npm package, documented integration path

@@ -36,3 +36,21 @@ npx tsx examples/launch-copilot/run-demo.ts
 The demo is fully local. It does not send email, publish posts, update a real CRM, call external APIs, or export real data.
 
 The runner prints each gate decision, simulates human approval only for actions that return `require_approval`, and creates illustrative in-memory audit log entries.
+
+## Review Packets
+
+The v0.6.0 demo includes Review Packets for actions that require approval or are blocked.
+
+A Review Packet shows:
+
+- proposed action
+- scope
+- diff / preview
+- rollback path
+- risk reason
+- reviewer question
+- safer alternative, when applicable
+
+`require_approval` without a Review Packet is approval theater.
+
+The reviewer is not approving a vague label like `send_email`. The reviewer is approving the exact email, exact recipient, scope, risk, and rollback condition.

@@ -10,6 +10,54 @@ export type ActionRiskLevel =
   | "high"
   | "critical";
 
+export type ReviewPacketScope = {
+  target?: string;
+  affectedSystems?: string[];
+  affectedRecords?: string[];
+  externalEffect?: boolean;
+  dataSensitivity?: "low" | "medium" | "high";
+  blastRadius?:
+    | "single_record"
+    | "single_external_contact"
+    | "public"
+    | "multi_record"
+    | "system_wide";
+};
+
+export type ReviewPacketDiffPreview = {
+  type:
+    | "email"
+    | "post"
+    | "record_update"
+    | "file_change"
+    | "delete"
+    | "export"
+    | "none";
+  before?: unknown;
+  after?: unknown;
+  preview?: string;
+};
+
+export type ReviewPacketRollbackPath = {
+  available: boolean;
+  description: string;
+};
+
+// Reviewer question rules by decision:
+// allow: "What was allowed, and why was it low risk?"
+// require_approval: "Do you approve this exact action with this scope and consequence?"
+// revise_action: "What must change before this can be approved?"
+// block: "What safer alternative should the agent propose instead?"
+export type ReviewPacket = {
+  proposedAction: string;
+  scope?: ReviewPacketScope;
+  diffPreview?: ReviewPacketDiffPreview;
+  rollbackPath?: ReviewPacketRollbackPath;
+  riskReason: string;
+  reviewerQuestion: string;
+  saferAlternative?: string;
+};
+
 export type GateDetectorType =
   | "wrong_target"
   | "unauthorized_scope"
@@ -69,6 +117,7 @@ export type ActionGateResult = {
   confidence: number;
   evidence: string[];
   recommendedAction: string;
+  reviewPacket?: ReviewPacket;
   detectorResults: GateDetectorResult[];
 };
 

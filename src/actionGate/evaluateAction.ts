@@ -6,6 +6,7 @@ import type {
   GateDetectorResult,
   GateSeverity,
 } from "./types";
+import { createReviewPacket } from "./createReviewPacket";
 import { decideGateAction } from "./decideGateAction";
 import { rankGateResults } from "./rankGateResults";
 import { detectCredentialAccess } from "./detectors/credentialAccess";
@@ -54,6 +55,7 @@ export function evaluateAction(input: ActionGateInput): ActionGateResult {
     confidence: getDecisionConfidence(decision, rankedResults),
     evidence: getEvidence(rankedResults),
     recommendedAction: getRecommendedAction(decision, rankedResults),
+    reviewPacket: createReviewPacket(input, decision, rankedResults),
     detectorResults,
   };
 }

@@ -5,6 +5,7 @@ import type {
   ActionGateInput,
   ActionGateResult,
   GateDecision,
+  ReviewPacket,
 } from "../../src/actionGate/types";
 
 type DataSensitivity = "low" | "medium" | "high";
@@ -29,6 +30,7 @@ type LaunchAction = {
   expectedDecision: GateDecision;
   rationale: string;
   payload: Record<string, unknown>;
+  reviewPacket?: ReviewPacket;
 };
 
 type DemoResult = {
@@ -42,6 +44,7 @@ type DemoResult = {
   humanDecision: HumanDecision;
   finalOutcome: FinalOutcome;
   primaryIssue: ActionGateResult["primaryIssue"];
+  reviewPacket?: ReviewPacket;
 };
 
 type AuditLogEntry = {
@@ -58,10 +61,11 @@ type AuditLogEntry = {
   finalOutcome: FinalOutcome;
   primaryIssue: ActionGateResult["primaryIssue"];
   reason: string;
+  reviewPacket?: ReviewPacket;
 };
 
 const demoName = "Launch Copilot Demo";
-const version = "0.5.0";
+const version = "0.6.0";
 const actionsPath = path.join(
   process.cwd(),
   "examples",
@@ -80,12 +84,14 @@ const summary: Record<GateDecision, number> = {
 };
 
 console.log(demoName);
+console.log(`Version: ${version}`);
 console.log("====================");
 console.log("");
 
 actions.forEach((action, index) => {
   const gateInput = toActionGateInput(action);
   const gateResult = evaluateAction(gateInput);
+  const reviewPacket = action.reviewPacket ?? gateResult.reviewPacket;
   const humanDecision = getHumanDecision(gateResult.decision);
   const finalOutcome = getFinalOutcome(gateResult.decision, humanDecision);
   const pass = gateResult.decision === action.expectedDecision;
@@ -103,10 +109,13 @@ actions.forEach((action, index) => {
     humanDecision,
     finalOutcome,
     primaryIssue: gateResult.primaryIssue,
+    reviewPacket,
   };
 
   results.push(demoResult);
-  auditLog.push(toAuditLogEntry(action, gateResult, humanDecision, finalOutcome));
+  auditLog.push(
+    toAuditLogEntry(action, gateResult, humanDecision, finalOutcome, reviewPacket),
+  );
 
   printActionResult(index + 1, demoResult);
 });
@@ -156,7 +165,8 @@ function isLaunchAction(value: unknown): value is LaunchAction {
     isDataSensitivity(value.dataSensitivity) &&
     isGateDecision(value.expectedDecision) &&
     typeof value.rationale === "string" &&
-    isRecord(value.payload)
+    isRecord(value.payload) &&
+    (value.reviewPacket === undefined || isReviewPacket(value.reviewPacket))
   );
 }
 
@@ -174,6 +184,15 @@ function isGateDecision(value: unknown): value is GateDecision {
     value === "require_approval" ||
     value === "revise_action" ||
     value === "block"
+  );
+}
+
+function isReviewPacket(value: unknown): value is ReviewPacket {
+  return (
+    isRecord(value) &&
+    typeof value.proposedAction === "string" &&
+    typeof value.riskReason === "string" &&
+    typeof value.reviewerQuestion === "string"
   );
 }
 
@@ -252,6 +271,7 @@ function toAuditLogEntry(
   gateResult: ActionGateResult,
   humanDecision: HumanDecision,
   finalOutcome: FinalOutcome,
+  reviewPacket: ReviewPacket | undefined,
 ): AuditLogEntry {
   return {
     timestamp: new Date().toISOString(),
@@ -267,13 +287,14 @@ function toAuditLogEntry(
     finalOutcome,
     primaryIssue: gateResult.primaryIssue,
     reason: action.rationale,
+    reviewPacket,
   };
 }
 
 function printActionResult(index: number, result: DemoResult): void {
-  console.log(`${index}. ${result.title}`);
-  console.log(`Expected: ${result.expectedDecision}`);
-  console.log(`Actual: ${result.actualDecision}`);
+  console.log(`${index}. Action: ${result.title}`);
+  console.log(`Expected decision: ${result.expectedDecision}`);
+  console.log(`Actual decision: ${result.actualDecision}`);
 
   if (result.actualDecision === "require_approval") {
     console.log(`Human review: ${result.humanDecision}`);
@@ -281,5 +302,74 @@ function printActionResult(index: number, result: DemoResult): void {
 
   console.log(`Result: ${result.pass ? "PASS" : "FAIL"}`);
   console.log(`Reason: ${result.reason}`);
+
+  if (result.reviewPacket) {
+    printReviewPacket(result.reviewPacket);
+  }
+
   console.log("");
+}
+
+function printReviewPacket(reviewPacket: ReviewPacket): void {
+  console.log("Review Packet:");
+  console.log(`Proposed action: ${reviewPacket.proposedAction}`);
+
+  if (reviewPacket.scope) {
+    console.log(`Scope: ${formatScope(reviewPacket.scope)}`);
+  }
+
+  if (reviewPacket.diffPreview) {
+    console.log("Diff / Preview:");
+    printDiffPreview(reviewPacket.diffPreview);
+  }
+
+  if (reviewPacket.rollbackPath) {
+    console.log(
+      `Rollback: ${reviewPacket.rollbackPath.description} available=${reviewPacket.rollbackPath.available}`,
+    );
+  }
+
+  console.log(`Risk: ${reviewPacket.riskReason}`);
+  console.log(`Reviewer question: ${reviewPacket.reviewerQuestion}`);
+
+  if (reviewPacket.saferAlternative) {
+    console.log(`Safer alternative: ${reviewPacket.saferAlternative}`);
+  }
+}
+
+function formatScope(scope: NonNullable<ReviewPacket["scope"]>): string {
+  const parts = [
+    scope.target ? `target=${scope.target}` : undefined,
+    scope.affectedSystems?.length
+      ? `systems=${scope.affectedSystems.join(", ")}`
+      : undefined,
+    scope.affectedRecords?.length
+      ? `records=${scope.affectedRecords.join(", ")}`
+      : undefined,
+    scope.externalEffect !== undefined
+      ? `externalEffect=${scope.externalEffect}`
+      : undefined,
+    scope.dataSensitivity ? `dataSensitivity=${scope.dataSensitivity}` : undefined,
+    scope.blastRadius ? `blastRadius=${scope.blastRadius}` : undefined,
+  ].filter(Boolean);
+
+  return parts.join("; ");
+}
+
+function printDiffPreview(
+  diffPreview: NonNullable<ReviewPacket["diffPreview"]>,
+): void {
+  console.log(`Type: ${diffPreview.type}`);
+
+  if (diffPreview.before !== undefined) {
+    console.log(`Before: ${JSON.stringify(diffPreview.before, null, 2)}`);
+  }
+
+  if (diffPreview.after !== undefined) {
+    console.log(`After: ${JSON.stringify(diffPreview.after, null, 2)}`);
+  }
+
+  if (diffPreview.preview) {
+    console.log(diffPreview.preview);
+  }
 }
