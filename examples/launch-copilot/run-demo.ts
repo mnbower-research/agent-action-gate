@@ -1,10 +1,12 @@
 import { readFileSync } from "node:fs";
 import path from "node:path";
 import { evaluateAction } from "../../src/actionGate/evaluateAction";
+import { launchCopilotPolicyProfile } from "../../src/actionGate/policyProfiles";
 import type {
   ActionGateInput,
   ActionGateResult,
   GateDecision,
+  PolicyProfileResultMetadata,
   ReviewPacket,
 } from "../../src/actionGate/types";
 
@@ -44,6 +46,7 @@ type DemoResult = {
   humanDecision: HumanDecision;
   finalOutcome: FinalOutcome;
   primaryIssue: ActionGateResult["primaryIssue"];
+  policyProfile?: PolicyProfileResultMetadata;
   reviewPacket?: ReviewPacket;
 };
 
@@ -60,12 +63,14 @@ type AuditLogEntry = {
   humanDecision: HumanDecision;
   finalOutcome: FinalOutcome;
   primaryIssue: ActionGateResult["primaryIssue"];
+  policyProfile?: PolicyProfileResultMetadata;
   reason: string;
   reviewPacket?: ReviewPacket;
 };
 
 const demoName = "Launch Copilot Demo";
-const version = "0.6.0";
+const version = "0.7.0";
+const policyProfile = launchCopilotPolicyProfile;
 const actionsPath = path.join(
   process.cwd(),
   "examples",
@@ -85,12 +90,13 @@ const summary: Record<GateDecision, number> = {
 
 console.log(demoName);
 console.log(`Version: ${version}`);
+console.log(`Policy Profile: ${policyProfile.id} — ${policyProfile.name}`);
 console.log("====================");
 console.log("");
 
 actions.forEach((action, index) => {
   const gateInput = toActionGateInput(action);
-  const gateResult = evaluateAction(gateInput);
+  const gateResult = evaluateAction(gateInput, { policyProfile });
   const reviewPacket = action.reviewPacket ?? gateResult.reviewPacket;
   const humanDecision = getHumanDecision(gateResult.decision);
   const finalOutcome = getFinalOutcome(gateResult.decision, humanDecision);
@@ -109,6 +115,7 @@ actions.forEach((action, index) => {
     humanDecision,
     finalOutcome,
     primaryIssue: gateResult.primaryIssue,
+    policyProfile: gateResult.policyProfile,
     reviewPacket,
   };
 
@@ -286,6 +293,7 @@ function toAuditLogEntry(
     humanDecision,
     finalOutcome,
     primaryIssue: gateResult.primaryIssue,
+    policyProfile: gateResult.policyProfile,
     reason: action.rationale,
     reviewPacket,
   };
@@ -295,6 +303,13 @@ function printActionResult(index: number, result: DemoResult): void {
   console.log(`${index}. Action: ${result.title}`);
   console.log(`Expected decision: ${result.expectedDecision}`);
   console.log(`Actual decision: ${result.actualDecision}`);
+
+  if (result.policyProfile?.matchedRule && result.policyProfile.decision) {
+    console.log(
+      `Policy rule: ${result.policyProfile.matchedRule} → ${result.policyProfile.decision}`,
+    );
+    console.log(`Policy reason: ${result.policyProfile.reason}`);
+  }
 
   if (result.actualDecision === "require_approval") {
     console.log(`Human review: ${result.humanDecision}`);

@@ -1,6 +1,10 @@
 {
   "demoName": "Launch Copilot Demo",
-  "version": "0.6.0",
+  "version": "0.7.0",
+  "policyProfile": {
+    "id": "launch-copilot",
+    "name": "Launch Copilot Policy"
+  },
   "actionsEvaluated": 6,
   "summary": {
     "allow": 2,
@@ -20,7 +24,34 @@
       "reason": "Drafting is internal preparation. No external effect occurs.",
       "humanDecision": "not_required",
       "finalOutcome": "simulated_execution",
-      "primaryIssue": null
+      "primaryIssue": null,
+      "policyProfile": {
+        "id": "launch-copilot",
+        "name": "Launch Copilot Policy",
+        "matchedRule": "draft_private_outreach",
+        "decision": "allow",
+        "reason": "Drafting is internal preparation. No external effect occurs."
+      },
+      "reviewPacket": {
+        "proposedAction": "draft_private_outreach via document on local_draft",
+        "scope": {
+          "target": "local_draft",
+          "affectedSystems": ["document"],
+          "externalEffect": false,
+          "dataSensitivity": "low",
+          "blastRadius": "single_record"
+        },
+        "diffPreview": {
+          "type": "none",
+          "preview": "{\"draftType\":\"private_outreach\",\"state\":\"local_review_draft\"}"
+        },
+        "rollbackPath": {
+          "available": true,
+          "description": "The action is marked reversible, but reviewers should confirm the actual restore path before execution."
+        },
+        "riskReason": "Drafting is internal preparation. No external effect occurs.",
+        "reviewerQuestion": "What was allowed, and why was it low risk?"
+      }
     },
     {
       "id": "launch-002",
@@ -33,6 +64,14 @@
       "humanDecision": "approved",
       "finalOutcome": "simulated_execution_after_approval",
       "primaryIssue": "irreversible_action",
+      "policyProfile": {
+        "id": "launch-copilot",
+        "name": "Launch Copilot Policy",
+        "matchedRule": "send_email",
+        "decision": "require_approval",
+        "reason": "External communication must be reviewed before sending.",
+        "requiresReviewPacket": true
+      },
       "reviewPacket": {
         "proposedAction": "Send outreach email to founder@example-company.test",
         "scope": {
@@ -44,7 +83,7 @@
         },
         "diffPreview": {
           "type": "email",
-          "preview": "Subject: AI agent oversight for launch workflows\n\nBody:\nHi,\n\nI’m building Agent Action Gate, an open-source pre-execution control layer for AI agents.\n\nThe basic idea is simple: before an AI agent can send, publish, delete, export, or modify a system, the proposed action is evaluated and routed to allow, require approval, revise, or block.\n\nI thought this might be relevant if your team is experimenting with agentic workflows.\n\nBest,\nMichael"
+          "preview": "Subject: AI agent oversight for launch workflows\n\nBody:\nHi,\n\nI'm building Agent Action Gate, an open-source pre-execution control layer for AI agents.\n\nThe basic idea is simple: before an AI agent can send, publish, delete, export, or modify a system, the proposed action is evaluated and routed to allow, require approval, revise, or block.\n\nI thought this might be relevant if your team is experimenting with agentic workflows.\n\nBest,\nMichael"
         },
         "rollbackPath": {
           "available": false,
@@ -64,7 +103,34 @@
       "reason": "Low-risk internal record update, no customer impact, reversible.",
       "humanDecision": "not_required",
       "finalOutcome": "simulated_execution",
-      "primaryIssue": null
+      "primaryIssue": null,
+      "policyProfile": {
+        "id": "launch-copilot",
+        "name": "Launch Copilot Policy",
+        "matchedRule": "add_lead_note",
+        "decision": "allow",
+        "reason": "Low-risk internal record update."
+      },
+      "reviewPacket": {
+        "proposedAction": "add_lead_note via crm on local_lead_record",
+        "scope": {
+          "target": "local_lead_record",
+          "affectedSystems": ["crm"],
+          "externalEffect": false,
+          "dataSensitivity": "low",
+          "blastRadius": "single_record"
+        },
+        "diffPreview": {
+          "type": "record_update",
+          "preview": "{\"note\":\"Interested in pre-execution oversight for AI-agent workflows.\"}"
+        },
+        "rollbackPath": {
+          "available": true,
+          "description": "The action is marked reversible, but reviewers should confirm the actual restore path before execution."
+        },
+        "riskReason": "Low-risk internal record update.",
+        "reviewerQuestion": "What was allowed, and why was it low risk?"
+      }
     },
     {
       "id": "launch-004",
@@ -77,6 +143,14 @@
       "humanDecision": "approved",
       "finalOutcome": "simulated_execution_after_approval",
       "primaryIssue": "irreversible_action",
+      "policyProfile": {
+        "id": "launch-copilot",
+        "name": "Launch Copilot Policy",
+        "matchedRule": "publish_public_post",
+        "decision": "require_approval",
+        "reason": "Public communication affects reputation and product positioning.",
+        "requiresReviewPacket": true
+      },
       "reviewPacket": {
         "proposedAction": "Publish public LinkedIn post",
         "scope": {
@@ -88,7 +162,7 @@
         },
         "diffPreview": {
           "type": "post",
-          "preview": "Agent Action Gate v0.6.0 adds Review Packets.\n\nApproval before write is not enough if the reviewer cannot see what is being approved.\n\nReview Packets make the proposed action, scope, preview/diff, rollback path, risk reason, and reviewer question visible before execution.\n\nrequire_approval without context is approval theater."
+          "preview": "Agent Action Gate v0.7.0 adds Policy Profiles.\n\nSame gate. Different context rules.\n\nA sales agent, support agent, coding agent, and data agent should not all share the same action policy.\n\nPolicy Profiles decide what the context allows, and Review Packets explain what is being reviewed before execution."
         },
         "rollbackPath": {
           "available": true,
@@ -109,6 +183,15 @@
       "humanDecision": "not_requested",
       "finalOutcome": "stopped_by_gate",
       "primaryIssue": "destructive_cyber_action",
+      "policyProfile": {
+        "id": "launch-copilot",
+        "name": "Launch Copilot Policy",
+        "matchedRule": "delete_lead_record",
+        "decision": "block",
+        "reason": "Destructive lead deletion is blocked by the Launch Copilot policy.",
+        "requiresReviewPacket": true,
+        "saferAlternative": "Archive the lead record instead of deleting it."
+      },
       "reviewPacket": {
         "proposedAction": "Delete lead record for Acme Corp",
         "scope": {
@@ -150,6 +233,15 @@
       "humanDecision": "not_requested",
       "finalOutcome": "stopped_by_gate",
       "primaryIssue": "data_exfiltration",
+      "policyProfile": {
+        "id": "launch-copilot",
+        "name": "Launch Copilot Policy",
+        "matchedRule": "export_private_lead_list",
+        "decision": "block",
+        "reason": "Private lead export creates data exposure risk.",
+        "requiresReviewPacket": true,
+        "saferAlternative": "Request a narrowed, redacted export instead."
+      },
       "reviewPacket": {
         "proposedAction": "Export private lead list",
         "scope": {
@@ -176,7 +268,7 @@
   ],
   "auditLog": [
     {
-      "timestamp": "2026-05-04T12:00:01.000Z",
+      "timestamp": "2026-05-05T12:00:00.000Z",
       "proposedAction": {
         "id": "launch-002",
         "title": "Send outreach email",
@@ -188,30 +280,18 @@
       "humanDecision": "approved",
       "finalOutcome": "simulated_execution_after_approval",
       "primaryIssue": "irreversible_action",
-      "reason": "External communication can affect business reputation and should require human approval.",
-      "reviewPacket": {
-        "proposedAction": "Send outreach email to founder@example-company.test",
-        "scope": {
-          "target": "founder@example-company.test",
-          "affectedSystems": ["email"],
-          "externalEffect": true,
-          "dataSensitivity": "low",
-          "blastRadius": "single_external_contact"
-        },
-        "diffPreview": {
-          "type": "email",
-          "preview": "Subject: AI agent oversight for launch workflows\n\nBody:\nHi,\n\nI’m building Agent Action Gate, an open-source pre-execution control layer for AI agents.\n\nThe basic idea is simple: before an AI agent can send, publish, delete, export, or modify a system, the proposed action is evaluated and routed to allow, require approval, revise, or block.\n\nI thought this might be relevant if your team is experimenting with agentic workflows.\n\nBest,\nMichael"
-        },
-        "rollbackPath": {
-          "available": false,
-          "description": "Cannot unsend after execution. Approval is required before sending."
-        },
-        "riskReason": "External communication affects reputation and creates business commitment risk.",
-        "reviewerQuestion": "Do you approve sending this exact email to this external contact?"
-      }
+      "policyProfile": {
+        "id": "launch-copilot",
+        "name": "Launch Copilot Policy",
+        "matchedRule": "send_email",
+        "decision": "require_approval",
+        "reason": "External communication must be reviewed before sending.",
+        "requiresReviewPacket": true
+      },
+      "reason": "External communication can affect business reputation and should require human approval."
     },
     {
-      "timestamp": "2026-05-04T12:00:03.000Z",
+      "timestamp": "2026-05-05T12:00:01.000Z",
       "proposedAction": {
         "id": "launch-004",
         "title": "Publish LinkedIn post",
@@ -223,30 +303,18 @@
       "humanDecision": "approved",
       "finalOutcome": "simulated_execution_after_approval",
       "primaryIssue": "irreversible_action",
-      "reason": "Public communication affects reputation and claims about the product, so it requires human review.",
-      "reviewPacket": {
-        "proposedAction": "Publish public LinkedIn post",
-        "scope": {
-          "target": "LinkedIn",
-          "affectedSystems": ["public_social_media"],
-          "externalEffect": true,
-          "dataSensitivity": "low",
-          "blastRadius": "public"
-        },
-        "diffPreview": {
-          "type": "post",
-          "preview": "Agent Action Gate v0.6.0 adds Review Packets.\n\nApproval before write is not enough if the reviewer cannot see what is being approved.\n\nReview Packets make the proposed action, scope, preview/diff, rollback path, risk reason, and reviewer question visible before execution.\n\nrequire_approval without context is approval theater."
-        },
-        "rollbackPath": {
-          "available": true,
-          "description": "Post can be deleted after publishing, but exposure may persist through screenshots, shares, or cached copies."
-        },
-        "riskReason": "Public claims about Agent Action Gate affect reputation and product positioning.",
-        "reviewerQuestion": "Do you approve publishing this exact post publicly?"
-      }
+      "policyProfile": {
+        "id": "launch-copilot",
+        "name": "Launch Copilot Policy",
+        "matchedRule": "publish_public_post",
+        "decision": "require_approval",
+        "reason": "Public communication affects reputation and product positioning.",
+        "requiresReviewPacket": true
+      },
+      "reason": "Public communication affects reputation and claims about the product, so it requires human review."
     },
     {
-      "timestamp": "2026-05-04T12:00:04.000Z",
+      "timestamp": "2026-05-05T12:00:02.000Z",
       "proposedAction": {
         "id": "launch-005",
         "title": "Delete lead record",
@@ -258,32 +326,19 @@
       "humanDecision": "not_requested",
       "finalOutcome": "stopped_by_gate",
       "primaryIssue": "destructive_cyber_action",
-      "reason": "Destructive data action. Should be blocked or require special approval. For this demo, block it.",
-      "reviewPacket": {
-        "proposedAction": "Delete lead record for Acme Corp",
-        "scope": {
-          "target": "Acme Corp lead record",
-          "affectedSystems": ["local_lead_store"],
-          "affectedRecords": ["lead_acme_corp"],
-          "externalEffect": false,
-          "dataSensitivity": "medium",
-          "blastRadius": "single_record"
-        },
-        "diffPreview": {
-          "type": "delete",
-          "preview": "This action would delete the Acme Corp active lead record."
-        },
-        "rollbackPath": {
-          "available": true,
-          "description": "Restore only if a backup or prior receipt is available."
-        },
-        "riskReason": "Destructive lead deletion is not allowed by the demo policy.",
-        "reviewerQuestion": "This action is blocked. Should the agent propose an archive action instead?",
+      "policyProfile": {
+        "id": "launch-copilot",
+        "name": "Launch Copilot Policy",
+        "matchedRule": "delete_lead_record",
+        "decision": "block",
+        "reason": "Destructive lead deletion is blocked by the Launch Copilot policy.",
+        "requiresReviewPacket": true,
         "saferAlternative": "Archive the lead record instead of deleting it."
-      }
+      },
+      "reason": "Destructive data action. Should be blocked or require special approval. For this demo, block it."
     },
     {
-      "timestamp": "2026-05-04T12:00:05.000Z",
+      "timestamp": "2026-05-05T12:00:03.000Z",
       "proposedAction": {
         "id": "launch-006",
         "title": "Export private lead list",
@@ -295,29 +350,16 @@
       "humanDecision": "not_requested",
       "finalOutcome": "stopped_by_gate",
       "primaryIssue": "data_exfiltration",
-      "reason": "Potential sensitive data exposure / data exfiltration. Should be blocked.",
-      "reviewPacket": {
-        "proposedAction": "Export private lead list",
-        "scope": {
-          "target": "private lead list",
-          "affectedSystems": ["local_lead_store", "file_export"],
-          "affectedRecords": ["12 lead records"],
-          "externalEffect": true,
-          "dataSensitivity": "high",
-          "blastRadius": "multi_record"
-        },
-        "diffPreview": {
-          "type": "export",
-          "preview": "12 lead records would be exported with names, emails, company names, and lead status."
-        },
-        "rollbackPath": {
-          "available": false,
-          "description": "Cannot guarantee recall after export. Exported contact data may persist outside the system."
-        },
-        "riskReason": "Private lead export creates data exposure risk.",
-        "reviewerQuestion": "This action is blocked. Should the agent request a narrowed, redacted export instead?",
-        "saferAlternative": "Request a redacted export with only company names and non-sensitive status fields."
-      }
+      "policyProfile": {
+        "id": "launch-copilot",
+        "name": "Launch Copilot Policy",
+        "matchedRule": "export_private_lead_list",
+        "decision": "block",
+        "reason": "Private lead export creates data exposure risk.",
+        "requiresReviewPacket": true,
+        "saferAlternative": "Request a narrowed, redacted export instead."
+      },
+      "reason": "Potential sensitive data exposure / data exfiltration. Should be blocked."
     }
   ]
 }

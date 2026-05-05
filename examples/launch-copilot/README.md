@@ -8,6 +8,8 @@ The point of the demo is not to automate sales.
 
 The point is to show that even the business copilot used to market Agent Action Gate should itself be governed by Agent Action Gate.
 
+v0.7.0 shows approval rules by workflow context.
+
 ```txt
 Launch Copilot proposes action
 -> Agent Action Gate evaluates action
@@ -27,6 +29,17 @@ Launch Copilot proposes action
 | Delete lead record | `block` | Destructive action |
 | Export private lead list | `block` | Sensitive data exposure |
 
+## Policy Profile
+
+This demo runs under the `launch-copilot` Policy Profile.
+
+The profile:
+
+- allows internal preparation
+- requires approval for external/public communication
+- blocks destructive or sensitive lead-data actions
+- requires Review Packets for approval and block decisions
+
 ## Run
 
 ```bash
@@ -39,7 +52,7 @@ The runner prints each gate decision, simulates human approval only for actions 
 
 ## Review Packets
 
-The v0.6.0 demo includes Review Packets for actions that require approval or are blocked.
+The demo includes Review Packets for actions that require approval or are blocked.
 
 A Review Packet shows:
 

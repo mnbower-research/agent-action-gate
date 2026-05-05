@@ -2,6 +2,7 @@ import type {
   ActionGateInput,
   ActionGateResult,
   GateDetectorResult,
+  PolicyProfileResultMetadata,
   ReviewPacket,
   ReviewPacketDiffPreview,
   ReviewPacketScope,
@@ -13,13 +14,15 @@ export function createReviewPacket(
   input: ActionGateInput,
   decision: ActionGateResult["decision"],
   rankedResults: GateDetectorResult[],
+  policyProfile?: PolicyProfileResultMetadata,
 ): ReviewPacket | undefined {
   if (decision === "allow") {
-    return createAllowPacket(input);
+    return createAllowPacket(input, policyProfile);
   }
 
   const primaryResult = rankedResults[0];
   const riskReason =
+    getAppliedPolicyReason(decision, policyProfile) ??
     primaryResult?.evidence[0] ??
     "The proposed action needs review before execution.";
 
@@ -30,17 +33,22 @@ export function createReviewPacket(
     rollbackPath: createRollbackPath(input),
     riskReason,
     reviewerQuestion: getReviewerQuestion(decision),
-    saferAlternative: getSaferAlternative(decision, primaryResult),
+    saferAlternative: getSaferAlternative(decision, primaryResult, policyProfile),
   };
 }
 
-function createAllowPacket(input: ActionGateInput): ReviewPacket {
+function createAllowPacket(
+  input: ActionGateInput,
+  policyProfile?: PolicyProfileResultMetadata,
+): ReviewPacket {
   return {
     proposedAction: describeProposedAction(input),
     scope: createScope(input),
     diffPreview: createDiffPreview(input),
     rollbackPath: createRollbackPath(input),
-    riskReason: "No detector triggered; the proposed action appears low risk.",
+    riskReason:
+      getAppliedPolicyReason("allow", policyProfile) ??
+      "No detector triggered; the proposed action appears low risk.",
     reviewerQuestion: getReviewerQuestion("allow"),
   };
 }
@@ -228,7 +236,15 @@ function getReviewerQuestion(
 function getSaferAlternative(
   decision: ActionGateResult["decision"],
   primaryResult: GateDetectorResult | undefined,
+  policyProfile?: PolicyProfileResultMetadata,
 ): string | undefined {
+  if (
+    policyProfile?.decision === decision &&
+    policyProfile.saferAlternative
+  ) {
+    return policyProfile.saferAlternative;
+  }
+
   if (decision === "block") {
     return primaryResult
       ? `Propose a narrower action that avoids ${primaryResult.type}.`
@@ -242,6 +258,13 @@ function getSaferAlternative(
   }
 
   return undefined;
+}
+
+function getAppliedPolicyReason(
+  decision: ActionGateResult["decision"],
+  policyProfile: PolicyProfileResultMetadata | undefined,
+): string | undefined {
+  return policyProfile?.decision === decision ? policyProfile.reason : undefined;
 }
 
 function stringifyPayload(payload: Record<string, unknown> | undefined): string {

@@ -5,9 +5,12 @@ import type {
   GateDetector,
   GateDetectorResult,
   GateSeverity,
+  PolicyProfile,
 } from "./types";
+import { applyPolicyProfile } from "./applyPolicyProfile";
 import { createReviewPacket } from "./createReviewPacket";
 import { decideGateAction } from "./decideGateAction";
+import { getPolicyProfileById } from "./policyProfiles";
 import { rankGateResults } from "./rankGateResults";
 import { detectCredentialAccess } from "./detectors/credentialAccess";
 import { detectDataExfiltration } from "./detectors/dataExfiltration";
@@ -41,22 +44,43 @@ export const actionGateDetectors: GateDetector[] = [
   detectObjectiveDrift,
 ];
 
-export function evaluateAction(input: ActionGateInput): ActionGateResult {
+export type EvaluateActionOptions = {
+  policyProfile?: PolicyProfile;
+  policyProfileId?: string;
+};
+
+export function evaluateAction(
+  input: ActionGateInput,
+  options: EvaluateActionOptions = {},
+): ActionGateResult {
   const detectorResults = actionGateDetectors.map((detector) =>
     detector(input),
   );
   const rankedResults = rankGateResults(detectorResults);
   const decision = decideGateAction(input, detectorResults);
-
-  return {
+  const baseResult: ActionGateResult = {
     decision,
     riskLevel: getRiskLevel(decision, rankedResults),
     primaryIssue: rankedResults[0]?.type ?? null,
     confidence: getDecisionConfidence(decision, rankedResults),
     evidence: getEvidence(rankedResults),
     recommendedAction: getRecommendedAction(decision, rankedResults),
-    reviewPacket: createReviewPacket(input, decision, rankedResults),
     detectorResults,
+  };
+  const policyProfile =
+    options.policyProfile ??
+    input.policyProfile ??
+    getPolicyProfileById(options.policyProfileId ?? input.policyProfileId);
+  const profiledResult = applyPolicyProfile(input, baseResult, policyProfile);
+
+  return {
+    ...profiledResult,
+    reviewPacket: createReviewPacket(
+      input,
+      profiledResult.decision,
+      rankedResults,
+      profiledResult.policyProfile,
+    ),
   };
 }
 

@@ -4,6 +4,39 @@ export type GateDecision =
   | "revise_action"
   | "block";
 
+export type PolicyDecision = GateDecision;
+
+export type PolicyRule = {
+  actionType: string;
+  decision: PolicyDecision;
+  reason: string;
+  requiresReviewPacket?: boolean;
+  saferAlternative?: string;
+};
+
+export type PolicyProfile = {
+  id: string;
+  name: string;
+  description: string;
+  rules: PolicyRule[];
+  defaults?: {
+    externalEffect?: PolicyDecision;
+    highSensitivityData?: PolicyDecision;
+    destructiveAction?: PolicyDecision;
+    irreversibleAction?: PolicyDecision;
+  };
+};
+
+export type PolicyProfileResultMetadata = {
+  id: string;
+  name: string;
+  matchedRule?: string;
+  decision?: PolicyDecision;
+  reason?: string;
+  requiresReviewPacket?: boolean;
+  saferAlternative?: string;
+};
+
 export type ActionRiskLevel =
   | "low"
   | "medium"
@@ -99,6 +132,8 @@ export type ActionGateInput = {
     authorizedTargets?: string[];
     authorizedActionTypes?: string[];
   };
+  policyProfile?: PolicyProfile;
+  policyProfileId?: string;
 };
 
 export type GateDetectorResult = {
@@ -118,6 +153,7 @@ export type ActionGateResult = {
   evidence: string[];
   recommendedAction: string;
   reviewPacket?: ReviewPacket;
+  policyProfile?: PolicyProfileResultMetadata;
   detectorResults: GateDetectorResult[];
 };
 

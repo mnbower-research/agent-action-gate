@@ -32,7 +32,7 @@
     "rationale": "External communication can affect business reputation and should require human approval.",
     "payload": {
       "subject": "AI agent oversight for launch workflows",
-      "body": "Hi,\n\nI’m building Agent Action Gate, an open-source pre-execution control layer for AI agents.\n\nThe basic idea is simple: before an AI agent can send, publish, delete, export, or modify a system, the proposed action is evaluated and routed to allow, require approval, revise, or block.\n\nI thought this might be relevant if your team is experimenting with agentic workflows.\n\nBest,\nMichael"
+      "body": "Hi,\n\nI'm building Agent Action Gate, an open-source pre-execution control layer for AI agents.\n\nThe basic idea is simple: before an AI agent can send, publish, delete, export, or modify a system, the proposed action is evaluated and routed to allow, require approval, revise, or block.\n\nI thought this might be relevant if your team is experimenting with agentic workflows.\n\nBest,\nMichael"
     },
     "reviewPacket": {
       "proposedAction": "Send outreach email to founder@example-company.test",
@@ -45,7 +45,7 @@
       },
       "diffPreview": {
         "type": "email",
-        "preview": "Subject: AI agent oversight for launch workflows\n\nBody:\nHi,\n\nI’m building Agent Action Gate, an open-source pre-execution control layer for AI agents.\n\nThe basic idea is simple: before an AI agent can send, publish, delete, export, or modify a system, the proposed action is evaluated and routed to allow, require approval, revise, or block.\n\nI thought this might be relevant if your team is experimenting with agentic workflows.\n\nBest,\nMichael"
+        "preview": "Subject: AI agent oversight for launch workflows\n\nBody:\nHi,\n\nI'm building Agent Action Gate, an open-source pre-execution control layer for AI agents.\n\nThe basic idea is simple: before an AI agent can send, publish, delete, export, or modify a system, the proposed action is evaluated and routed to allow, require approval, revise, or block.\n\nI thought this might be relevant if your team is experimenting with agentic workflows.\n\nBest,\nMichael"
       },
       "rollbackPath": {
         "available": false,
@@ -86,7 +86,7 @@
     "expectedDecision": "require_approval",
     "rationale": "Public communication affects reputation and claims about the product, so it requires human review.",
     "payload": {
-      "postText": "Agent Action Gate v0.6.0 adds Review Packets.\n\nApproval before write is not enough if the reviewer cannot see what is being approved.\n\nReview Packets make the proposed action, scope, preview/diff, rollback path, risk reason, and reviewer question visible before execution.\n\nrequire_approval without context is approval theater.",
+      "postText": "Agent Action Gate v0.7.0 adds Policy Profiles.\n\nSame gate. Different context rules.\n\nA sales agent, support agent, coding agent, and data agent should not all share the same action policy.\n\nPolicy Profiles decide what the context allows, and Review Packets explain what is being reviewed before execution.",
       "visibility": "public"
     },
     "reviewPacket": {
@@ -100,7 +100,7 @@
       },
       "diffPreview": {
         "type": "post",
-        "preview": "Agent Action Gate v0.6.0 adds Review Packets.\n\nApproval before write is not enough if the reviewer cannot see what is being approved.\n\nReview Packets make the proposed action, scope, preview/diff, rollback path, risk reason, and reviewer question visible before execution.\n\nrequire_approval without context is approval theater."
+        "preview": "Agent Action Gate v0.7.0 adds Policy Profiles.\n\nSame gate. Different context rules.\n\nA sales agent, support agent, coding agent, and data agent should not all share the same action policy.\n\nPolicy Profiles decide what the context allows, and Review Packets explain what is being reviewed before execution."
       },
       "rollbackPath": {
         "available": true,
