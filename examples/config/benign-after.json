@@ -1,0 +1,12 @@
+{
+  "version": "1.0.0",
+  "locked": true,
+  "lockReason": "Production safety policy active for customer-facing workflows",
+  "lockedAt": "2026-05-06T00:00:00.000Z",
+  "lockedBy": "security-admin",
+  "description": "Clarifies the locked production policy scope.",
+  "defaultDecision": "require_approval",
+  "receipts": {
+    "enabled": true
+  }
+}

@@ -2,9 +2,9 @@
 
 Agent Action Gate is a TypeScript pre-execution control layer for AI agents. It checks proposed tool actions before they run and returns a structured decision: `allow`, `require_approval`, `revise_action`, or `block`.
 
-**Current version:** v0.9.0
+**Current version:** v1.0.0
 
-**Status:** TypeScript compile passing, 19/19 evals passing, logging smoke test passing, Launch Copilot demo passing, Review Packets included, Policy Profiles included, CLI audit foundation included
+**Status:** TypeScript compile passing, 19/19 evals passing, logging smoke test passing, Launch Copilot demo passing, Review Packets included, Policy Profiles included, CLI audit foundation included, Locked Policy Mode included
 
 ▶️ Watch the v0.5.0 Launch Copilot demo: https://youtu.be/YpEOIQ_v15Q
 
@@ -37,7 +37,19 @@ Audit local receipts:
 npx agent-action-gate audit
 ```
 
-v0.9.0 adds audit metadata to receipts: `receiptVersion`, normalized `createdAt`, `configHash`, and `policyHash`. The audit command verifies that receipts contain the required audit fields and basic integrity markers. This is a tamper-evident foundation for future locked policies and MetaGate work; it is not cryptographic signing.
+Check locked policy mode:
+
+```bash
+npx agent-action-gate lock-status
+```
+
+Check a proposed config change:
+
+```bash
+npx agent-action-gate check-config-change --before examples/config/locked-before.json --after examples/config/weakened-after.json --write-receipt
+```
+
+v1.0.0 adds locked policy mode. When locked mode is active, risky attempts to weaken policy/config governance can be detected and escalated. Governance receipts remain audit-compatible with the v0.9.0 audit metadata fields. This is a foundation for MetaGate; it is not cryptographic signing or a security guarantee.
 
 See [CLI docs](docs/CLI.md).
 
@@ -50,11 +62,11 @@ See [CLI docs](docs/CLI.md).
 
 ## Audit Foundation
 
-v0.9.0 makes local decision receipts auditable.
+v0.9.0 made local decision receipts auditable.
 
 Each new receipt includes:
 
-- `receiptVersion: "0.9.0"`
+- `receiptVersion`
 - `createdAt` as a normalized ISO timestamp
 - `configHash` for the effective AAG config state
 - `policyHash` for the effective policy profile used during evaluation
@@ -66,7 +78,34 @@ Run:
 npx agent-action-gate audit
 ```
 
-The audit command scans `.aag/receipts/`, verifies required audit metadata, detects malformed SHA-256 hashes and timestamps, reports invalid JSON receipt files, and exits non-zero when any receipt fails. This provides basic receipt verification and audit metadata for future locked policies, MetaGate, and tamper-evident receipt chains. It does not claim tamper-proof security.
+The audit command scans `.aag/receipts/`, verifies required audit metadata, detects malformed SHA-256 hashes and timestamps, reports invalid JSON receipt files, and exits non-zero when any receipt fails. This provides basic receipt verification and audit metadata for future locked policies, MetaGate, and tamper-evident receipt chains. It does not claim cryptographic signing.
+
+## Locked Policy Mode
+
+v1.0.0 introduces locked policy mode.
+
+Effective AAG config can now include:
+
+- `locked`
+- `lockReason`
+- `lockedAt`
+- `lockedBy`
+
+If no config exists, `locked` defaults to `false`. When locked mode is active, AAG can detect simple risky governance changes such as disabling receipts, changing `defaultDecision` to `allow`, turning locked mode off, or disabling AAG itself.
+
+Check status:
+
+```bash
+npx agent-action-gate lock-status
+```
+
+Check a proposed change:
+
+```bash
+npx agent-action-gate check-config-change --before examples/config/locked-before.json --after examples/config/weakened-after.json --write-receipt
+```
+
+Governance/config-change receipts use `receiptType: "governance_change"` and include previous and next config hashes, lock status, detected governance weakening, and the decision. These receipts are audit-compatible and create the foundation for MetaGate, where policy/config changes become first-class gated actions.
 
 ## Review Packets
 
@@ -470,15 +509,35 @@ Agent Action Gate runs heuristic detectors:
 | v0.7.0 | Policy Profiles | Shows approval rules by workflow context |
 | v0.8.0 | CLI MVP | Runs the gate locally from the command line |
 | v0.9.0 | Audit Foundation | Receipts include config/policy hashes and `aag audit` verifies audit metadata |
+| v1.0.0 | Locked Policy Mode | Detects risky locked governance changes and writes audit-compatible governance receipts |
 
-## v0.9.0 — Audit Foundation
+## v1.0.0 - Locked Policy Mode
+
+This release adds locked policy mode and governance change receipts.
+
+### Added
+
+- `locked` support in effective AAG config
+- lock metadata: `lockReason`, `lockedAt`, `lockedBy`
+- `aag lock-status`
+- governance weakening detection
+- `aag check-config-change`
+- governance/config-change receipts
+- audit compatibility for v1.0.0 receipts
+- examples for locked, weakened, and benign config changes
+
+### Why this matters
+
+AAG can now detect when its own policy/config governance is locked and can escalate risky attempts to weaken the gate. This creates the foundation for MetaGate, where policy/config changes become first-class gated actions.
+
+## v0.9.0 - Audit Foundation
 
 This release adds audit metadata and receipt verification.
 
 ### Added
 
 - `configHash` and `policyHash` in receipts
-- `receiptVersion: "0.9.0"`
+- `receiptVersion`
 - normalized `createdAt` timestamps
 - `aag audit` CLI command
 - basic receipt validation
@@ -499,6 +558,7 @@ Review Packets: included
 Policy Profiles: included
 CLI MVP: included
 CLI audit foundation: included
+Locked Policy Mode: included
 GET /health: working
 POST /evaluate: working
 ```
@@ -517,8 +577,8 @@ It is a pre-execution control layer that evaluates proposed tool actions before 
 
 ## Roadmap
 
-- v0.10.0: Indirect prompt injection / untrusted-content boundary examples
-- v1.0.0: Stable API, npm package, documented integration path
+- v1.1.0: MetaGate foundation for policy/config changes as gated actions
+- v1.x: Indirect prompt injection / untrusted-content boundary examples
 
 ## Compliance Note
 

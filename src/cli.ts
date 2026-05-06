@@ -1,24 +1,36 @@
 #!/usr/bin/env node
 
-import { readFileSync } from "node:fs";
+import { existsSync, readFileSync } from "node:fs";
 import path from "node:path";
+import {
+  createEffectiveAagConfig,
+  defaultConfigPath,
+  type AagConfigInput,
+} from "./actionGate/aagConfig";
 import { auditReceipts } from "./actionGate/auditReceipts";
-import { evaluateAction } from "./actionGate/evaluateAction";
+import { actionGateDetectors, evaluateAction } from "./actionGate/evaluateAction";
 import { formatAuditReport } from "./actionGate/formatAuditReport";
+import { formatGovernanceCheck } from "./actionGate/formatGovernanceCheck";
+import { formatLockStatus } from "./actionGate/formatLockStatus";
 import { printReviewPacket } from "./actionGate/formatReviewPacket";
+import { checkGovernanceChange } from "./actionGate/governanceWeakening";
 import { runLaunchCopilotDemo } from "./actionGate/launchCopilotDemo";
 import {
   builtInPolicyProfiles,
+  defaultPolicyProfile,
   getPolicyProfileById,
 } from "./actionGate/policyProfiles";
 import type { ActionGateInput } from "./actionGate/types";
 import {
+  createConfigHash,
+  createPolicyHash,
   type FinalOutcome,
   type HumanDecision,
   writeEvaluationReceipt,
+  writeGovernanceReceipt,
 } from "./actionGate/writeReceipt";
 
-const cliVersion = "0.9.0";
+const cliVersion = "1.0.0";
 
 type CliActionFile = {
   id?: string;
@@ -69,6 +81,14 @@ function main(args: string[]): number {
 
     if (args[0] === "audit") {
       return runAuditCommand(args.slice(1));
+    }
+
+    if (args[0] === "lock-status") {
+      return runLockStatusCommand(args.slice(1));
+    }
+
+    if (args[0] === "check-config-change") {
+      return runCheckConfigChangeCommand(args.slice(1));
     }
 
     printError(`Unknown command: ${args[0]}`);
@@ -150,6 +170,48 @@ function runAuditCommand(args: string[]): number {
   return result.failed === 0 ? 0 : 1;
 }
 
+function runLockStatusCommand(args: string[]): number {
+  const options = parseLockStatusArgs(args);
+  const config = loadEffectiveConfig(options.configFile);
+  const configHash = createConfigHash({ config });
+  const policyHash = createPolicyHash(defaultPolicyProfile);
+
+  console.log(
+    formatLockStatus({
+      config,
+      configHash,
+      policyHash,
+    }),
+  );
+
+  return 0;
+}
+
+function runCheckConfigChangeCommand(args: string[]): number {
+  const options = parseCheckConfigChangeArgs(args);
+  const previousConfig = loadEffectiveConfig(options.beforeFile);
+  const nextConfig = loadEffectiveConfig(options.afterFile);
+  const result = checkGovernanceChange(previousConfig, nextConfig);
+  const receiptPath = options.writeReceipt
+    ? writeGovernanceReceipt({
+        command: "check-config-change",
+        previousConfig,
+        nextConfig,
+        result,
+        policyProfile: defaultPolicyProfile,
+      })
+    : undefined;
+
+  console.log(
+    formatGovernanceCheck({
+      result,
+      receiptPath,
+    }),
+  );
+
+  return 0;
+}
+
 function parseEvaluateArgs(args: string[]): {
   actionFile: string | undefined;
   profileId: string;
@@ -205,6 +267,105 @@ function parseAuditArgs(args: string[]): {
   throw new Error(
     "Invalid arguments. Use: agent-action-gate audit [--receipts-dir <dir>]",
   );
+}
+
+function parseLockStatusArgs(args: string[]): {
+  configFile?: string;
+} {
+  if (args.length === 0) {
+    return {};
+  }
+
+  if (args.length === 2 && args[0] === "--config" && args[1]) {
+    return {
+      configFile: args[1],
+    };
+  }
+
+  throw new Error("Invalid arguments. Use: agent-action-gate lock-status [--config <config.json>]");
+}
+
+function parseCheckConfigChangeArgs(args: string[]): {
+  beforeFile: string;
+  afterFile: string;
+  writeReceipt: boolean;
+} {
+  let beforeFile: string | undefined;
+  let afterFile: string | undefined;
+  let writeReceipt = false;
+  let index = 0;
+
+  while (index < args.length) {
+    const arg = args[index];
+
+    if (arg === "--before") {
+      beforeFile = args[index + 1];
+      index += 2;
+      continue;
+    }
+
+    if (arg === "--after") {
+      afterFile = args[index + 1];
+      index += 2;
+      continue;
+    }
+
+    if (arg === "--write-receipt") {
+      writeReceipt = true;
+      index += 1;
+      continue;
+    }
+
+    throw new Error(
+      "Invalid arguments. Use: agent-action-gate check-config-change --before <before.json> --after <after.json> [--write-receipt]",
+    );
+  }
+
+  if (!beforeFile || !afterFile) {
+    throw new Error("Missing --before or --after config file.");
+  }
+
+  return {
+    beforeFile,
+    afterFile,
+    writeReceipt,
+  };
+}
+
+function loadEffectiveConfig(configFile: string | undefined): ReturnType<
+  typeof createEffectiveAagConfig
+> {
+  const configInput = loadConfigInput(configFile);
+
+  return createEffectiveAagConfig({
+    config: configInput,
+    detectorIds: actionGateDetectors.map((detector) => detector.name),
+  });
+}
+
+function loadConfigInput(configFile: string | undefined): AagConfigInput {
+  if (!configFile && !existsSync(defaultConfigPath)) {
+    return {};
+  }
+
+  const sourceFile = path.resolve(configFile ?? defaultConfigPath);
+  let parsed: unknown;
+
+  try {
+    parsed = JSON.parse(readFileSync(sourceFile, "utf8"));
+  } catch (error) {
+    if (error instanceof SyntaxError) {
+      throw new Error(`Invalid JSON in ${sourceFile}.`);
+    }
+
+    throw new Error(`Unable to read config file: ${sourceFile}`);
+  }
+
+  if (!isRecord(parsed)) {
+    throw new Error(`Config file must contain a JSON object: ${sourceFile}`);
+  }
+
+  return parsed;
 }
 
 function loadActionInput(sourceFile: string, profileId: string): LoadedAction {
@@ -391,12 +552,16 @@ Usage:
   agent-action-gate demo
   agent-action-gate evaluate <action.json> [--profile <profileId>] [--write-receipt]
   agent-action-gate audit [--receipts-dir <dir>]
+  agent-action-gate lock-status [--config <config.json>]
+  agent-action-gate check-config-change --before <before.json> --after <after.json> [--write-receipt]
   agent-action-gate help
 
 Examples:
   npx agent-action-gate demo
   npx agent-action-gate evaluate examples/actions/send-email.json --profile strict-external-actions
   npx agent-action-gate audit
+  npx agent-action-gate lock-status
+  npx agent-action-gate check-config-change --before examples/config/locked-before.json --after examples/config/weakened-after.json --write-receipt
 
 Profiles:
 ${builtInPolicyProfiles.map((profile) => `  ${profile.id}`).join("\n")}`);

@@ -6,12 +6,20 @@ import {
 } from "node:fs";
 import { tmpdir } from "node:os";
 import path from "node:path";
+import { createEffectiveAagConfig } from "../aagConfig";
 import { auditReceipts } from "../auditReceipts";
 import { evaluateAction } from "../evaluateAction";
+import { formatLockStatus } from "../formatLockStatus";
+import { checkGovernanceChange } from "../governanceWeakening";
 import { defaultPolicyProfile } from "../policyProfiles";
 import { sha256Stable } from "../stableHash";
 import type { ActionGateInput } from "../types";
-import { writeEvaluationReceipt } from "../writeReceipt";
+import {
+  createConfigHash,
+  createPolicyHash,
+  writeEvaluationReceipt,
+  writeGovernanceReceipt,
+} from "../writeReceipt";
 
 const validHash = `sha256:${"a".repeat(64)}`;
 const validPolicyHash = `sha256:${"b".repeat(64)}`;
@@ -36,7 +44,152 @@ runTest("stable hashing ignores object key order", () => {
   assert.match(left, /^sha256:[a-f0-9]{64}$/);
 });
 
-runTest("written receipts include v0.9.0 audit metadata", () => {
+runTest("default config has locked false", () => {
+  const config = createEffectiveAagConfig({});
+
+  assert.equal(config.locked, false);
+});
+
+runTest("config with locked true is loaded correctly", () => {
+  const config = createEffectiveAagConfig({
+    config: {
+      locked: true,
+      lockReason: "Production safety policy active",
+      lockedAt: "2026-05-06T00:00:00.000Z",
+      lockedBy: "security-admin",
+    },
+  });
+
+  assert.equal(config.locked, true);
+  assert.equal(config.lockReason, "Production safety policy active");
+  assert.equal(config.lockedAt, "2026-05-06T00:00:00.000Z");
+  assert.equal(config.lockedBy, "security-admin");
+});
+
+runTest("lock-status formatting for unlocked config", () => {
+  const config = createEffectiveAagConfig({});
+  const output = formatLockStatus({
+    config,
+    configHash: createConfigHash({ config }),
+    policyHash: createPolicyHash(defaultPolicyProfile),
+  });
+
+  assert.match(output, /AAG Lock Status/);
+  assert.match(output, /Locked: false/);
+  assert.match(output, /Config Hash: sha256:[a-f0-9]{64}/);
+  assert.match(output, /Policy Hash: sha256:[a-f0-9]{64}/);
+});
+
+runTest("lock-status formatting for locked config", () => {
+  const config = createLockedConfig();
+  const output = formatLockStatus({
+    config,
+    configHash: createConfigHash({ config }),
+    policyHash: createPolicyHash(defaultPolicyProfile),
+  });
+
+  assert.match(output, /Locked: true/);
+  assert.match(output, /Reason: Production safety policy active/);
+  assert.match(output, /Locked At: 2026-05-06T00:00:00.000Z/);
+  assert.match(output, /Locked By: security-admin/);
+});
+
+runTest("governance weakening is detected when defaultDecision changes to allow", () => {
+  const result = checkGovernanceChange(
+    createLockedConfig(),
+    createEffectiveAagConfig({
+      config: {
+        locked: true,
+        defaultDecision: "allow",
+      },
+    }),
+  );
+
+  assert.equal(result.decision, "require_approval");
+  assert.equal(result.detectorsTriggered[0], "governanceWeakening");
+  assert.equal(result.governanceChangeType, "change_default_decision");
+});
+
+runTest("governance weakening is detected when receipts are disabled", () => {
+  const result = checkGovernanceChange(
+    createLockedConfig(),
+    createEffectiveAagConfig({
+      config: {
+        locked: true,
+        defaultDecision: "require_approval",
+        receipts: {
+          enabled: false,
+        },
+      },
+    }),
+  );
+
+  assert.equal(result.decision, "require_approval");
+  assert.equal(result.governanceChangeType, "disable_receipts");
+});
+
+runTest("governance weakening is detected when locked changes to false", () => {
+  const result = checkGovernanceChange(
+    createLockedConfig(),
+    createEffectiveAagConfig({
+      config: {
+        locked: false,
+        lockReason: "Production safety policy active",
+        lockedAt: "2026-05-06T00:00:00.000Z",
+        lockedBy: "security-admin",
+        defaultDecision: "require_approval",
+        receipts: {
+          enabled: true,
+        },
+      },
+    }),
+  );
+
+  assert.equal(result.decision, "require_approval");
+  assert.equal(result.governanceChangeType, "unlock_policy");
+});
+
+runTest("benign config change is allowed", () => {
+  const result = checkGovernanceChange(
+    createLockedConfig(),
+    createEffectiveAagConfig({
+      config: {
+        locked: true,
+        lockReason: "Production safety policy active for customer workflows",
+        lockedAt: "2026-05-06T00:00:00.000Z",
+        lockedBy: "security-admin",
+        defaultDecision: "require_approval",
+        receipts: {
+          enabled: true,
+        },
+        description: "Metadata-only update.",
+      },
+    }),
+  );
+
+  assert.equal(result.decision, "allow");
+  assert.deepEqual(result.detectorsTriggered, []);
+});
+
+runTest("locked disable AAG change returns block", () => {
+  const result = checkGovernanceChange(
+    createLockedConfig(),
+    createEffectiveAagConfig({
+      config: {
+        enabled: false,
+        locked: true,
+        defaultDecision: "require_approval",
+        receipts: {
+          enabled: true,
+        },
+      },
+    }),
+  );
+
+  assert.equal(result.decision, "block");
+});
+
+runTest("written receipts include v1.0.0 audit metadata", () => {
   const receiptsDir = createTempDir();
   const input = createActionInput();
   const result = evaluateAction(input, {
@@ -58,12 +211,78 @@ runTest("written receipts include v0.9.0 audit metadata", () => {
     unknown
   >;
 
-  assert.equal(receipt.receiptVersion, "0.9.0");
+  assert.equal(receipt.receiptVersion, "1.0.0");
   assert.equal(typeof receipt.createdAt, "string");
   assert.match(String(receipt.configHash), /^sha256:[a-f0-9]{64}$/);
   assert.match(String(receipt.policyHash), /^sha256:[a-f0-9]{64}$/);
   assert.equal(receipt.decision, result.decision);
   assert.equal(receipt.gateDecision, result.decision);
+});
+
+runTest("governance receipt includes locked config metadata", () => {
+  const receiptsDir = createTempDir();
+  const previousConfig = createLockedConfig();
+  const nextConfig = createEffectiveAagConfig({
+    config: {
+      locked: true,
+      defaultDecision: "allow",
+    },
+  });
+  const result = checkGovernanceChange(previousConfig, nextConfig);
+  const receiptPath = writeGovernanceReceipt({
+    command: "check-config-change",
+    previousConfig,
+    nextConfig,
+    result,
+    receiptDirectory: receiptsDir,
+  });
+  const receipt = JSON.parse(readFileSync(receiptPath, "utf8")) as Record<
+    string,
+    unknown
+  >;
+
+  assert.equal(receipt.receiptType, "governance_change");
+  assert.equal(receipt.locked, true);
+  assert.equal(receipt.decision, "require_approval");
+  assert.match(String(receipt.previousConfigHash), /^sha256:[a-f0-9]{64}$/);
+  assert.match(String(receipt.nextConfigHash), /^sha256:[a-f0-9]{64}$/);
+});
+
+runTest("v1.0.0 governance receipts pass audit", () => {
+  const receiptsDir = createTempDir();
+  const previousConfig = createLockedConfig();
+  const nextConfig = createEffectiveAagConfig({
+    config: {
+      locked: true,
+      defaultDecision: "allow",
+    },
+  });
+  const result = checkGovernanceChange(previousConfig, nextConfig);
+
+  writeGovernanceReceipt({
+    command: "check-config-change",
+    previousConfig,
+    nextConfig,
+    result,
+    receiptDirectory: receiptsDir,
+  });
+
+  assert.deepEqual(auditReceipts({ receiptsDir }), {
+    scanned: 1,
+    passed: 1,
+    failed: 0,
+    failures: [],
+  });
+});
+
+runTest("audit accepts receiptVersion 1.0.0", () => {
+  const receiptsDir = createTempDir();
+  writeReceipt(receiptsDir, "valid-v1.json", {
+    ...createValidReceipt(),
+    receiptVersion: "1.0.0",
+  });
+
+  assert.equal(auditReceipts({ receiptsDir }).failed, 0);
 });
 
 runTest("valid receipts pass audit", () => {
@@ -162,12 +381,27 @@ function writeReceipt(
 
 function createValidReceipt(): Record<string, unknown> {
   return {
-    receiptVersion: "0.9.0",
+    receiptVersion: "1.0.0",
     createdAt: "2026-05-06T00:00:00.000Z",
     configHash: validHash,
     policyHash: validPolicyHash,
     decision: "allow",
   };
+}
+
+function createLockedConfig(): ReturnType<typeof createEffectiveAagConfig> {
+  return createEffectiveAagConfig({
+    config: {
+      locked: true,
+      lockReason: "Production safety policy active",
+      lockedAt: "2026-05-06T00:00:00.000Z",
+      lockedBy: "security-admin",
+      defaultDecision: "require_approval",
+      receipts: {
+        enabled: true,
+      },
+    },
+  });
 }
 
 function createActionInput(): ActionGateInput {

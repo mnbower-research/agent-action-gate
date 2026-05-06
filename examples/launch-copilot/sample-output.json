@@ -1,6 +1,6 @@
 {
   "demoName": "Launch Copilot Demo",
-  "version": "0.9.0",
+  "version": "1.0.0",
   "policyProfile": {
     "id": "launch-copilot",
     "name": "Launch Copilot Policy"

@@ -68,7 +68,7 @@ type RunLaunchCopilotDemoOptions = {
   writeReceipt?: boolean;
 };
 
-const defaultVersion = "0.9.0";
+const defaultVersion = "1.0.0";
 const policyProfile = launchCopilotPolicyProfile;
 
 export function runLaunchCopilotDemo(

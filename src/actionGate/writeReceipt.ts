@@ -2,10 +2,12 @@ import { mkdirSync, writeFileSync } from "node:fs";
 import path from "node:path";
 import {
   createEffectiveAagConfig,
+  type EffectiveAagConfig,
   defaultReceiptDirectory,
   receiptVersion,
 } from "./aagConfig";
 import { actionGateDetectors } from "./evaluateAction";
+import type { GovernanceCheckResult } from "./governanceWeakening";
 import { defaultPolicyProfile, getPolicyProfileById } from "./policyProfiles";
 import { sha256Stable } from "./stableHash";
 import type {
@@ -49,6 +51,15 @@ type DemoReceiptParams = {
   receiptDirectory?: string;
 };
 
+type GovernanceReceiptParams = {
+  command: "check-config-change";
+  previousConfig: EffectiveAagConfig;
+  nextConfig: EffectiveAagConfig;
+  result: GovernanceCheckResult;
+  policyProfile?: PolicyProfile;
+  receiptDirectory?: string;
+};
+
 export type DemoReceiptAction = {
   timestamp: string;
   proposedAction: {
@@ -73,7 +84,9 @@ export function writeEvaluationReceipt(params: EvaluationReceiptParams): string 
     params.input,
     params.policyProfile,
   );
-  const configHash = getConfigHash(params.receiptDirectory);
+  const configHash = createConfigHash({
+    receiptDirectory: params.receiptDirectory,
+  });
   const policyHash = sha256Stable(effectivePolicyProfile);
   const receipt = {
     receiptVersion,
@@ -107,7 +120,9 @@ export function writeDemoReceipt(params: DemoReceiptParams): string {
     id: params.policyProfile.id,
     name: params.policyProfile.name,
   };
-  const configHash = getConfigHash(params.receiptDirectory);
+  const configHash = createConfigHash({
+    receiptDirectory: params.receiptDirectory,
+  });
   const policyHash = sha256Stable(params.policyProfile);
   const receipt = {
     receiptVersion,
@@ -140,6 +155,43 @@ export function writeDemoReceipt(params: DemoReceiptParams): string {
   return writeJsonReceipt(receipt, filename, params.receiptDirectory);
 }
 
+export function writeGovernanceReceipt(params: GovernanceReceiptParams): string {
+  const createdAt = new Date().toISOString();
+  const previousConfigHash = createConfigHash({
+    config: params.previousConfig,
+  });
+  const nextConfigHash = createConfigHash({
+    config: params.nextConfig,
+  });
+  const policyHash = createPolicyHash(
+    params.policyProfile ?? defaultPolicyProfile,
+  );
+  const receipt = {
+    receiptVersion,
+    receiptType: "governance_change",
+    createdAt,
+    timestamp: createdAt,
+    command: params.command,
+    decision: params.result.decision,
+    governanceChangeType: params.result.governanceChangeType,
+    configHash: nextConfigHash,
+    policyHash,
+    previousConfigHash,
+    nextConfigHash,
+    locked: params.result.locked,
+    ...(params.previousConfig.lockReason
+      ? { lockReason: params.previousConfig.lockReason }
+      : {}),
+    detectorsTriggered: params.result.detectorsTriggered,
+    changes: params.result.changes,
+    previousConfig: summarizeGovernanceConfig(params.previousConfig),
+    nextConfig: summarizeGovernanceConfig(params.nextConfig),
+  };
+  const filename = `${toFilenameTimestamp(createdAt)}-governance-change.json`;
+
+  return writeJsonReceipt(receipt, filename, params.receiptDirectory);
+}
+
 function writeJsonReceipt(
   receipt: unknown,
   filename: string,
@@ -163,13 +215,38 @@ function summarizeAction(input: ActionGateInput): Record<string, unknown> {
   };
 }
 
-function getConfigHash(receiptDirectory: string | undefined): string {
+export function createConfigHash(options: {
+  config?: EffectiveAagConfig | Record<string, unknown>;
+  receiptDirectory?: string;
+} = {}): string {
   return sha256Stable(
-    createEffectiveAagConfig({
-      receiptDirectory,
-      detectorIds: actionGateDetectors.map((detector) => detector.name),
-    }),
+    options.config ??
+      createEffectiveAagConfig({
+        receiptDirectory: options.receiptDirectory,
+        detectorIds: actionGateDetectors.map((detector) => detector.name),
+      }),
   );
+}
+
+export function createPolicyHash(policyProfile: PolicyProfile): string {
+  return sha256Stable(policyProfile);
+}
+
+function summarizeGovernanceConfig(
+  config: EffectiveAagConfig,
+): Record<string, unknown> {
+  return {
+    version: config.version,
+    locked: config.locked,
+    lockReason: config.lockReason,
+    lockedAt: config.lockedAt,
+    lockedBy: config.lockedBy,
+    defaultDecision: config.defaultDecision,
+    enabled: config.enabled,
+    receipts: config.receipts,
+    receiptDirectory: config.receiptDirectory,
+    detectorCount: config.detectors.length,
+  };
 }
 
 function getEffectivePolicyProfile(

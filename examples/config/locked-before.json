@@ -1,0 +1,11 @@
+{
+  "version": "1.0.0",
+  "locked": true,
+  "lockReason": "Production safety policy active",
+  "lockedAt": "2026-05-06T00:00:00.000Z",
+  "lockedBy": "security-admin",
+  "defaultDecision": "require_approval",
+  "receipts": {
+    "enabled": true
+  }
+}
