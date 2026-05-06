@@ -15,6 +15,7 @@ import { rankGateResults } from "./rankGateResults";
 import { detectCredentialAccess } from "./detectors/credentialAccess";
 import { detectDataExfiltration } from "./detectors/dataExfiltration";
 import { detectDestructiveCyberAction } from "./detectors/destructiveCyberAction";
+import { detectHighImpactRecommendation } from "./detectors/highImpactRecommendation";
 import { detectIrreversibleAction } from "./detectors/irreversibleAction";
 import { detectMissingApproval } from "./detectors/missingApproval";
 import { detectObjectiveDrift } from "./detectors/objectiveDrift";
@@ -36,6 +37,7 @@ export const actionGateDetectors: GateDetector[] = [
   detectPrivilegeEscalation,
   detectSupplyChainModification,
   detectDestructiveCyberAction,
+  detectHighImpactRecommendation,
   detectUnapprovedCommandExecution,
   detectMissingApproval,
   detectIrreversibleAction,

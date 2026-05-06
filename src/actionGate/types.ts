@@ -105,7 +105,8 @@ export type GateDetectorType =
   | "privilege_escalation"
   | "supply_chain_modification"
   | "destructive_cyber_action"
-  | "unapproved_command_execution";
+  | "unapproved_command_execution"
+  | "high_impact_recommendation";
 
 export type GateSeverity = "low" | "medium" | "high" | "critical";
 

@@ -1,6 +1,6 @@
 {
   "name": "agent-action-gate",
-  "version": "1.1.0",
+  "version": "1.1.1",
   "description": "Pre-execution safety gate for AI agents.",
   "main": "dist/server.js",
   "bin": {
@@ -22,6 +22,7 @@
     "test": "tsx src/actionGate/tests/runAuditFoundationTests.ts",
     "typecheck": "tsc --noEmit",
     "eval:action-gate": "tsx src/actionGate/evals/runActionGateEvals.ts",
+    "eval:high-impact": "tsx evals/high-impact-recommendation.test.ts",
     "test:logging": "tsx src/actionGate/logging/smokeTestDecisionLogger.ts"
   },
   "keywords": [],

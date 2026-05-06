@@ -201,6 +201,16 @@ Receipt written: .aag/receipts/...
 
 MetaGate builds on locked policy mode and governance receipts. It is a recursive governance layer: oversight for oversight controls. It does not implement cryptographic signing, Sigstore, hosted governance, auth, or a database.
 
+## High-Impact Recommendation Evals
+
+```bash
+npm run eval:high-impact
+```
+
+These evals check whether AAG escalates risky AI-generated technical recommendations, such as advice to bypass approvals, disable security controls, expose credentials, or weaken governance controls.
+
+The cases are incident-inspired recommendation-risk evals. They are not a claim about any specific company incident.
+
 ## Profiles
 
 - `default`

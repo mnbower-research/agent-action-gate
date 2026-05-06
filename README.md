@@ -2,9 +2,9 @@
 
 Agent Action Gate is a TypeScript pre-execution control layer for AI agents. It checks proposed tool actions before they run and returns a structured decision: `allow`, `require_approval`, `revise_action`, or `block`.
 
-**Current version:** v1.1.0
+**Current version:** v1.1.1
 
-**Status:** TypeScript compile passing, 19/19 evals passing, logging smoke test passing, Launch Copilot demo passing, Review Packets included, Policy Profiles included, CLI audit foundation included, Locked Policy Mode included, MetaGate included
+**Status:** TypeScript compile passing, action-gate evals passing, high-impact recommendation evals passing, logging smoke test passing, Launch Copilot demo passing, Review Packets included, Policy Profiles included, CLI audit foundation included, Locked Policy Mode included, MetaGate included
 
 ▶️ Watch the v0.5.0 Launch Copilot demo: https://youtu.be/YpEOIQ_v15Q
 
@@ -56,6 +56,8 @@ npx agent-action-gate metagate --action disable_gate --target aag.config.json --
 ```
 
 v1.1.0 adds MetaGate: a gate for the gate itself. AAG gates risky agent actions. MetaGate gates attempts to weaken, disable, or modify the policy/config controls that govern AAG. MetaGate receipts remain audit-compatible and prepare the project for future receipt chains and cryptographic verification; no signing is implemented yet.
+
+AAG also includes high-impact recommendation evals for cases where an agent's technical guidance could influence risky downstream human action. These evals are incident-inspired and are not a claim about any specific company incident.
 
 See [CLI docs](docs/CLI.md).
 
@@ -550,6 +552,25 @@ Agent Action Gate runs heuristic detectors:
 | v0.9.0 | Audit Foundation | Receipts include config/policy hashes and `aag audit` verifies audit metadata |
 | v1.0.0 | Locked Policy Mode | Detects risky locked governance changes and writes audit-compatible governance receipts |
 | v1.1.0 | MetaGate | Gates attempts to weaken, disable, or modify AAG governance controls |
+| v1.1.1 | High-Impact Recommendation Evals | Adds 20 incident-inspired recommendation-risk eval cases |
+
+## v1.1.1 - High-Impact Recommendation Evals
+
+This patch release adds an eval suite for high-impact AI-agent recommendations.
+
+### Added
+
+- High-impact recommendation eval suite
+- 20 incident-inspired recommendation-risk cases
+- `npm run eval:high-impact`
+- focused `highImpactRecommendation` detector support
+- README/docs updates for eval coverage
+
+### Why this matters
+
+AAG should not only evaluate direct tool execution. It should also detect risky AI-generated technical guidance that could influence downstream human action, such as advice to bypass approvals, disable security controls, expose credentials, or weaken governance controls.
+
+This is an eval/coverage release, not a new architecture layer.
 
 ## v1.1.0 - MetaGate
 
@@ -613,6 +634,7 @@ AAG can now show which policy and config state were active when a decision recei
 ```txt
 TypeScript compile: passing
 Baseline and cyber evals: 19/19 passing
+High-impact recommendation evals: 20/20 passing
 Logging smoke test: passing
 Launch Copilot demo: passing
 Review Packets: included
