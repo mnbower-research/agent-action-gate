@@ -1,0 +1,12 @@
+{
+  "id": "example-delete-record",
+  "title": "Delete customer record",
+  "proposedBy": "example-agent",
+  "actionType": "delete_customer_record",
+  "target": "customer_record_123",
+  "description": "Delete a customer record from the database.",
+  "externalEffect": false,
+  "reversible": false,
+  "dataSensitivity": "medium",
+  "tool": "database"
+}

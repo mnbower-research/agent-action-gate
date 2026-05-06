@@ -1,0 +1,5 @@
+.aag/
+**/.aag/
+logs/
+*.jsonl
+*.tgz

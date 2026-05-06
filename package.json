@@ -1,9 +1,23 @@
 {
   "name": "agent-action-gate",
-  "version": "1.0.0",
+  "version": "0.8.0",
   "description": "Pre-execution safety gate for AI agents.",
-  "main": "index.js",
+  "main": "dist/server.js",
+  "bin": {
+    "agent-action-gate": "./dist/cli.js",
+    "aag": "./dist/cli.js"
+  },
+  "files": [
+    "src",
+    "dist",
+    "docs",
+    "examples",
+    "README.md",
+    "LICENSE"
+  ],
   "scripts": {
+    "build": "tsc",
+    "prepack": "npm run build",
     "dev": "tsx src/server.ts",
     "test": "echo \"Error: no test specified\" && exit 1",
     "typecheck": "tsc --noEmit",

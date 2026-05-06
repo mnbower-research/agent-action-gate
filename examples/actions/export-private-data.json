@@ -1,0 +1,12 @@
+{
+  "id": "example-export-private-data",
+  "title": "Export private customer data",
+  "proposedBy": "example-agent",
+  "actionType": "export_private_customer_data",
+  "target": "customer_export.csv",
+  "description": "Export private customer data to a local CSV file.",
+  "externalEffect": true,
+  "reversible": false,
+  "dataSensitivity": "high",
+  "tool": "file_export"
+}

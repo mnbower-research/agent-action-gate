@@ -1,0 +1,12 @@
+{
+  "id": "example-send-email",
+  "title": "Send customer email",
+  "proposedBy": "example-agent",
+  "actionType": "send_email",
+  "target": "customer@example.com",
+  "description": "Send a pricing update email to an external customer.",
+  "externalEffect": true,
+  "reversible": false,
+  "dataSensitivity": "low",
+  "tool": "email"
+}

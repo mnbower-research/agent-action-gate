@@ -2,9 +2,9 @@
 
 Agent Action Gate is a TypeScript pre-execution control layer for AI agents. It checks proposed tool actions before they run and returns a structured decision: `allow`, `require_approval`, `revise_action`, or `block`.
 
-**Current version:** v0.7.0
+**Current version:** v0.8.0
 
-**Status:** TypeScript compile passing, 19/19 evals passing, logging smoke test passing, Launch Copilot demo passing, Review Packets included, Policy Profiles included
+**Status:** TypeScript compile passing, 19/19 evals passing, logging smoke test passing, Launch Copilot demo passing, Review Packets included, Policy Profiles included, CLI MVP included
 
 ▶️ Watch the v0.5.0 Launch Copilot demo: https://youtu.be/YpEOIQ_v15Q
 
@@ -15,11 +15,30 @@ Agent proposes a tool action
 -> Decision is logged as an audit-style receipt
 ```
 
+## CLI
+
+Run the gate locally:
+
+```bash
+npx agent-action-gate demo
+```
+
+Evaluate a proposed action:
+
+```bash
+npx agent-action-gate evaluate examples/actions/send-email.json --profile strict-external-actions
+```
+
+The CLI prints the gate decision, Review Packet context when present, and writes local receipts to `.aag/receipts/`.
+
+See [CLI docs](docs/CLI.md).
+
 ## Core Concepts
 
 - [Integration Bypass](docs/INTEGRATION_BYPASS.md) - the failure mode where an AI agent closes an action loop before meaningful human review can occur.
 - [Article 14 Oversight](docs/ARTICLE_14_OVERSIGHT.md) - how Agent Action Gate can support Article 14-style human oversight without claiming to guarantee legal compliance.
 - [Policy Profiles](docs/POLICY_PROFILES.md) - workflow-specific approval, revision, and block rules for proposed AI-agent actions.
+- [CLI](docs/CLI.md) - run the gate locally before an agent acts.
 
 ## Review Packets
 
@@ -421,6 +440,7 @@ Agent Action Gate runs heuristic detectors:
 | v0.5.0 | Runtime-Controlled Launch Copilot demo | Shows AAG governing launch workflow actions |
 | v0.6.0 | Review Packets | Shows approval context before risky write actions |
 | v0.7.0 | Policy Profiles | Shows approval rules by workflow context |
+| v0.8.0 | CLI MVP | Runs the gate locally from the command line |
 
 ## Validation Status
 
@@ -431,6 +451,7 @@ Logging smoke test: passing
 Launch Copilot demo: passing
 Review Packets: included
 Policy Profiles: included
+CLI MVP: included
 GET /health: working
 POST /evaluate: working
 ```
@@ -449,7 +470,7 @@ It is a pre-execution control layer that evaluates proposed tool actions before 
 
 ## Roadmap
 
-- v0.8.0: Indirect prompt injection / untrusted-content boundary examples
+- v0.9.0: Indirect prompt injection / untrusted-content boundary examples
 - v1.0.0: Stable API, npm package, documented integration path
 
 ## Compliance Note
