@@ -2,9 +2,9 @@
 
 Agent Action Gate is a TypeScript pre-execution control layer for AI agents. It checks proposed tool actions before they run and returns a structured decision: `allow`, `require_approval`, `revise_action`, or `block`.
 
-**Current version:** v0.8.0
+**Current version:** v0.9.0
 
-**Status:** TypeScript compile passing, 19/19 evals passing, logging smoke test passing, Launch Copilot demo passing, Review Packets included, Policy Profiles included, CLI MVP included
+**Status:** TypeScript compile passing, 19/19 evals passing, logging smoke test passing, Launch Copilot demo passing, Review Packets included, Policy Profiles included, CLI audit foundation included
 
 ▶️ Watch the v0.5.0 Launch Copilot demo: https://youtu.be/YpEOIQ_v15Q
 
@@ -31,6 +31,14 @@ npx agent-action-gate evaluate examples/actions/send-email.json --profile strict
 
 The CLI prints the gate decision, Review Packet context when present, and writes local receipts to `.aag/receipts/`.
 
+Audit local receipts:
+
+```bash
+npx agent-action-gate audit
+```
+
+v0.9.0 adds audit metadata to receipts: `receiptVersion`, normalized `createdAt`, `configHash`, and `policyHash`. The audit command verifies that receipts contain the required audit fields and basic integrity markers. This is a tamper-evident foundation for future locked policies and MetaGate work; it is not cryptographic signing.
+
 See [CLI docs](docs/CLI.md).
 
 ## Core Concepts
@@ -39,6 +47,26 @@ See [CLI docs](docs/CLI.md).
 - [Article 14 Oversight](docs/ARTICLE_14_OVERSIGHT.md) - how Agent Action Gate can support Article 14-style human oversight without claiming to guarantee legal compliance.
 - [Policy Profiles](docs/POLICY_PROFILES.md) - workflow-specific approval, revision, and block rules for proposed AI-agent actions.
 - [CLI](docs/CLI.md) - run the gate locally before an agent acts.
+
+## Audit Foundation
+
+v0.9.0 makes local decision receipts auditable.
+
+Each new receipt includes:
+
+- `receiptVersion: "0.9.0"`
+- `createdAt` as a normalized ISO timestamp
+- `configHash` for the effective AAG config state
+- `policyHash` for the effective policy profile used during evaluation
+- `decision`
+
+Run:
+
+```bash
+npx agent-action-gate audit
+```
+
+The audit command scans `.aag/receipts/`, verifies required audit metadata, detects malformed SHA-256 hashes and timestamps, reports invalid JSON receipt files, and exits non-zero when any receipt fails. This provides basic receipt verification and audit metadata for future locked policies, MetaGate, and tamper-evident receipt chains. It does not claim tamper-proof security.
 
 ## Review Packets
 
@@ -441,6 +469,24 @@ Agent Action Gate runs heuristic detectors:
 | v0.6.0 | Review Packets | Shows approval context before risky write actions |
 | v0.7.0 | Policy Profiles | Shows approval rules by workflow context |
 | v0.8.0 | CLI MVP | Runs the gate locally from the command line |
+| v0.9.0 | Audit Foundation | Receipts include config/policy hashes and `aag audit` verifies audit metadata |
+
+## v0.9.0 — Audit Foundation
+
+This release adds audit metadata and receipt verification.
+
+### Added
+
+- `configHash` and `policyHash` in receipts
+- `receiptVersion: "0.9.0"`
+- normalized `createdAt` timestamps
+- `aag audit` CLI command
+- basic receipt validation
+- audit report formatter
+
+### Why this matters
+
+AAG can now show which policy and config state were active when a decision receipt was written. This creates the foundation for locked policies, MetaGate, and future tamper-evident receipt chains.
 
 ## Validation Status
 
@@ -452,6 +498,7 @@ Launch Copilot demo: passing
 Review Packets: included
 Policy Profiles: included
 CLI MVP: included
+CLI audit foundation: included
 GET /health: working
 POST /evaluate: working
 ```
@@ -470,7 +517,7 @@ It is a pre-execution control layer that evaluates proposed tool actions before 
 
 ## Roadmap
 
-- v0.9.0: Indirect prompt injection / untrusted-content boundary examples
+- v0.10.0: Indirect prompt injection / untrusted-content boundary examples
 - v1.0.0: Stable API, npm package, documented integration path
 
 ## Compliance Note

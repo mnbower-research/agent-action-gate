@@ -1,14 +1,21 @@
 import { mkdirSync, writeFileSync } from "node:fs";
 import path from "node:path";
+import {
+  createEffectiveAagConfig,
+  defaultReceiptDirectory,
+  receiptVersion,
+} from "./aagConfig";
+import { actionGateDetectors } from "./evaluateAction";
+import { defaultPolicyProfile, getPolicyProfileById } from "./policyProfiles";
+import { sha256Stable } from "./stableHash";
 import type {
   ActionGateInput,
   ActionGateResult,
   GateDecision,
+  PolicyProfile,
   PolicyProfileResultMetadata,
   ReviewPacket,
 } from "./types";
-
-export const defaultReceiptDirectory = path.join(".aag", "receipts");
 
 export type HumanDecision = "approved" | "not_required" | "not_requested";
 
@@ -27,12 +34,13 @@ type EvaluationReceiptParams = {
   humanDecision: HumanDecision;
   finalOutcome: FinalOutcome;
   sourceFile?: string;
+  policyProfile?: PolicyProfile;
   receiptDirectory?: string;
 };
 
 type DemoReceiptParams = {
   command: "demo";
-  policyProfile: PolicyProfileResultMetadata;
+  policyProfile: PolicyProfile;
   summary: Record<GateDecision, number> & {
     total: number;
     matchedExpected: number;
@@ -60,12 +68,23 @@ export type DemoReceiptAction = {
 };
 
 export function writeEvaluationReceipt(params: EvaluationReceiptParams): string {
-  const timestamp = new Date().toISOString();
+  const createdAt = new Date().toISOString();
+  const effectivePolicyProfile = getEffectivePolicyProfile(
+    params.input,
+    params.policyProfile,
+  );
+  const configHash = getConfigHash(params.receiptDirectory);
+  const policyHash = sha256Stable(effectivePolicyProfile);
   const receipt = {
-    timestamp,
+    receiptVersion,
+    createdAt,
+    timestamp: createdAt,
+    configHash,
+    policyHash,
     command: params.command,
     policyProfile: params.result.policyProfile,
     proposedAction: summarizeAction(params.input),
+    decision: params.result.decision,
     gateDecision: params.result.decision,
     reason: params.reason,
     primaryIssue: params.result.primaryIssue,
@@ -75,7 +94,7 @@ export function writeEvaluationReceipt(params: EvaluationReceiptParams): string 
     humanDecision: params.humanDecision,
     sourceFile: params.sourceFile,
   };
-  const filename = `${toFilenameTimestamp(timestamp)}-${safeSegment(
+  const filename = `${toFilenameTimestamp(createdAt)}-${safeSegment(
     params.input.proposedAction.actionType,
   )}.json`;
 
@@ -83,19 +102,30 @@ export function writeEvaluationReceipt(params: EvaluationReceiptParams): string 
 }
 
 export function writeDemoReceipt(params: DemoReceiptParams): string {
-  const timestamp = new Date().toISOString();
+  const createdAt = new Date().toISOString();
+  const policyMetadata: PolicyProfileResultMetadata = {
+    id: params.policyProfile.id,
+    name: params.policyProfile.name,
+  };
+  const configHash = getConfigHash(params.receiptDirectory);
+  const policyHash = sha256Stable(params.policyProfile);
   const receipt = {
-    timestamp,
+    receiptVersion,
+    createdAt,
+    timestamp: createdAt,
+    configHash,
+    policyHash,
     command: params.command,
-    policyProfile: params.policyProfile,
+    policyProfile: policyMetadata,
     proposedAction: {
       title: "Launch Copilot demo",
       actionType: "launch_copilot_demo",
     },
+    decision: "allow" as GateDecision,
     gateDecision: "allow" as GateDecision,
     reason: "Launch Copilot demo evaluated all sample actions.",
     primaryIssue: null,
-    policyMetadata: params.policyProfile,
+    policyMetadata,
     reviewPacket: undefined,
     finalOutcome:
       params.summary.matchedExpected === params.summary.total
@@ -105,7 +135,7 @@ export function writeDemoReceipt(params: DemoReceiptParams): string {
     summary: params.summary,
     actions: params.actions,
   };
-  const filename = `${toFilenameTimestamp(timestamp)}-launch-copilot-demo.json`;
+  const filename = `${toFilenameTimestamp(createdAt)}-launch-copilot-demo.json`;
 
   return writeJsonReceipt(receipt, filename, params.receiptDirectory);
 }
@@ -131,6 +161,27 @@ function summarizeAction(input: ActionGateInput): Record<string, unknown> {
     reversible: input.proposedAction.reversible,
     externalFacing: input.proposedAction.externalFacing,
   };
+}
+
+function getConfigHash(receiptDirectory: string | undefined): string {
+  return sha256Stable(
+    createEffectiveAagConfig({
+      receiptDirectory,
+      detectorIds: actionGateDetectors.map((detector) => detector.name),
+    }),
+  );
+}
+
+function getEffectivePolicyProfile(
+  input: ActionGateInput,
+  policyProfile: PolicyProfile | undefined,
+): PolicyProfile {
+  return (
+    policyProfile ??
+    input.policyProfile ??
+    getPolicyProfileById(input.policyProfileId) ??
+    defaultPolicyProfile
+  );
 }
 
 function toFilenameTimestamp(timestamp: string): string {

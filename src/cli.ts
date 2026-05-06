@@ -2,7 +2,9 @@
 
 import { readFileSync } from "node:fs";
 import path from "node:path";
+import { auditReceipts } from "./actionGate/auditReceipts";
 import { evaluateAction } from "./actionGate/evaluateAction";
+import { formatAuditReport } from "./actionGate/formatAuditReport";
 import { printReviewPacket } from "./actionGate/formatReviewPacket";
 import { runLaunchCopilotDemo } from "./actionGate/launchCopilotDemo";
 import {
@@ -16,7 +18,7 @@ import {
   writeEvaluationReceipt,
 } from "./actionGate/writeReceipt";
 
-const cliVersion = "0.8.0";
+const cliVersion = "0.9.0";
 
 type CliActionFile = {
   id?: string;
@@ -65,6 +67,10 @@ function main(args: string[]): number {
       return runEvaluateCommand(args.slice(1));
     }
 
+    if (args[0] === "audit") {
+      return runAuditCommand(args.slice(1));
+    }
+
     printError(`Unknown command: ${args[0]}`);
     printHelp();
     return 1;
@@ -86,13 +92,14 @@ function runDemoCommand(): number {
 }
 
 function runEvaluateCommand(args: string[]): number {
-  const actionFile = args[0];
+  const evaluateOptions = parseEvaluateArgs(args);
+  const actionFile = evaluateOptions.actionFile;
 
   if (!actionFile || actionFile.startsWith("-")) {
     throw new Error("Missing action JSON file.");
   }
 
-  const profileId = parseProfileId(args.slice(1));
+  const profileId = evaluateOptions.profileId;
   const policyProfile = getPolicyProfileById(profileId);
 
   if (!policyProfile) {
@@ -117,6 +124,7 @@ function runEvaluateCommand(args: string[]): number {
     humanDecision,
     finalOutcome,
     sourceFile,
+    policyProfile,
   });
 
   printEvaluationResult(
@@ -131,17 +139,71 @@ function runEvaluateCommand(args: string[]): number {
   return 0;
 }
 
-function parseProfileId(args: string[]): string {
-  if (args.length === 0) {
-    return "default";
+function runAuditCommand(args: string[]): number {
+  const auditOptions = parseAuditArgs(args);
+  const result = auditReceipts({
+    receiptsDir: auditOptions.receiptsDir,
+  });
+
+  console.log(formatAuditReport(result));
+
+  return result.failed === 0 ? 0 : 1;
+}
+
+function parseEvaluateArgs(args: string[]): {
+  actionFile: string | undefined;
+  profileId: string;
+} {
+  const actionFile = args[0];
+  let profileId = "default";
+  let index = 1;
+
+  while (index < args.length) {
+    const arg = args[index];
+
+    if (arg === "--profile") {
+      const value = args[index + 1];
+
+      if (!value) {
+        throw new Error("Missing value for --profile.");
+      }
+
+      profileId = value;
+      index += 2;
+      continue;
+    }
+
+    if (arg === "--write-receipt") {
+      index += 1;
+      continue;
+    }
+
+    throw new Error(
+      "Invalid arguments. Use: agent-action-gate evaluate <action.json> [--profile <profileId>] [--write-receipt]",
+    );
   }
 
-  if (args.length === 2 && args[0] === "--profile" && args[1]) {
-    return args[1];
+  return {
+    actionFile,
+    profileId,
+  };
+}
+
+function parseAuditArgs(args: string[]): {
+  receiptsDir?: string;
+} {
+  if (args.length === 0) {
+    return {};
+  }
+
+  if (args.length === 2 && args[0] === "--receipts-dir" && args[1]) {
+    return {
+      receiptsDir: args[1],
+    };
   }
 
   throw new Error(
-    "Invalid arguments. Use: agent-action-gate evaluate <action.json> [--profile <profileId>]",
+    "Invalid arguments. Use: agent-action-gate audit [--receipts-dir <dir>]",
   );
 }
 
@@ -327,12 +389,14 @@ function printHelp(): void {
 
 Usage:
   agent-action-gate demo
-  agent-action-gate evaluate <action.json> [--profile <profileId>]
+  agent-action-gate evaluate <action.json> [--profile <profileId>] [--write-receipt]
+  agent-action-gate audit [--receipts-dir <dir>]
   agent-action-gate help
 
 Examples:
   npx agent-action-gate demo
   npx agent-action-gate evaluate examples/actions/send-email.json --profile strict-external-actions
+  npx agent-action-gate audit
 
 Profiles:
 ${builtInPolicyProfiles.map((profile) => `  ${profile.id}`).join("\n")}`);

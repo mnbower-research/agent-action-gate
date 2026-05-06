@@ -68,7 +68,7 @@ type RunLaunchCopilotDemoOptions = {
   writeReceipt?: boolean;
 };
 
-const defaultVersion = "0.8.0";
+const defaultVersion = "0.9.0";
 const policyProfile = launchCopilotPolicyProfile;
 
 export function runLaunchCopilotDemo(
@@ -139,10 +139,7 @@ export function runLaunchCopilotDemo(
   if (options.writeReceipt) {
     receiptPath = writeDemoReceipt({
       command: "demo",
-      policyProfile: {
-        id: policyProfile.id,
-        name: policyProfile.name,
-      },
+      policyProfile,
       summary: {
         ...summary,
         total: actions.length,

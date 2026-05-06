@@ -10,7 +10,7 @@ import type {
 import { applyPolicyProfile } from "./applyPolicyProfile";
 import { createReviewPacket } from "./createReviewPacket";
 import { decideGateAction } from "./decideGateAction";
-import { getPolicyProfileById } from "./policyProfiles";
+import { defaultPolicyProfile, getPolicyProfileById } from "./policyProfiles";
 import { rankGateResults } from "./rankGateResults";
 import { detectCredentialAccess } from "./detectors/credentialAccess";
 import { detectDataExfiltration } from "./detectors/dataExfiltration";
@@ -70,7 +70,8 @@ export function evaluateAction(
   const policyProfile =
     options.policyProfile ??
     input.policyProfile ??
-    getPolicyProfileById(options.policyProfileId ?? input.policyProfileId);
+    getPolicyProfileById(options.policyProfileId ?? input.policyProfileId) ??
+    defaultPolicyProfile;
   const profiledResult = applyPolicyProfile(input, baseResult, policyProfile);
 
   return {
