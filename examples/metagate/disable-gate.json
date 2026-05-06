@@ -1,0 +1,6 @@
+{
+  "actionType": "disable_gate",
+  "target": "aag.config.json",
+  "requestedBy": "agent",
+  "reason": "Attempting to bypass oversight"
+}

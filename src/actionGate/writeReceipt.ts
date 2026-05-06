@@ -8,6 +8,7 @@ import {
 } from "./aagConfig";
 import { actionGateDetectors } from "./evaluateAction";
 import type { GovernanceCheckResult } from "./governanceWeakening";
+import type { MetaGateDecision, MetaGateInput } from "./metaGate";
 import { defaultPolicyProfile, getPolicyProfileById } from "./policyProfiles";
 import { sha256Stable } from "./stableHash";
 import type {
@@ -56,6 +57,16 @@ type GovernanceReceiptParams = {
   previousConfig: EffectiveAagConfig;
   nextConfig: EffectiveAagConfig;
   result: GovernanceCheckResult;
+  policyProfile?: PolicyProfile;
+  receiptDirectory?: string;
+};
+
+type MetaGateReceiptParams = {
+  command: "metagate" | "check-config-change";
+  input: MetaGateInput;
+  decision: MetaGateDecision;
+  previousConfig?: EffectiveAagConfig;
+  nextConfig?: EffectiveAagConfig;
   policyProfile?: PolicyProfile;
   receiptDirectory?: string;
 };
@@ -188,6 +199,50 @@ export function writeGovernanceReceipt(params: GovernanceReceiptParams): string 
     nextConfig: summarizeGovernanceConfig(params.nextConfig),
   };
   const filename = `${toFilenameTimestamp(createdAt)}-governance-change.json`;
+
+  return writeJsonReceipt(receipt, filename, params.receiptDirectory);
+}
+
+export function writeMetaGateReceipt(params: MetaGateReceiptParams): string {
+  const createdAt = new Date().toISOString();
+  const previousConfigHash = params.previousConfig
+    ? createConfigHash({ config: params.previousConfig })
+    : undefined;
+  const nextConfigHash = params.nextConfig
+    ? createConfigHash({ config: params.nextConfig })
+    : undefined;
+  const configHash =
+    nextConfigHash ??
+    previousConfigHash ??
+    createConfigHash({
+      receiptDirectory: params.receiptDirectory,
+    });
+  const policyHash = createPolicyHash(
+    params.policyProfile ?? defaultPolicyProfile,
+  );
+  const receipt = {
+    receiptVersion,
+    receiptType: "metagate_decision",
+    metaGate: true,
+    command: params.command,
+    actionType: params.input.actionType,
+    target: params.input.target,
+    createdAt,
+    timestamp: createdAt,
+    decision: params.decision.decision,
+    configHash,
+    policyHash,
+    ...(previousConfigHash ? { previousConfigHash } : {}),
+    ...(nextConfigHash ? { nextConfigHash } : {}),
+    locked: params.decision.locked,
+    ...(params.input.requestedBy
+      ? { requestedBy: params.input.requestedBy }
+      : {}),
+    ...(params.input.reason ? { reason: params.input.reason } : {}),
+    detectorsTriggered: params.decision.detectorsTriggered,
+    reasons: params.decision.reasons,
+  };
+  const filename = `${toFilenameTimestamp(createdAt)}-metagate-decision.json`;
 
   return writeJsonReceipt(receipt, filename, params.receiptDirectory);
 }

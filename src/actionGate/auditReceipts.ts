@@ -28,6 +28,7 @@ const requiredFields = [
 const sha256HashPattern = /^sha256:[a-f0-9]{64}$/;
 const isoTimestampPattern =
   /^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}\.\d{3}Z$/;
+const supportedReceiptVersions = new Set(["0.9.0", "1.0.0", "1.1.0"]);
 
 export function auditReceipts(options: {
   receiptsDir?: string;
@@ -91,6 +92,14 @@ function auditReceipt(receipt: Record<string, unknown>): string[] {
       issues.push(`missing ${field}`);
     }
   });
+
+  if (
+    receipt.receiptVersion !== undefined &&
+    (typeof receipt.receiptVersion !== "string" ||
+      !supportedReceiptVersions.has(receipt.receiptVersion))
+  ) {
+    issues.push("unsupported receiptVersion");
+  }
 
   if (
     receipt.createdAt !== undefined &&

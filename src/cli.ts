@@ -12,9 +12,15 @@ import { actionGateDetectors, evaluateAction } from "./actionGate/evaluateAction
 import { formatAuditReport } from "./actionGate/formatAuditReport";
 import { formatGovernanceCheck } from "./actionGate/formatGovernanceCheck";
 import { formatLockStatus } from "./actionGate/formatLockStatus";
+import { formatMetaGateReport } from "./actionGate/formatMetaGateReport";
 import { printReviewPacket } from "./actionGate/formatReviewPacket";
-import { checkGovernanceChange } from "./actionGate/governanceWeakening";
+import type { GovernanceCheckResult } from "./actionGate/governanceWeakening";
 import { runLaunchCopilotDemo } from "./actionGate/launchCopilotDemo";
+import {
+  evaluateMetaGateAction,
+  type MetaGateDecision,
+  type MetaGateInput,
+} from "./actionGate/metaGate";
 import {
   builtInPolicyProfiles,
   defaultPolicyProfile,
@@ -27,10 +33,10 @@ import {
   type FinalOutcome,
   type HumanDecision,
   writeEvaluationReceipt,
-  writeGovernanceReceipt,
+  writeMetaGateReceipt,
 } from "./actionGate/writeReceipt";
 
-const cliVersion = "1.0.0";
+const cliVersion = "1.1.0";
 
 type CliActionFile = {
   id?: string;
@@ -89,6 +95,10 @@ function main(args: string[]): number {
 
     if (args[0] === "check-config-change") {
       return runCheckConfigChangeCommand(args.slice(1));
+    }
+
+    if (args[0] === "metagate") {
+      return runMetaGateCommand(args.slice(1));
     }
 
     printError(`Unknown command: ${args[0]}`);
@@ -191,13 +201,22 @@ function runCheckConfigChangeCommand(args: string[]): number {
   const options = parseCheckConfigChangeArgs(args);
   const previousConfig = loadEffectiveConfig(options.beforeFile);
   const nextConfig = loadEffectiveConfig(options.afterFile);
-  const result = checkGovernanceChange(previousConfig, nextConfig);
+  const metaGateInput: MetaGateInput = {
+    actionType: "modify_config",
+    target: options.afterFile,
+    beforeConfig: previousConfig,
+    afterConfig: nextConfig,
+    locked: previousConfig.locked,
+  };
+  const metaGateDecision = evaluateMetaGateAction(metaGateInput);
+  const result = toGovernanceCheckResult(metaGateDecision);
   const receiptPath = options.writeReceipt
-    ? writeGovernanceReceipt({
+    ? writeMetaGateReceipt({
         command: "check-config-change",
+        input: metaGateInput,
+        decision: metaGateDecision,
         previousConfig,
         nextConfig,
-        result,
         policyProfile: defaultPolicyProfile,
       })
     : undefined;
@@ -210,6 +229,46 @@ function runCheckConfigChangeCommand(args: string[]): number {
   );
 
   return 0;
+}
+
+function runMetaGateCommand(args: string[]): number {
+  const options = parseMetaGateArgs(args);
+  const previousConfig = options.beforeFile
+    ? loadEffectiveConfig(options.beforeFile)
+    : loadEffectiveConfig(undefined);
+  const nextConfig = options.afterFile
+    ? loadEffectiveConfig(options.afterFile)
+    : undefined;
+  const input: MetaGateInput = {
+    actionType: options.actionType,
+    target: options.target,
+    beforeConfig: previousConfig,
+    ...(nextConfig ? { afterConfig: nextConfig } : {}),
+    locked: previousConfig.locked,
+    ...(options.requestedBy ? { requestedBy: options.requestedBy } : {}),
+    ...(options.reason ? { reason: options.reason } : {}),
+  };
+  const decision = evaluateMetaGateAction(input);
+  const receiptPath = options.writeReceipt
+    ? writeMetaGateReceipt({
+        command: "metagate",
+        input,
+        decision,
+        previousConfig,
+        nextConfig,
+        policyProfile: defaultPolicyProfile,
+      })
+    : undefined;
+
+  console.log(
+    formatMetaGateReport({
+      input,
+      decision,
+      receiptPath,
+    }),
+  );
+
+  return decision.decision === "block" ? 1 : 0;
 }
 
 function parseEvaluateArgs(args: string[]): {
@@ -329,6 +388,124 @@ function parseCheckConfigChangeArgs(args: string[]): {
     beforeFile,
     afterFile,
     writeReceipt,
+  };
+}
+
+function parseMetaGateArgs(args: string[]): {
+  actionType: string;
+  target: string;
+  beforeFile?: string;
+  afterFile?: string;
+  requestedBy?: string;
+  reason?: string;
+  writeReceipt: boolean;
+} {
+  let actionType: string | undefined;
+  let target: string | undefined;
+  let beforeFile: string | undefined;
+  let afterFile: string | undefined;
+  let requestedBy: string | undefined;
+  let reason: string | undefined;
+  let writeReceipt = false;
+  let index = 0;
+
+  while (index < args.length) {
+    const arg = args[index];
+
+    if (arg === "--action") {
+      actionType = args[index + 1];
+      index += 2;
+      continue;
+    }
+
+    if (arg === "--target") {
+      target = args[index + 1];
+      index += 2;
+      continue;
+    }
+
+    if (arg === "--before") {
+      beforeFile = args[index + 1];
+      index += 2;
+      continue;
+    }
+
+    if (arg === "--after") {
+      afterFile = args[index + 1];
+      index += 2;
+      continue;
+    }
+
+    if (arg === "--requested-by") {
+      requestedBy = args[index + 1];
+      index += 2;
+      continue;
+    }
+
+    if (arg === "--reason") {
+      reason = args[index + 1];
+      index += 2;
+      continue;
+    }
+
+    if (arg === "--write-receipt") {
+      writeReceipt = true;
+      index += 1;
+      continue;
+    }
+
+    throw new Error(
+      "Invalid arguments. Use: agent-action-gate metagate --action <actionType> --target <target> [--before <before.json>] [--after <after.json>] [--requested-by <name>] [--reason <text>] [--write-receipt]",
+    );
+  }
+
+  if (!actionType || !target) {
+    throw new Error("Missing --action or --target.");
+  }
+
+  return {
+    actionType,
+    target,
+    beforeFile,
+    afterFile,
+    requestedBy,
+    reason,
+    writeReceipt,
+  };
+}
+
+function toGovernanceCheckResult(
+  decision: MetaGateDecision,
+): GovernanceCheckResult {
+  const detectorsTriggered = decision.detectorsTriggered.filter(
+    (detector) => detector !== "metaGate",
+  );
+  if (decision.decision === "allow") {
+    return {
+      locked: decision.locked,
+      decision: decision.decision,
+      governanceChangeType: "metadata_update",
+      detectorsTriggered: [],
+      changes: ["No risky governance weakening detected."],
+      findings: [],
+    };
+  }
+
+  const changes = decision.reasons.filter(
+    (reason) =>
+      reason !== "Locked policy mode is active." && reason !== "AAG is locked.",
+  );
+
+  return {
+    locked: decision.locked,
+    decision: decision.decision,
+    governanceChangeType: decision.governanceChangeType ?? "metadata_update",
+    detectorsTriggered,
+    changes:
+      changes.length > 0
+        ? changes
+        : ["No risky governance weakening detected."],
+    findings: [],
   };
 }
 
@@ -554,6 +731,7 @@ Usage:
   agent-action-gate audit [--receipts-dir <dir>]
   agent-action-gate lock-status [--config <config.json>]
   agent-action-gate check-config-change --before <before.json> --after <after.json> [--write-receipt]
+  agent-action-gate metagate --action <actionType> --target <target> [--before <before.json>] [--after <after.json>] [--requested-by <name>] [--reason <text>] [--write-receipt]
   agent-action-gate help
 
 Examples:
@@ -562,6 +740,7 @@ Examples:
   npx agent-action-gate audit
   npx agent-action-gate lock-status
   npx agent-action-gate check-config-change --before examples/config/locked-before.json --after examples/config/weakened-after.json --write-receipt
+  npx agent-action-gate metagate --action disable_gate --target aag.config.json --write-receipt
 
 Profiles:
 ${builtInPolicyProfiles.map((profile) => `  ${profile.id}`).join("\n")}`);

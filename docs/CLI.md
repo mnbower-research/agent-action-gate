@@ -40,7 +40,7 @@ v0.9.0 adds audit verification. Each new receipt includes `receiptVersion`, norm
 
 The audit command scans `.aag/receipts/` by default and verifies that receipts contain the required audit fields and basic integrity markers. It detects missing audit fields, malformed SHA-256 hashes, malformed timestamps, and invalid JSON receipt files.
 
-This is a tamper-evident foundation for locked policies and MetaGate. It is basic receipt verification, not cryptographic signing or a security guarantee. v1.0.0 governance receipts remain audit-compatible with these required fields.
+This is a tamper-evident foundation for locked policies and MetaGate. It is basic receipt verification, not cryptographic signing or a security guarantee. v1.0.0 governance receipts and v1.1.0 MetaGate receipts remain audit-compatible with these required fields.
 
 Example success:
 
@@ -74,8 +74,6 @@ AUDIT FAIL
 ## Locked Policy Mode
 
 v1.0.0 introduces locked policy mode. When locked mode is active, risky attempts to weaken policy/config governance can be detected and escalated before they silently reduce gate coverage.
-
-This is not full MetaGate yet. It is the foundation for MetaGate in v1.1.0.
 
 ## Lock status
 
@@ -145,6 +143,64 @@ Receipt written: .aag/receipts/...
 
 Benign metadata-only config changes are allowed.
 
+## MetaGate
+
+MetaGate is a gate for the gate itself.
+
+AAG gates risky agent actions. MetaGate gates attempts to weaken, disable, or modify the policy/config controls that govern AAG.
+
+```bash
+npx agent-action-gate metagate --action disable_gate --target aag.config.json
+```
+
+Local repository usage:
+
+```bash
+npx . metagate --action disable_gate --target aag.config.json
+```
+
+More examples:
+
+```bash
+npx agent-action-gate metagate --action unlock_policy --target aag.config.json --write-receipt
+npx agent-action-gate metagate --action modify_policy --target aag.config.json --before examples/config/locked-before.json --after examples/config/weakened-after.json --write-receipt
+```
+
+Supported options:
+
+- `--action <actionType>`
+- `--target <target>`
+- `--before <path>`
+- `--after <path>`
+- `--requested-by <name>`
+- `--reason <text>`
+- `--write-receipt`
+
+MetaGate evaluates governance-sensitive actions including `modify_policy`, `modify_config`, `disable_gate`, `unlock_policy`, `disable_receipts`, `disable_audit`, `delete_receipt`, `add_allowlist`, `change_default_decision`, `remove_detector`, and `weaken_sensitive_action_rule`.
+
+Example:
+
+```txt
+AAG MetaGate
+
+Action: disable_gate
+Target: aag.config.json
+Locked: true
+Decision: block
+
+Detected:
+- metaGate
+- disableGateWhileLocked
+
+Reasons:
+- AAG is locked.
+- Disabling the gate while locked is blocked.
+
+Receipt written: .aag/receipts/...
+```
+
+MetaGate builds on locked policy mode and governance receipts. It is a recursive governance layer: oversight for oversight controls. It does not implement cryptographic signing, Sigstore, hosted governance, auth, or a database.
+
 ## Profiles
 
 - `default`
@@ -161,6 +217,8 @@ New receipts include the effective config and policy hashes that were active whe
 
 Governance receipts use `receiptType: "governance_change"` and include `governanceChangeType`, `previousConfigHash`, `nextConfigHash`, `locked`, optional lock metadata, and `detectorsTriggered`. These config-change receipts are audit-compatible.
 
+MetaGate receipts use `receiptType: "metagate_decision"` and include `metaGate: true`, `actionType`, `target`, `locked`, optional requester context, `detectorsTriggered`, and `reasons`. These receipts are audit-compatible.
+
 ## Exit codes
 
 `0` means the CLI ran successfully.
@@ -173,6 +231,8 @@ For `lock-status`, `0` means the effective config was loaded and printed.
 
 For `check-config-change`, `0` means the governance check ran and printed a decision. A `require_approval` or `block` governance decision is not a CLI execution error.
 
+For `metagate`, `0` means the MetaGate decision was `allow` or `require_approval`. A `block` decision exits non-zero.
+
 For other commands, non-zero means invalid input, invalid JSON, unknown profile, or internal CLI failure.
 
 ## Example workflow
@@ -183,4 +243,5 @@ npx agent-action-gate evaluate examples/actions/send-email.json --profile strict
 npx agent-action-gate audit
 npx agent-action-gate lock-status
 npx agent-action-gate check-config-change --before examples/config/locked-before.json --after examples/config/weakened-after.json --write-receipt
+npx agent-action-gate metagate --action disable_gate --target aag.config.json --write-receipt
 ```

@@ -2,9 +2,9 @@
 
 Agent Action Gate is a TypeScript pre-execution control layer for AI agents. It checks proposed tool actions before they run and returns a structured decision: `allow`, `require_approval`, `revise_action`, or `block`.
 
-**Current version:** v1.0.0
+**Current version:** v1.1.0
 
-**Status:** TypeScript compile passing, 19/19 evals passing, logging smoke test passing, Launch Copilot demo passing, Review Packets included, Policy Profiles included, CLI audit foundation included, Locked Policy Mode included
+**Status:** TypeScript compile passing, 19/19 evals passing, logging smoke test passing, Launch Copilot demo passing, Review Packets included, Policy Profiles included, CLI audit foundation included, Locked Policy Mode included, MetaGate included
 
 ▶️ Watch the v0.5.0 Launch Copilot demo: https://youtu.be/YpEOIQ_v15Q
 
@@ -49,7 +49,13 @@ Check a proposed config change:
 npx agent-action-gate check-config-change --before examples/config/locked-before.json --after examples/config/weakened-after.json --write-receipt
 ```
 
-v1.0.0 adds locked policy mode. When locked mode is active, risky attempts to weaken policy/config governance can be detected and escalated. Governance receipts remain audit-compatible with the v0.9.0 audit metadata fields. This is a foundation for MetaGate; it is not cryptographic signing or a security guarantee.
+Run MetaGate:
+
+```bash
+npx agent-action-gate metagate --action disable_gate --target aag.config.json --write-receipt
+```
+
+v1.1.0 adds MetaGate: a gate for the gate itself. AAG gates risky agent actions. MetaGate gates attempts to weaken, disable, or modify the policy/config controls that govern AAG. MetaGate receipts remain audit-compatible and prepare the project for future receipt chains and cryptographic verification; no signing is implemented yet.
 
 See [CLI docs](docs/CLI.md).
 
@@ -106,6 +112,39 @@ npx agent-action-gate check-config-change --before examples/config/locked-before
 ```
 
 Governance/config-change receipts use `receiptType: "governance_change"` and include previous and next config hashes, lock status, detected governance weakening, and the decision. These receipts are audit-compatible and create the foundation for MetaGate, where policy/config changes become first-class gated actions.
+
+## MetaGate
+
+MetaGate is a gate for the gate itself.
+
+AAG gates risky agent actions before execution. MetaGate gates attempts to weaken, disable, or modify the policy/config controls that govern AAG itself.
+
+It evaluates governance-sensitive actions such as:
+
+- disabling the gate
+- unlocking locked policy mode
+- disabling audit or receipts
+- deleting receipts
+- changing default decisions
+- adding broad allowlists
+- modifying policy/config files
+- removing detectors or weakening sensitive-action rules
+
+Run:
+
+```bash
+npx agent-action-gate metagate --action disable_gate --target aag.config.json --write-receipt
+```
+
+With config context:
+
+```bash
+npx agent-action-gate metagate --action modify_policy --target aag.config.json --before examples/config/locked-before.json --after examples/config/weakened-after.json --write-receipt
+```
+
+MetaGate builds on locked policy mode and governance receipts. It adds a recursive governance layer: oversight for the oversight controls. MetaGate receipts use `receiptType: "metagate_decision"` and include `metaGate: true`, action metadata, lock state, config hashes, detected controls, and reasons.
+
+This is not cryptographic signing, Sigstore, hosted governance, auth, or a database. It is a focused foundation for future receipt chains and cryptographic verification.
 
 ## Review Packets
 
@@ -510,6 +549,28 @@ Agent Action Gate runs heuristic detectors:
 | v0.8.0 | CLI MVP | Runs the gate locally from the command line |
 | v0.9.0 | Audit Foundation | Receipts include config/policy hashes and `aag audit` verifies audit metadata |
 | v1.0.0 | Locked Policy Mode | Detects risky locked governance changes and writes audit-compatible governance receipts |
+| v1.1.0 | MetaGate | Gates attempts to weaken, disable, or modify AAG governance controls |
+
+## v1.1.0 - MetaGate
+
+This release adds MetaGate: a gate for the gate itself.
+
+### Added
+
+- MetaGate evaluation module
+- `aag metagate` CLI command
+- first-class gating for policy/config governance actions
+- MetaGate receipts with `receiptType: "metagate_decision"`
+- MetaGate terminal formatter
+- audit compatibility for v1.1.0 receipts
+- MetaGate examples and docs
+- `check-config-change` integration with MetaGate
+
+### Why this matters
+
+AAG gates risky agent actions before execution. MetaGate gates attempts to weaken, disable, or modify the controls that govern AAG itself.
+
+This moves Agent Action Gate toward recursive governance infrastructure: oversight for the oversight layer.
 
 ## v1.0.0 - Locked Policy Mode
 
@@ -559,6 +620,7 @@ Policy Profiles: included
 CLI MVP: included
 CLI audit foundation: included
 Locked Policy Mode: included
+MetaGate: included
 GET /health: working
 POST /evaluate: working
 ```
@@ -577,8 +639,8 @@ It is a pre-execution control layer that evaluates proposed tool actions before 
 
 ## Roadmap
 
-- v1.1.0: MetaGate foundation for policy/config changes as gated actions
-- v1.x: Indirect prompt injection / untrusted-content boundary examples
+- future: receipt chains and cryptographic verification
+- future: indirect prompt injection / untrusted-content boundary examples
 
 ## Compliance Note
 

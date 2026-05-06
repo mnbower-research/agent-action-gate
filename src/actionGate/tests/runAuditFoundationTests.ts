@@ -10,6 +10,7 @@ import { createEffectiveAagConfig } from "../aagConfig";
 import { auditReceipts } from "../auditReceipts";
 import { evaluateAction } from "../evaluateAction";
 import { formatLockStatus } from "../formatLockStatus";
+import { evaluateMetaGateAction } from "../metaGate";
 import { checkGovernanceChange } from "../governanceWeakening";
 import { defaultPolicyProfile } from "../policyProfiles";
 import { sha256Stable } from "../stableHash";
@@ -19,6 +20,7 @@ import {
   createPolicyHash,
   writeEvaluationReceipt,
   writeGovernanceReceipt,
+  writeMetaGateReceipt,
 } from "../writeReceipt";
 
 const validHash = `sha256:${"a".repeat(64)}`;
@@ -189,7 +191,112 @@ runTest("locked disable AAG change returns block", () => {
   assert.equal(result.decision, "block");
 });
 
-runTest("written receipts include v1.0.0 audit metadata", () => {
+runTest("MetaGate allows benign metadata update", () => {
+  const decision = evaluateMetaGateAction({
+    actionType: "modify_config",
+    target: "aag.config.json",
+    beforeConfig: createLockedConfig(),
+    afterConfig: createBenignConfig(),
+  });
+
+  assert.equal(decision.decision, "allow");
+  assert.equal(decision.metaGate, true);
+});
+
+runTest("MetaGate blocks disable_gate when locked true", () => {
+  const decision = evaluateMetaGateAction({
+    actionType: "disable_gate",
+    target: "aag.config.json",
+    locked: true,
+  });
+
+  assert.equal(decision.decision, "block");
+  assert.ok(decision.detectorsTriggered.includes("disableGateWhileLocked"));
+});
+
+runTest("MetaGate blocks delete_receipt", () => {
+  const decision = evaluateMetaGateAction({
+    actionType: "delete_receipt",
+    target: ".aag/receipts/example.json",
+  });
+
+  assert.equal(decision.decision, "block");
+});
+
+runTest("MetaGate blocks disable_audit when locked true", () => {
+  const decision = evaluateMetaGateAction({
+    actionType: "disable_audit",
+    target: "aag.config.json",
+    locked: true,
+  });
+
+  assert.equal(decision.decision, "block");
+});
+
+runTest("MetaGate requires approval for unlock_policy when locked true", () => {
+  const decision = evaluateMetaGateAction({
+    actionType: "unlock_policy",
+    target: "aag.config.json",
+    locked: true,
+  });
+
+  assert.equal(decision.decision, "require_approval");
+});
+
+runTest("MetaGate requires approval for modify_policy with governance weakening", () => {
+  const decision = evaluateMetaGateAction({
+    actionType: "modify_policy",
+    target: "aag.config.json",
+    beforeConfig: createLockedConfig(),
+    afterConfig: createWeakenedConfig(),
+  });
+
+  assert.equal(decision.decision, "require_approval");
+  assert.ok(decision.detectorsTriggered.includes("governanceWeakening"));
+});
+
+runTest("MetaGate requires approval for change_default_decision to allow", () => {
+  const decision = evaluateMetaGateAction({
+    actionType: "change_default_decision",
+    target: "aag.config.json",
+    afterConfig: createWeakenedConfig(),
+  });
+
+  assert.equal(decision.decision, "require_approval");
+});
+
+runTest("MetaGate requires approval for broad allowlist", () => {
+  const decision = evaluateMetaGateAction({
+    actionType: "add_allowlist",
+    target: "*",
+    reason: "Allow all config changes.",
+  });
+
+  assert.equal(decision.decision, "require_approval");
+});
+
+runTest("MetaGate unknown governance action defaults to require_approval", () => {
+  const decision = evaluateMetaGateAction({
+    actionType: "replace_governance_layer",
+    target: "aag.config.json",
+  });
+
+  assert.equal(decision.decision, "require_approval");
+});
+
+runTest("check-config-change path still detects weakening through MetaGate", () => {
+  const decision = evaluateMetaGateAction({
+    actionType: "modify_config",
+    target: "aag.config.json",
+    beforeConfig: createLockedConfig(),
+    afterConfig: createWeakenedConfig(),
+  });
+
+  assert.equal(decision.decision, "require_approval");
+  assert.ok(decision.detectorsTriggered.includes("governanceWeakening"));
+});
+
+runTest("written receipts include v1.1.0 audit metadata", () => {
   const receiptsDir = createTempDir();
   const input = createActionInput();
   const result = evaluateAction(input, {
@@ -211,7 +318,7 @@ runTest("written receipts include v1.0.0 audit metadata", () => {
     unknown
   >;
 
-  assert.equal(receipt.receiptVersion, "1.0.0");
+  assert.equal(receipt.receiptVersion, "1.1.0");
   assert.equal(typeof receipt.createdAt, "string");
   assert.match(String(receipt.configHash), /^sha256:[a-f0-9]{64}$/);
   assert.match(String(receipt.policyHash), /^sha256:[a-f0-9]{64}$/);
@@ -248,7 +355,7 @@ runTest("governance receipt includes locked config metadata", () => {
   assert.match(String(receipt.nextConfigHash), /^sha256:[a-f0-9]{64}$/);
 });
 
-runTest("v1.0.0 governance receipts pass audit", () => {
+runTest("v1.1.0 governance receipts pass audit", () => {
   const receiptsDir = createTempDir();
   const previousConfig = createLockedConfig();
   const nextConfig = createEffectiveAagConfig({
@@ -280,6 +387,78 @@ runTest("audit accepts receiptVersion 1.0.0", () => {
   writeReceipt(receiptsDir, "valid-v1.json", {
     ...createValidReceipt(),
     receiptVersion: "1.0.0",
+  });
+
+  assert.equal(auditReceipts({ receiptsDir }).failed, 0);
+});
+
+runTest("audit accepts receiptVersion 0.9.0", () => {
+  const receiptsDir = createTempDir();
+  writeReceipt(receiptsDir, "valid-v0-9.json", {
+    ...createValidReceipt(),
+    receiptVersion: "0.9.0",
+  });
+
+  assert.equal(auditReceipts({ receiptsDir }).failed, 0);
+});
+
+runTest("MetaGate receipt includes required MetaGate fields", () => {
+  const receiptsDir = createTempDir();
+  const input = {
+    actionType: "disable_gate",
+    target: "aag.config.json",
+    locked: true,
+    requestedBy: "agent",
+    reason: "Disable oversight during deployment",
+  };
+  const decision = evaluateMetaGateAction(input);
+  const receiptPath = writeMetaGateReceipt({
+    command: "metagate",
+    input,
+    decision,
+    previousConfig: createLockedConfig(),
+    receiptDirectory: receiptsDir,
+  });
+  const receipt = JSON.parse(readFileSync(receiptPath, "utf8")) as Record<
+    string,
+    unknown
+  >;
+
+  assert.equal(receipt.receiptType, "metagate_decision");
+  assert.equal(receipt.metaGate, true);
+  assert.equal(receipt.actionType, "disable_gate");
+  assert.equal(receipt.target, "aag.config.json");
+  assert.equal(receipt.locked, true);
+  assert.equal(receipt.decision, "block");
+  assert.ok(Array.isArray(receipt.detectorsTriggered));
+  assert.ok(Array.isArray(receipt.reasons));
+});
+
+runTest("v1.1.0 MetaGate receipts pass audit", () => {
+  const receiptsDir = createTempDir();
+  const input = {
+    actionType: "disable_gate",
+    target: "aag.config.json",
+    locked: true,
+  };
+  const decision = evaluateMetaGateAction(input);
+
+  writeMetaGateReceipt({
+    command: "metagate",
+    input,
+    decision,
+    previousConfig: createLockedConfig(),
+    receiptDirectory: receiptsDir,
+  });
+
+  assert.equal(auditReceipts({ receiptsDir }).failed, 0);
+});
+
+runTest("audit accepts receiptVersion 1.1.0", () => {
+  const receiptsDir = createTempDir();
+  writeReceipt(receiptsDir, "valid-v1-1.json", {
+    ...createValidReceipt(),
+    receiptVersion: "1.1.0",
   });
 
   assert.equal(auditReceipts({ receiptsDir }).failed, 0);
@@ -381,12 +560,43 @@ function writeReceipt(
 
 function createValidReceipt(): Record<string, unknown> {
   return {
-    receiptVersion: "1.0.0",
+    receiptVersion: "1.1.0",
     createdAt: "2026-05-06T00:00:00.000Z",
     configHash: validHash,
     policyHash: validPolicyHash,
     decision: "allow",
   };
+}
+
+function createWeakenedConfig(): ReturnType<typeof createEffectiveAagConfig> {
+  return createEffectiveAagConfig({
+    config: {
+      locked: true,
+      lockReason: "Production safety policy active",
+      lockedAt: "2026-05-06T00:00:00.000Z",
+      lockedBy: "security-admin",
+      defaultDecision: "allow",
+      receipts: {
+        enabled: false,
+      },
+    },
+  });
+}
+
+function createBenignConfig(): ReturnType<typeof createEffectiveAagConfig> {
+  return createEffectiveAagConfig({
+    config: {
+      locked: true,
+      lockReason: "Production safety policy active for customer workflows",
+      lockedAt: "2026-05-06T00:00:00.000Z",
+      lockedBy: "security-admin",
+      defaultDecision: "require_approval",
+      receipts: {
+        enabled: true,
+      },
+      description: "Metadata-only update.",
+    },
+  });
 }
 
 function createLockedConfig(): ReturnType<typeof createEffectiveAagConfig> {

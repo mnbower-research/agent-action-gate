@@ -1,0 +1,6 @@
+{
+  "actionType": "unlock_policy",
+  "target": "aag.config.json",
+  "requestedBy": "agent",
+  "reason": "Attempting to change locked policy mode"
+}
