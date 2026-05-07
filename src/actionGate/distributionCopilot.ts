@@ -1,6 +1,13 @@
 import { appendFileSync, existsSync, mkdirSync, readFileSync, writeFileSync } from "node:fs";
 import path from "node:path";
 import { sha256Stable } from "./stableHash";
+import {
+  appendWorkflowAction,
+  createWorkflowActionId,
+  defaultWorkflowDirectory,
+  loadLatestWorkflowLedger,
+  writeWorkflowLedgerUpdate,
+} from "./workflowScopeLedger";
 
 export type DistributionDecision =
   | "allow"
@@ -23,6 +30,7 @@ export type DistributionInput = {
   sourceText: string;
   draft?: string;
   includeRepoLink?: boolean;
+  workflowId?: string;
 };
 
 export type DistributionReview = {
@@ -45,6 +53,7 @@ export type DistributionReview = {
   };
   sourceTextHash: string;
   draftHash?: string;
+  workflowId?: string;
   createdAt: string;
 };
 
@@ -157,6 +166,7 @@ export function reviewDistributionInput(
     reviewPacket,
     sourceTextHash,
     ...(draftHash ? { draftHash } : {}),
+    ...(input.workflowId ? { workflowId: input.workflowId } : {}),
     createdAt,
   };
 }
@@ -164,6 +174,7 @@ export function reviewDistributionInput(
 export function writeDistributionLogs(
   review: DistributionReview,
   logDirectory = path.join(".aag", "distribution"),
+  workflowDirectory = defaultWorkflowDirectory,
 ): DistributionLogPaths {
   mkdirSync(logDirectory, { recursive: true });
 
@@ -196,6 +207,10 @@ export function writeDistributionLogs(
     sourceTextHash: review.sourceTextHash,
     ...(review.draftHash ? { draftHash: review.draftHash } : {}),
   });
+
+  if (review.workflowId) {
+    attachDistributionReviewToWorkflow(review, workflowDirectory);
+  }
 
   return paths;
 }
@@ -274,6 +289,9 @@ export function normalizeDistributionInput(value: unknown): DistributionInput {
     ...(typeof record.draft === "string" ? { draft: record.draft } : {}),
     ...(typeof record.includeRepoLink === "boolean"
       ? { includeRepoLink: record.includeRepoLink }
+      : {}),
+    ...(typeof record.workflowId === "string" && record.workflowId.trim()
+      ? { workflowId: record.workflowId }
       : {}),
   };
 }
@@ -580,6 +598,23 @@ function proposedActionForGoal(goal: DistributionGoal): string {
   }
 }
 
+function workflowActionForGoal(goal: string): string {
+  switch (goal) {
+    case "comment":
+      return "draft_comment";
+    case "repost":
+      return "draft_repost";
+    case "dm":
+      return "draft_dm";
+    case "original_post":
+      return "draft_original_post";
+    case "save_for_later":
+      return "save_opportunity";
+    default:
+      return "distribution_review";
+  }
+}
+
 function riskLevelForDecision(
   decision: DistributionDecision,
   riskFlags: DistributionRiskFlag[],
@@ -666,6 +701,41 @@ function createWhatNotToReveal(riskFlags: DistributionRiskFlag[]): string[] {
 
 function appendJsonl(filePath: string, value: unknown): void {
   appendFileSync(filePath, `${JSON.stringify(value)}\n`, "utf8");
+}
+
+function attachDistributionReviewToWorkflow(
+  review: DistributionReview,
+  workflowDirectory: string,
+): void {
+  if (!review.workflowId) {
+    return;
+  }
+
+  const actionType = workflowActionForGoal(review.goal);
+  const ledger = loadLatestWorkflowLedger(review.workflowId, workflowDirectory);
+  const nextLedger = appendWorkflowAction({
+    ledger,
+    action: {
+      actionId: createWorkflowActionId({
+        workflowId: review.workflowId,
+        actionType,
+        target: review.platform,
+        summary: review.summary,
+      }),
+      workflowId: review.workflowId,
+      actionType,
+      target: `${review.platform}:${review.goal}`,
+      decision: review.decision,
+      receiptId: review.sourceTextHash,
+      riskFlags: review.riskFlags,
+      summary: review.summary,
+    },
+  });
+  const action = nextLedger.actions[nextLedger.actions.length - 1];
+
+  if (action) {
+    writeWorkflowLedgerUpdate(nextLedger, action, workflowDirectory);
+  }
 }
 
 function ensureJsonlFile(filePath: string): void {

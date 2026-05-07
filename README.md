@@ -2,9 +2,9 @@
 
 Agent Action Gate is a TypeScript pre-execution control layer for AI agents. It checks proposed tool actions before they run and returns a structured decision: `allow`, `require_approval`, `revise_action`, or `block`.
 
-**Current version:** v1.1.1
+**Current version:** v1.2.0
 
-**Status:** TypeScript compile passing, action-gate evals passing, high-impact recommendation evals passing, logging smoke test passing, Launch Copilot demo passing, Review Packets included, Policy Profiles included, CLI audit foundation included, Locked Policy Mode included, MetaGate included
+**Status:** TypeScript compile passing, action-gate evals passing, high-impact recommendation evals passing, logging smoke test passing, Launch Copilot demo passing, Review Packets included, Policy Profiles included, CLI audit foundation included, Locked Policy Mode included, MetaGate included, Workflow Scope Ledger included
 
 ▶️ Watch the v0.5.0 Launch Copilot demo: https://youtu.be/YpEOIQ_v15Q
 
@@ -66,6 +66,7 @@ See [CLI docs](docs/CLI.md).
 - [Integration Bypass](docs/INTEGRATION_BYPASS.md) - the failure mode where an AI agent closes an action loop before meaningful human review can occur.
 - [Article 14 Oversight](docs/ARTICLE_14_OVERSIGHT.md) - how Agent Action Gate can support Article 14-style human oversight without claiming to guarantee legal compliance.
 - [Policy Profiles](docs/POLICY_PROFILES.md) - workflow-specific approval, revision, and block rules for proposed AI-agent actions.
+- [Workflow Scope Ledger](docs/WORKFLOW_SCOPE_LEDGER.md) - local workflow/session scope tracking across multiple agent actions.
 - [CLI](docs/CLI.md) - run the gate locally before an agent acts.
 
 ## Audit Foundation
@@ -147,6 +148,18 @@ npx agent-action-gate metagate --action modify_policy --target aag.config.json -
 MetaGate builds on locked policy mode and governance receipts. It adds a recursive governance layer: oversight for the oversight controls. MetaGate receipts use `receiptType: "metagate_decision"` and include `metaGate: true`, action metadata, lock state, config hashes, detected controls, and reasons.
 
 This is not cryptographic signing, Sigstore, hosted governance, auth, or a database. It is a focused foundation for future receipt chains and cryptographic verification.
+
+## Workflow Scope Ledger
+
+AAG can track a workflow/session across multiple agent actions. This helps detect when a chain of individually allowed actions begins to drift outside the original intent or authorized scope.
+
+Run:
+
+```bash
+npx . workflow-start --intent "Distribute AAG safely" --allow "research public posts" --allow "draft comments" --deny "auto-post"
+```
+
+See [Workflow Scope Ledger docs](docs/WORKFLOW_SCOPE_LEDGER.md).
 
 ## Review Packets
 
@@ -563,6 +576,30 @@ Agent Action Gate runs heuristic detectors:
 | v1.0.0 | Locked Policy Mode | Detects risky locked governance changes and writes audit-compatible governance receipts |
 | v1.1.0 | MetaGate | Gates attempts to weaken, disable, or modify AAG governance controls |
 | v1.1.1 | High-Impact Recommendation Evals | Adds 20 incident-inspired recommendation-risk eval cases |
+| v1.2.0 | Workflow Scope Ledger | Tracks workflow/session scope across multi-action chains |
+
+## v1.2.0 - Workflow Scope Ledger
+
+This release adds workflow-level scope tracking for agentic action chains.
+
+### Added
+
+- Workflow Scope Ledger module
+- Workflow/session intent, allowed scope, and prohibited scope tracking
+- Action sequence entries
+- Scope warning and scope violation detection
+- Cumulative workflow risk
+- `aag workflow-start`
+- `aag workflow-add-action`
+- `aag workflow-status`
+- Distribution Copilot workflow attachment support
+- Workflow Scope Ledger docs and examples
+
+### Why this matters
+
+A single agent action can be allowed while the overall workflow drifts outside the original intent. The Workflow Scope Ledger begins tracking the chain: original intent, scoped authority, action sequence, decisions, risk flags, and whether the workflow remains in scope.
+
+This is the foundation for reconstructible decision chains in governed agentic workflows.
 
 ## v1.1.1 - High-Impact Recommendation Evals
 

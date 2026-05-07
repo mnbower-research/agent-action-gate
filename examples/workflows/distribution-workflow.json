@@ -1,0 +1,20 @@
+{
+  "originalIntent": "Distribute Agent Action Gate safely through relevant public conversations.",
+  "allowedScope": [
+    "research public AI governance posts",
+    "summarize relevance",
+    "draft comments",
+    "draft reposts",
+    "prepare review packets",
+    "log outcomes"
+  ],
+  "prohibitedScope": [
+    "auto-post",
+    "auto-DM",
+    "claim AAG prevented a specific incident",
+    "tag people aggressively",
+    "disable review",
+    "modify AAG policy"
+  ],
+  "createdBy": "michael"
+}

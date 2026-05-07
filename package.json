@@ -1,6 +1,6 @@
 {
   "name": "agent-action-gate",
-  "version": "1.1.1",
+  "version": "1.2.0",
   "description": "Pre-execution safety gate for AI agents.",
   "main": "dist/server.js",
   "bin": {
@@ -19,7 +19,7 @@
     "build": "tsc",
     "prepack": "npm run build",
     "dev": "tsx src/server.ts",
-    "test": "tsx src/actionGate/tests/runAuditFoundationTests.ts && tsx src/actionGate/tests/runDistributionCopilotTests.ts",
+    "test": "tsx src/actionGate/tests/runAuditFoundationTests.ts && tsx src/actionGate/tests/runDistributionCopilotTests.ts && tsx src/actionGate/tests/runWorkflowScopeLedgerTests.ts",
     "typecheck": "tsc --noEmit",
     "distribution:copilot": "tsx tools/distribution-copilot.ts",
     "eval:action-gate": "tsx src/actionGate/evals/runActionGateEvals.ts",

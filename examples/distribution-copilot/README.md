@@ -34,11 +34,14 @@ npm run distribution:copilot -- --input examples/distribution-copilot/inputs/inc
   "goal": "comment",
   "sourceText": "Paste the post, comment, or article text here.",
   "draft": "Optional rough draft response",
-  "includeRepoLink": false
+  "includeRepoLink": false,
+  "workflowId": "optional workflow ID from workflow-start"
 }
 ```
 
 Supported goals are `comment`, `repost`, `dm`, `original_post`, and `save_for_later`.
+
+When `workflowId` is present, the copilot appends its review as a Workflow Scope Ledger action. Start a workflow first with `npx . workflow-start ...`, then paste the real `wf_...` value into a local input file.
 
 ## Logs
 

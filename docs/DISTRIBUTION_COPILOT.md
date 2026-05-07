@@ -46,7 +46,8 @@ npx tsx tools/distribution-copilot.ts --input examples/distribution-copilot/inpu
   "goal": "comment",
   "sourceText": "The post/comment/article text goes here",
   "draft": "Optional rough draft response",
-  "includeRepoLink": false
+  "includeRepoLink": false,
+  "workflowId": "optional workflow ID from workflow-start"
 }
 ```
 
@@ -57,6 +58,8 @@ Supported goals:
 - `dm`
 - `original_post`
 - `save_for_later`
+
+If `workflowId` is provided, the copilot appends the review decision to the Workflow Scope Ledger as a local action entry. Use a real `wf_...` value created by `npx . workflow-start`.
 
 ## Decisions
 

@@ -201,6 +201,28 @@ Receipt written: .aag/receipts/...
 
 MetaGate builds on locked policy mode and governance receipts. It is a recursive governance layer: oversight for oversight controls. It does not implement cryptographic signing, Sigstore, hosted governance, auth, or a database.
 
+## Workflow Scope Ledger
+
+Start a local workflow ledger:
+
+```bash
+npx . workflow-start --intent "Distribute AAG safely" --allow "research public posts" --allow "draft comments" --allow "prepare review packets" --deny "auto-post" --deny "auto-DM" --deny "claim incident prevention"
+```
+
+Add an action to the workflow:
+
+```bash
+npx . workflow-add-action --workflow wf_example --action draft_comment --decision allow --summary "Drafted LinkedIn comment"
+```
+
+Check status:
+
+```bash
+npx . workflow-status --workflow wf_example
+```
+
+Workflow ledgers are local JSONL records under `.aag/workflows/`. The ledger tracks original intent, allowed scope, prohibited scope, action sequence, scope warnings, scope violations, and cumulative risk. It does not implement cryptographic signing or a database.
+
 ## High-Impact Recommendation Evals
 
 ```bash

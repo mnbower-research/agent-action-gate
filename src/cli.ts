@@ -26,7 +26,7 @@ import {
   defaultPolicyProfile,
   getPolicyProfileById,
 } from "./actionGate/policyProfiles";
-import type { ActionGateInput } from "./actionGate/types";
+import type { ActionGateInput, GateDecision } from "./actionGate/types";
 import {
   createConfigHash,
   createPolicyHash,
@@ -35,8 +35,19 @@ import {
   writeEvaluationReceipt,
   writeMetaGateReceipt,
 } from "./actionGate/writeReceipt";
+import {
+  appendWorkflowAction,
+  createWorkflowActionId,
+  createWorkflowScope,
+  formatWorkflowAddActionReport,
+  formatWorkflowStartReport,
+  formatWorkflowStatusReport,
+  loadLatestWorkflowLedger,
+  writeWorkflowLedger,
+  writeWorkflowLedgerUpdate,
+} from "./actionGate/workflowScopeLedger";
 
-const cliVersion = "1.1.1";
+const cliVersion = "1.2.0";
 
 type CliActionFile = {
   id?: string;
@@ -99,6 +110,18 @@ function main(args: string[]): number {
 
     if (args[0] === "metagate") {
       return runMetaGateCommand(args.slice(1));
+    }
+
+    if (args[0] === "workflow-start") {
+      return runWorkflowStartCommand(args.slice(1));
+    }
+
+    if (args[0] === "workflow-add-action") {
+      return runWorkflowAddActionCommand(args.slice(1));
+    }
+
+    if (args[0] === "workflow-status") {
+      return runWorkflowStatusCommand(args.slice(1));
     }
 
     printError(`Unknown command: ${args[0]}`);
@@ -269,6 +292,65 @@ function runMetaGateCommand(args: string[]): number {
   );
 
   return decision.decision === "block" ? 1 : 0;
+}
+
+function runWorkflowStartCommand(args: string[]): number {
+  const options = parseWorkflowStartArgs(args);
+  const ledger = createWorkflowScope({
+    originalIntent: options.intent,
+    allowedScope: options.allowedScope,
+    prohibitedScope: options.prohibitedScope,
+    ...(options.createdBy ? { createdBy: options.createdBy } : {}),
+  });
+  const paths = writeWorkflowLedger(ledger);
+
+  console.log(formatWorkflowStartReport(ledger, paths.ledgers));
+
+  return 0;
+}
+
+function runWorkflowAddActionCommand(args: string[]): number {
+  const options = parseWorkflowAddActionArgs(args);
+  const ledger = loadLatestWorkflowLedger(options.workflowId);
+  const actionId = createWorkflowActionId({
+    workflowId: options.workflowId,
+    actionType: options.actionType,
+    target: options.target,
+    summary: options.summary,
+  });
+  const nextLedger = appendWorkflowAction({
+    ledger,
+    action: {
+      actionId,
+      workflowId: options.workflowId,
+      actionType: options.actionType,
+      ...(options.target ? { target: options.target } : {}),
+      decision: options.decision,
+      ...(options.receiptId ? { receiptId: options.receiptId } : {}),
+      ...(options.riskFlags.length > 0 ? { riskFlags: options.riskFlags } : {}),
+      ...(options.summary ? { summary: options.summary } : {}),
+    },
+  });
+  const action = nextLedger.actions[nextLedger.actions.length - 1];
+
+  if (!action) {
+    throw new Error("Unable to append workflow action.");
+  }
+
+  writeWorkflowLedgerUpdate(nextLedger, action);
+
+  console.log(formatWorkflowAddActionReport(nextLedger, action));
+
+  return 0;
+}
+
+function runWorkflowStatusCommand(args: string[]): number {
+  const options = parseWorkflowStatusArgs(args);
+  const ledger = loadLatestWorkflowLedger(options.workflowId);
+
+  console.log(formatWorkflowStatusReport(ledger));
+
+  return 0;
 }
 
 function parseEvaluateArgs(args: string[]): {
@@ -472,6 +554,171 @@ function parseMetaGateArgs(args: string[]): {
     reason,
     writeReceipt,
   };
+}
+
+function parseWorkflowStartArgs(args: string[]): {
+  intent: string;
+  allowedScope: string[];
+  prohibitedScope: string[];
+  createdBy?: string;
+} {
+  let intent: string | undefined;
+  let createdBy: string | undefined;
+  const allowedScope: string[] = [];
+  const prohibitedScope: string[] = [];
+  let index = 0;
+
+  while (index < args.length) {
+    const arg = args[index];
+    const value = args[index + 1];
+
+    if (arg === "--intent") {
+      intent = requireArgValue(arg, value);
+      index += 2;
+      continue;
+    }
+
+    if (arg === "--allow") {
+      allowedScope.push(requireArgValue(arg, value));
+      index += 2;
+      continue;
+    }
+
+    if (arg === "--deny") {
+      prohibitedScope.push(requireArgValue(arg, value));
+      index += 2;
+      continue;
+    }
+
+    if (arg === "--created-by") {
+      createdBy = requireArgValue(arg, value);
+      index += 2;
+      continue;
+    }
+
+    throw new Error(
+      'Invalid arguments. Use: agent-action-gate workflow-start --intent "<intent>" --allow "<scope>" [--allow "<scope>"] [--deny "<scope>"]',
+    );
+  }
+
+  if (!intent) {
+    throw new Error("Missing --intent.");
+  }
+
+  if (allowedScope.length === 0) {
+    throw new Error("At least one --allow value is required.");
+  }
+
+  return {
+    intent,
+    allowedScope,
+    prohibitedScope,
+    createdBy,
+  };
+}
+
+function parseWorkflowAddActionArgs(args: string[]): {
+  workflowId: string;
+  actionType: string;
+  target?: string;
+  decision: GateDecision;
+  receiptId?: string;
+  riskFlags: string[];
+  summary?: string;
+} {
+  let workflowId: string | undefined;
+  let actionType: string | undefined;
+  let target: string | undefined;
+  let decision: GateDecision | undefined;
+  let receiptId: string | undefined;
+  let summary: string | undefined;
+  const riskFlags: string[] = [];
+  let index = 0;
+
+  while (index < args.length) {
+    const arg = args[index];
+    const value = args[index + 1];
+
+    if (arg === "--workflow") {
+      workflowId = requireArgValue(arg, value);
+      index += 2;
+      continue;
+    }
+
+    if (arg === "--action") {
+      actionType = requireArgValue(arg, value);
+      index += 2;
+      continue;
+    }
+
+    if (arg === "--target") {
+      target = requireArgValue(arg, value);
+      index += 2;
+      continue;
+    }
+
+    if (arg === "--decision") {
+      const parsedDecision = requireArgValue(arg, value);
+
+      if (!isGateDecision(parsedDecision)) {
+        throw new Error("Invalid --decision. Use allow, require_approval, revise_action, or block.");
+      }
+
+      decision = parsedDecision;
+      index += 2;
+      continue;
+    }
+
+    if (arg === "--receipt") {
+      receiptId = requireArgValue(arg, value);
+      index += 2;
+      continue;
+    }
+
+    if (arg === "--risk") {
+      riskFlags.push(requireArgValue(arg, value));
+      index += 2;
+      continue;
+    }
+
+    if (arg === "--summary") {
+      summary = requireArgValue(arg, value);
+      index += 2;
+      continue;
+    }
+
+    throw new Error(
+      "Invalid arguments. Use: agent-action-gate workflow-add-action --workflow <workflowId> --action <actionType> --decision <decision> [--target <target>] [--receipt <receiptId>] [--risk <riskFlag>] [--summary <summary>]",
+    );
+  }
+
+  if (!workflowId || !actionType || !decision) {
+    throw new Error("Missing --workflow, --action, or --decision.");
+  }
+
+  return {
+    workflowId,
+    actionType,
+    target,
+    decision,
+    receiptId,
+    riskFlags,
+    summary,
+  };
+}
+
+function parseWorkflowStatusArgs(args: string[]): {
+  workflowId: string;
+} {
+  if (args.length === 2 && args[0] === "--workflow" && args[1]) {
+    return {
+      workflowId: args[1],
+    };
+  }
+
+  throw new Error(
+    "Invalid arguments. Use: agent-action-gate workflow-status --workflow <workflowId>",
+  );
 }
 
 function toGovernanceCheckResult(
@@ -701,6 +948,23 @@ function isActionGateInput(value: unknown): value is ActionGateInput {
   );
 }
 
+function requireArgValue(flag: string, value: string | undefined): string {
+  if (!value || value.startsWith("--")) {
+    throw new Error(`Missing value for ${flag}.`);
+  }
+
+  return value;
+}
+
+function isGateDecision(value: string): value is GateDecision {
+  return (
+    value === "allow" ||
+    value === "require_approval" ||
+    value === "revise_action" ||
+    value === "block"
+  );
+}
+
 function isCliActionFile(value: unknown): value is CliActionFile {
   return (
     isRecord(value) &&
@@ -732,6 +996,9 @@ Usage:
   agent-action-gate lock-status [--config <config.json>]
   agent-action-gate check-config-change --before <before.json> --after <after.json> [--write-receipt]
   agent-action-gate metagate --action <actionType> --target <target> [--before <before.json>] [--after <after.json>] [--requested-by <name>] [--reason <text>] [--write-receipt]
+  agent-action-gate workflow-start --intent <intent> --allow <scope> [--allow <scope>] [--deny <scope>]
+  agent-action-gate workflow-add-action --workflow <workflowId> --action <actionType> --decision <decision> [--target <target>] [--receipt <receiptId>] [--risk <riskFlag>] [--summary <summary>]
+  agent-action-gate workflow-status --workflow <workflowId>
   agent-action-gate help
 
 Examples:
@@ -741,6 +1008,9 @@ Examples:
   npx agent-action-gate lock-status
   npx agent-action-gate check-config-change --before examples/config/locked-before.json --after examples/config/weakened-after.json --write-receipt
   npx agent-action-gate metagate --action disable_gate --target aag.config.json --write-receipt
+  npx agent-action-gate workflow-start --intent "Distribute AAG safely" --allow "research public posts" --allow "draft comments" --deny "auto-post"
+  npx agent-action-gate workflow-add-action --workflow wf_example --action draft_comment --decision allow --summary "Drafted LinkedIn comment"
+  npx agent-action-gate workflow-status --workflow wf_example
 
 Profiles:
 ${builtInPolicyProfiles.map((profile) => `  ${profile.id}`).join("\n")}`);
