@@ -203,6 +203,16 @@ Run it with:
 npx tsx examples/launch-copilot/run-demo.ts
 ```
 
+## Dogfooding: Distribution Copilot
+
+AAG includes a local [Distribution Copilot example](examples/distribution-copilot/README.md) that helps review marketing and comment opportunities before posting. It scores relevance, drafts safer responses, flags overclaim risk, writes review receipts, and keeps human approval in the loop.
+
+Run it with:
+
+```bash
+npm run distribution:copilot -- --input examples/distribution-copilot/inputs/ai-governance-post.json
+```
+
 ## Quick demo
 
 The defensive n8n demo shows Agent Action Gate reviewing a terminal-like action that targets an external subnet outside the authorized target scope. The expected gate result is:

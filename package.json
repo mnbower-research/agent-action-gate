@@ -19,8 +19,9 @@
     "build": "tsc",
     "prepack": "npm run build",
     "dev": "tsx src/server.ts",
-    "test": "tsx src/actionGate/tests/runAuditFoundationTests.ts",
+    "test": "tsx src/actionGate/tests/runAuditFoundationTests.ts && tsx src/actionGate/tests/runDistributionCopilotTests.ts",
     "typecheck": "tsc --noEmit",
+    "distribution:copilot": "tsx tools/distribution-copilot.ts",
     "eval:action-gate": "tsx src/actionGate/evals/runActionGateEvals.ts",
     "eval:high-impact": "tsx evals/high-impact-recommendation.test.ts",
     "test:logging": "tsx src/actionGate/logging/smokeTestDecisionLogger.ts"

@@ -1,0 +1,7 @@
+{
+  "platform": "linkedin",
+  "goal": "repost",
+  "sourceText": "A public postmortem about the CrowdStrike outage argues that automation, approvals, runtime controls, audit logs, and human oversight need to be designed into deployment workflows before incidents happen.",
+  "draft": "This is exactly why agentic workflow governance matters. AAG gates risky actions before execution and records receipts for audit review.",
+  "includeRepoLink": true
+}
