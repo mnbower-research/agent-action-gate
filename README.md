@@ -226,6 +226,16 @@ Run it with:
 npm run distribution:copilot -- --input examples/distribution-copilot/inputs/ai-governance-post.json
 ```
 
+## Local Dashboard
+
+AAG includes a local [Distribution Copilot dashboard](docs/DASHBOARD.md) for viewing opportunities, approvals, receipts, workflow ledgers, and local human review state. It does not post, DM, scrape, schedule, call social APIs, or use an LLM.
+
+Run it with:
+
+```bash
+npm run dashboard
+```
+
 ## Quick demo
 
 The defensive n8n demo shows Agent Action Gate reviewing a terminal-like action that targets an external subnet outside the authorized target scope. The expected gate result is:
