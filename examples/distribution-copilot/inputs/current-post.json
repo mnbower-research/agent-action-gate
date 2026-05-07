@@ -1,0 +1,7 @@
+{
+  "platform": "linkedin",
+  "goal": "comment",
+  "sourceText": "AI governance is moving from static policy documents into live workflows. As companies deploy more AI agents, the real challenge is making sure these systems do not just generate answers, but operate with oversight, accountability, and controls at the point of action. The next phase of AI governance will be about runtime controls, auditability, and human approval paths inside agentic workflows.",
+  "draft": "This is exactly why I’m building Agent Action Gate. AAG is a pre-execution oversight layer for AI agents that helps teams catch risky agent actions before they happen.",
+  "includeRepoLink": false
+}
