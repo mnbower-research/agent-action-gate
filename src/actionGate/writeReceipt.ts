@@ -10,6 +10,7 @@ import { actionGateDetectors } from "./evaluateAction";
 import type { GovernanceCheckResult } from "./governanceWeakening";
 import type { MetaGateDecision, MetaGateInput } from "./metaGate";
 import { defaultPolicyProfile, getPolicyProfileById } from "./policyProfiles";
+import { attachHashChainMetadata } from "./receiptHashChain";
 import { sha256Stable } from "./stableHash";
 import type {
   ActionGateInput,
@@ -255,7 +256,20 @@ function writeJsonReceipt(
   mkdirSync(receiptDirectory, { recursive: true });
 
   const receiptPath = path.join(receiptDirectory, filename);
-  writeFileSync(receiptPath, `${JSON.stringify(receipt, null, 2)}\n`, "utf8");
+  const chainedReceipt = attachHashChainMetadata(receipt, {
+    receiptsDir: receiptDirectory,
+    source:
+      receiptDirectory === defaultReceiptDirectory ||
+      path.resolve(receiptDirectory) === path.resolve(defaultReceiptDirectory)
+        ? "all"
+        : "receipts",
+  });
+
+  writeFileSync(
+    receiptPath,
+    `${JSON.stringify(chainedReceipt, null, 2)}\n`,
+    "utf8",
+  );
 
   return receiptPath;
 }

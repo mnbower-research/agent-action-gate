@@ -1,5 +1,6 @@
 import { appendFileSync, existsSync, mkdirSync, readFileSync, writeFileSync } from "node:fs";
 import path from "node:path";
+import { attachHashChainMetadata } from "./receiptHashChain";
 import { sha256Stable } from "./stableHash";
 import {
   appendWorkflowAction,
@@ -186,7 +187,17 @@ export function writeDistributionLogs(
   };
 
   ensureJsonlFile(paths.outcomes);
-  appendJsonl(paths.receipts, review);
+  appendJsonl(
+    paths.receipts,
+    attachHashChainMetadata(review, {
+      distributionReceiptsPath: paths.receipts,
+      source:
+        logDirectory === path.join(".aag", "distribution") ||
+        path.resolve(logDirectory) === path.resolve(".aag", "distribution")
+          ? "all"
+          : "distribution",
+    }),
+  );
   appendJsonl(paths.opportunities, {
     createdAt: review.createdAt,
     platform: review.platform,

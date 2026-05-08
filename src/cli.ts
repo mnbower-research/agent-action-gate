@@ -26,6 +26,11 @@ import {
   defaultPolicyProfile,
   getPolicyProfileById,
 } from "./actionGate/policyProfiles";
+import {
+  formatReceiptHashChainVerification,
+  verifyReceiptHashChain,
+  type ReceiptChainSource,
+} from "./actionGate/receiptHashChain";
 import type { ActionGateInput, GateDecision } from "./actionGate/types";
 import {
   createConfigHash,
@@ -47,7 +52,7 @@ import {
   writeWorkflowLedgerUpdate,
 } from "./actionGate/workflowScopeLedger";
 
-const cliVersion = "1.2.0";
+const cliVersion = "1.3.0";
 
 type CliActionFile = {
   id?: string;
@@ -98,6 +103,10 @@ function main(args: string[]): number {
 
     if (args[0] === "audit") {
       return runAuditCommand(args.slice(1));
+    }
+
+    if (args[0] === "verify-receipts") {
+      return runVerifyReceiptsCommand(args.slice(1));
     }
 
     if (args[0] === "lock-status") {
@@ -201,6 +210,21 @@ function runAuditCommand(args: string[]): number {
   console.log(formatAuditReport(result));
 
   return result.failed === 0 ? 0 : 1;
+}
+
+function runVerifyReceiptsCommand(args: string[]): number {
+  const options = parseVerifyReceiptsArgs(args);
+  const result = verifyReceiptHashChain({
+    source: options.source,
+  });
+
+  console.log(
+    options.json
+      ? JSON.stringify(result, null, 2)
+      : formatReceiptHashChainVerification(result),
+  );
+
+  return result.valid ? 0 : 1;
 }
 
 function runLockStatusCommand(args: string[]): number {
@@ -408,6 +432,50 @@ function parseAuditArgs(args: string[]): {
   throw new Error(
     "Invalid arguments. Use: agent-action-gate audit [--receipts-dir <dir>]",
   );
+}
+
+function parseVerifyReceiptsArgs(args: string[]): {
+  json: boolean;
+  source: ReceiptChainSource;
+} {
+  let json = false;
+  let source: ReceiptChainSource = "all";
+  let index = 0;
+
+  while (index < args.length) {
+    const arg = args[index];
+
+    if (arg === "--json") {
+      json = true;
+      index += 1;
+      continue;
+    }
+
+    if (arg === "--source") {
+      const value = args[index + 1];
+
+      if (
+        value !== "receipts" &&
+        value !== "distribution" &&
+        value !== "all"
+      ) {
+        throw new Error("Invalid --source. Use receipts, distribution, or all.");
+      }
+
+      source = value;
+      index += 2;
+      continue;
+    }
+
+    throw new Error(
+      "Invalid arguments. Use: agent-action-gate verify-receipts [--json] [--source receipts|distribution|all]",
+    );
+  }
+
+  return {
+    json,
+    source,
+  };
 }
 
 function parseLockStatusArgs(args: string[]): {
@@ -993,6 +1061,7 @@ Usage:
   agent-action-gate demo
   agent-action-gate evaluate <action.json> [--profile <profileId>] [--write-receipt]
   agent-action-gate audit [--receipts-dir <dir>]
+  agent-action-gate verify-receipts [--json] [--source receipts|distribution|all]
   agent-action-gate lock-status [--config <config.json>]
   agent-action-gate check-config-change --before <before.json> --after <after.json> [--write-receipt]
   agent-action-gate metagate --action <actionType> --target <target> [--before <before.json>] [--after <after.json>] [--requested-by <name>] [--reason <text>] [--write-receipt]
@@ -1005,6 +1074,7 @@ Examples:
   npx agent-action-gate demo
   npx agent-action-gate evaluate examples/actions/send-email.json --profile strict-external-actions
   npx agent-action-gate audit
+  npx agent-action-gate verify-receipts
   npx agent-action-gate lock-status
   npx agent-action-gate check-config-change --before examples/config/locked-before.json --after examples/config/weakened-after.json --write-receipt
   npx agent-action-gate metagate --action disable_gate --target aag.config.json --write-receipt

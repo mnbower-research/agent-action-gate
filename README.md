@@ -2,9 +2,9 @@
 
 Agent Action Gate is a TypeScript pre-execution control layer for AI agents. It checks proposed tool actions before they run and returns a structured decision: `allow`, `require_approval`, `revise_action`, or `block`.
 
-**Current version:** v1.2.0
+**Current version:** v1.3.0
 
-**Status:** TypeScript compile passing, action-gate evals passing, high-impact recommendation evals passing, logging smoke test passing, Launch Copilot demo passing, Review Packets included, Policy Profiles included, CLI audit foundation included, Locked Policy Mode included, MetaGate included, Workflow Scope Ledger included
+**Status:** TypeScript compile passing, action-gate evals passing, high-impact recommendation evals passing, logging smoke test passing, Launch Copilot demo passing, Review Packets included, Policy Profiles included, CLI audit foundation included, Locked Policy Mode included, MetaGate included, Workflow Scope Ledger included, Receipt Hash Chain included
 
 ▶️ Watch the v0.5.0 Launch Copilot demo: https://youtu.be/YpEOIQ_v15Q
 
@@ -55,7 +55,7 @@ Run MetaGate:
 npx agent-action-gate metagate --action disable_gate --target aag.config.json --write-receipt
 ```
 
-v1.1.0 adds MetaGate: a gate for the gate itself. AAG gates risky agent actions. MetaGate gates attempts to weaken, disable, or modify the policy/config controls that govern AAG. MetaGate receipts remain audit-compatible and prepare the project for future receipt chains and cryptographic verification; no signing is implemented yet.
+v1.1.0 adds MetaGate: a gate for the gate itself. AAG gates risky agent actions. MetaGate gates attempts to weaken, disable, or modify the policy/config controls that govern AAG. MetaGate receipts remain audit-compatible and prepare the project for signed receipts and cryptographic verification; no signing is implemented yet.
 
 AAG also includes high-impact recommendation evals for cases where an agent's technical guidance could influence risky downstream human action. These evals are incident-inspired and are not a claim about any specific company incident.
 
@@ -67,6 +67,7 @@ See [CLI docs](docs/CLI.md).
 - [Article 14 Oversight](docs/ARTICLE_14_OVERSIGHT.md) - how Agent Action Gate can support Article 14-style human oversight without claiming to guarantee legal compliance.
 - [Policy Profiles](docs/POLICY_PROFILES.md) - workflow-specific approval, revision, and block rules for proposed AI-agent actions.
 - [Workflow Scope Ledger](docs/WORKFLOW_SCOPE_LEDGER.md) - local workflow/session scope tracking across multiple agent actions.
+- [Receipt Hash Chain](docs/RECEIPT_HASH_CHAIN.md) - local tamper-evident receipt-chain verification.
 - [CLI](docs/CLI.md) - run the gate locally before an agent acts.
 
 ## Audit Foundation
@@ -87,7 +88,25 @@ Run:
 npx agent-action-gate audit
 ```
 
-The audit command scans `.aag/receipts/`, verifies required audit metadata, detects malformed SHA-256 hashes and timestamps, reports invalid JSON receipt files, and exits non-zero when any receipt fails. This provides basic receipt verification and audit metadata for future locked policies, MetaGate, and tamper-evident receipt chains. It does not claim cryptographic signing.
+The audit command scans `.aag/receipts/`, verifies required audit metadata, detects malformed SHA-256 hashes and timestamps, reports invalid JSON receipt files, and exits non-zero when any receipt fails. This provides basic receipt metadata verification for locked policies, MetaGate, and tamper-evident receipt chains. It does not claim cryptographic signing.
+
+## Receipt Hash Chain
+
+v1.3.0 adds tamper-evident local receipt chains. Each new receipt includes a SHA-256 hash and a pointer to the previous chained receipt hash. This allows AAG to verify whether the local receipt history has been silently altered.
+
+Run:
+
+```bash
+npx agent-action-gate verify-receipts
+```
+
+or locally:
+
+```bash
+npx . verify-receipts
+```
+
+`audit` checks receipt metadata. `verify-receipts` checks receipt-chain integrity. Legacy receipts are reported but do not fail verification.
 
 ## Locked Policy Mode
 
@@ -147,7 +166,7 @@ npx agent-action-gate metagate --action modify_policy --target aag.config.json -
 
 MetaGate builds on locked policy mode and governance receipts. It adds a recursive governance layer: oversight for the oversight controls. MetaGate receipts use `receiptType: "metagate_decision"` and include `metaGate: true`, action metadata, lock state, config hashes, detected controls, and reasons.
 
-This is not cryptographic signing, Sigstore, hosted governance, auth, or a database. It is a focused foundation for future receipt chains and cryptographic verification.
+This is not cryptographic signing, Sigstore, hosted governance, auth, or a database. It is a focused foundation for signed receipts and stronger cryptographic verification.
 
 ## Workflow Scope Ledger
 
@@ -587,6 +606,28 @@ Agent Action Gate runs heuristic detectors:
 | v1.1.0 | MetaGate | Gates attempts to weaken, disable, or modify AAG governance controls |
 | v1.1.1 | High-Impact Recommendation Evals | Adds 20 incident-inspired recommendation-risk eval cases |
 | v1.2.0 | Workflow Scope Ledger | Tracks workflow/session scope across multi-action chains |
+| v1.3.0 | Receipt Hash Chain | New receipts include hash-chain metadata and local verification detects tampering |
+
+## v1.3.0 - Receipt Hash Chain
+
+This release adds local tamper-evident receipt chaining.
+
+### Added
+
+- Receipt Hash Chain module
+- SHA-256 receipt hashing
+- `previousReceiptHash` linkage
+- canonical payload hashing
+- local receipt-chain verification
+- `aag verify-receipts`
+- JSON and JSONL receipt verification
+- Receipt Hash Chain docs and tests
+
+### Why this matters
+
+AAG already writes local decision receipts. v1.3.0 chains each new receipt to the previous receipt hash so local verification can detect silent alteration of chained receipt history.
+
+This is not signing, blockchain, hosted verification, or external notarization.
 
 ## v1.2.0 - Workflow Scope Ledger
 
@@ -718,7 +759,7 @@ It is a pre-execution control layer that evaluates proposed tool actions before 
 
 ## Roadmap
 
-- future: receipt chains and cryptographic verification
+- future: signed receipts and cryptographic verification
 - future: indirect prompt injection / untrusted-content boundary examples
 
 ## Compliance Note
