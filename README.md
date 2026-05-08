@@ -2,9 +2,9 @@
 
 Agent Action Gate is a TypeScript pre-execution control layer for AI agents. It checks proposed tool actions before they run and returns a structured decision: `allow`, `require_approval`, `revise_action`, or `block`.
 
-**Current version:** v1.3.0
+**Current version:** v1.4.0
 
-**Status:** TypeScript compile passing, action-gate evals passing, high-impact recommendation evals passing, logging smoke test passing, Launch Copilot demo passing, Review Packets included, Policy Profiles included, CLI audit foundation included, Locked Policy Mode included, MetaGate included, Workflow Scope Ledger included, Receipt Hash Chain included
+**Status:** TypeScript compile passing, action-gate evals passing, high-impact recommendation evals passing, logging smoke test passing, Launch Copilot demo passing, Review Packets included, Policy Profiles included, CLI audit foundation included, Locked Policy Mode included, MetaGate included, Workflow Scope Ledger included, Receipt Hash Chain included, Policy Provenance included
 
 ▶️ Watch the v0.5.0 Launch Copilot demo: https://youtu.be/YpEOIQ_v15Q
 
@@ -68,6 +68,7 @@ See [CLI docs](docs/CLI.md).
 - [Policy Profiles](docs/POLICY_PROFILES.md) - workflow-specific approval, revision, and block rules for proposed AI-agent actions.
 - [Workflow Scope Ledger](docs/WORKFLOW_SCOPE_LEDGER.md) - local workflow/session scope tracking across multiple agent actions.
 - [Receipt Hash Chain](docs/RECEIPT_HASH_CHAIN.md) - local tamper-evident receipt-chain verification.
+- [Policy Provenance](docs/POLICY_PROVENANCE.md) - local policy context preserved in receipts.
 - [CLI](docs/CLI.md) - run the gate locally before an agent acts.
 
 ## Audit Foundation
@@ -107,6 +108,26 @@ npx . verify-receipts
 ```
 
 `audit` checks receipt metadata. `verify-receipts` checks receipt-chain integrity. Legacy receipts are reported but do not fail verification.
+
+## Policy Provenance
+
+v1.4.0 adds policy provenance to new AAG receipts. Each new receipt can now preserve the policy source, policy version, policy hash, policy snapshot hash, matched rules, and decision basis that governed the action at decision time.
+
+This strengthens the receipt trail by preserving not only evidence integrity, but policy context.
+
+Run:
+
+```bash
+npx agent-action-gate policy-provenance
+```
+
+or locally:
+
+```bash
+npx . policy-provenance
+```
+
+`audit` checks receipt metadata. `verify-receipts` checks receipt-chain integrity. `policy-provenance` checks policy context coverage and validity. Legacy receipts are reported but do not fail verification.
 
 ## Locked Policy Mode
 
@@ -607,6 +628,28 @@ Agent Action Gate runs heuristic detectors:
 | v1.1.1 | High-Impact Recommendation Evals | Adds 20 incident-inspired recommendation-risk eval cases |
 | v1.2.0 | Workflow Scope Ledger | Tracks workflow/session scope across multi-action chains |
 | v1.3.0 | Receipt Hash Chain | New receipts include hash-chain metadata and local verification detects tampering |
+| v1.4.0 | Policy Provenance | New receipts preserve policy source, snapshot hash, matched rules, and decision basis |
+
+## v1.4.0 - Policy Provenance
+
+This release adds policy context provenance to new receipts.
+
+### Added
+
+- Policy Provenance module
+- `policyProvenance` metadata on new receipts
+- policy source classification
+- policy snapshot hashing
+- decision basis capture
+- profile, MetaGate, and Distribution Copilot provenance support
+- `aag policy-provenance`
+- Policy Provenance docs and tests
+
+### Why this matters
+
+v1.3.0 made receipt trails tamper-evident. v1.4.0 preserves which policy context governed the decision when the receipt was created. This helps future reviewers understand not just that a decision happened, but what policy meaning governed it at the time.
+
+This is not approval authority mapping, multi-gate routing, signing, hosted verification, or external notarization.
 
 ## v1.3.0 - Receipt Hash Chain
 
@@ -741,6 +784,8 @@ CLI MVP: included
 CLI audit foundation: included
 Locked Policy Mode: included
 MetaGate: included
+Receipt Hash Chain: included
+Policy Provenance: included
 GET /health: working
 POST /evaluate: working
 ```
@@ -759,8 +804,13 @@ It is a pre-execution control layer that evaluates proposed tool actions before 
 
 ## Roadmap
 
-- future: signed receipts and cryptographic verification
-- future: indirect prompt injection / untrusted-content boundary examples
+Next:
+
+- v1.5.0 Approval Authority Map
+- v1.6.0 Multi-Gate Registry
+- v1.7.0 Local Approval Dashboard
+- v1.8.0 Incident Reconstruction Reports
+- v2.0.0 Signed Receipts / Cryptographic Trust
 
 ## Compliance Note
 

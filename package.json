@@ -1,6 +1,6 @@
 {
   "name": "agent-action-gate",
-  "version": "1.3.0",
+  "version": "1.4.0",
   "description": "Pre-execution safety gate for AI agents.",
   "main": "dist/server.js",
   "bin": {
@@ -21,8 +21,9 @@
     "dev": "tsx src/server.ts",
     "dashboard": "tsx src/dashboard/server.ts",
     "dashboard:dev": "tsx src/dashboard/server.ts",
-    "test": "tsx src/actionGate/tests/runAuditFoundationTests.ts && tsx src/actionGate/tests/runDistributionCopilotTests.ts && tsx src/actionGate/tests/runWorkflowScopeLedgerTests.ts && tsx src/actionGate/tests/runReceiptHashChainTests.ts && tsx src/dashboard/tests/runDashboardTests.ts",
+    "test": "tsx src/actionGate/tests/runAuditFoundationTests.ts && tsx src/actionGate/tests/runDistributionCopilotTests.ts && tsx src/actionGate/tests/runWorkflowScopeLedgerTests.ts && tsx src/actionGate/tests/runReceiptHashChainTests.ts && tsx src/actionGate/tests/runPolicyProvenanceTests.ts && tsx src/dashboard/tests/runDashboardTests.ts",
     "test:receipt-chain": "tsx src/actionGate/tests/runReceiptHashChainTests.ts",
+    "test:policy-provenance": "tsx src/actionGate/tests/runPolicyProvenanceTests.ts",
     "typecheck": "tsc --noEmit",
     "distribution:copilot": "tsx tools/distribution-copilot.ts",
     "eval:action-gate": "tsx src/actionGate/evals/runActionGateEvals.ts",

@@ -10,6 +10,10 @@ import { actionGateDetectors } from "./evaluateAction";
 import type { GovernanceCheckResult } from "./governanceWeakening";
 import type { MetaGateDecision, MetaGateInput } from "./metaGate";
 import { defaultPolicyProfile, getPolicyProfileById } from "./policyProfiles";
+import {
+  attachPolicyProvenance,
+  type AttachPolicyProvenanceContext,
+} from "./policyProvenance";
 import { attachHashChainMetadata } from "./receiptHashChain";
 import { sha256Stable } from "./stableHash";
 import type {
@@ -123,7 +127,22 @@ export function writeEvaluationReceipt(params: EvaluationReceiptParams): string 
     params.input.proposedAction.actionType,
   )}.json`;
 
-  return writeJsonReceipt(receipt, filename, params.receiptDirectory);
+  return writeJsonReceipt(receipt, filename, params.receiptDirectory, {
+    sourceType: "profile",
+    profile: effectivePolicyProfile,
+    result: params.result,
+    policyHash,
+    configHash,
+    policyAppliedAt: createdAt,
+    scopeBasis: [
+      ...(params.input.context?.workflowId
+        ? [`workflowId:${params.input.context.workflowId}`]
+        : []),
+      ...(params.input.context?.environment
+        ? [`environment:${params.input.context.environment}`]
+        : []),
+    ],
+  });
 }
 
 export function writeDemoReceipt(params: DemoReceiptParams): string {
@@ -164,7 +183,22 @@ export function writeDemoReceipt(params: DemoReceiptParams): string {
   };
   const filename = `${toFilenameTimestamp(createdAt)}-launch-copilot-demo.json`;
 
-  return writeJsonReceipt(receipt, filename, params.receiptDirectory);
+  return writeJsonReceipt(receipt, filename, params.receiptDirectory, {
+    sourceType: "profile",
+    profile: params.policyProfile,
+    policyHash,
+    configHash,
+    policyAppliedAt: createdAt,
+    matchedRules: params.actions
+      .map((action) => action.policyProfile?.matchedRule)
+      .filter((rule): rule is string => Boolean(rule)),
+    decisionBasis: [
+      "decision:allow",
+      "Launch Copilot demo evaluated all sample actions.",
+      `matchedExpected:${params.summary.matchedExpected}`,
+      `total:${params.summary.total}`,
+    ],
+  });
 }
 
 export function writeGovernanceReceipt(params: GovernanceReceiptParams): string {
@@ -201,7 +235,26 @@ export function writeGovernanceReceipt(params: GovernanceReceiptParams): string 
   };
   const filename = `${toFilenameTimestamp(createdAt)}-governance-change.json`;
 
-  return writeJsonReceipt(receipt, filename, params.receiptDirectory);
+  return writeJsonReceipt(receipt, filename, params.receiptDirectory, {
+    sourceType: "metagate",
+    policyId: "metagate",
+    policyName: "MetaGate policy",
+    policySource: "MetaGate policy",
+    policyHash,
+    configHash: nextConfigHash,
+    policyAppliedAt: createdAt,
+    matchedRules: params.result.detectorsTriggered,
+    decisionBasis: [
+      `decision:${params.result.decision}`,
+      `locked:${params.result.locked}`,
+      ...params.result.changes,
+    ],
+    snapshot: {
+      previousConfigHash,
+      nextConfigHash,
+      governanceChangeType: params.result.governanceChangeType,
+    },
+  });
 }
 
 export function writeMetaGateReceipt(params: MetaGateReceiptParams): string {
@@ -245,18 +298,44 @@ export function writeMetaGateReceipt(params: MetaGateReceiptParams): string {
   };
   const filename = `${toFilenameTimestamp(createdAt)}-metagate-decision.json`;
 
-  return writeJsonReceipt(receipt, filename, params.receiptDirectory);
+  return writeJsonReceipt(receipt, filename, params.receiptDirectory, {
+    sourceType: "metagate",
+    policyId: "metagate",
+    policyName: "MetaGate policy",
+    policySource: "MetaGate policy",
+    policyHash,
+    configHash,
+    policyAppliedAt: createdAt,
+    matchedRules: params.decision.detectorsTriggered,
+    decisionBasis: [
+      `decision:${params.decision.decision}`,
+      `locked:${params.decision.locked}`,
+      ...params.decision.reasons,
+    ],
+    snapshot: {
+      previousConfigHash,
+      nextConfigHash,
+      actionType: params.input.actionType,
+      target: params.input.target,
+      governanceChangeType: params.decision.governanceChangeType,
+    },
+  });
 }
 
 function writeJsonReceipt(
   receipt: unknown,
   filename: string,
   receiptDirectory = defaultReceiptDirectory,
+  policyProvenanceContext: AttachPolicyProvenanceContext = {},
 ): string {
   mkdirSync(receiptDirectory, { recursive: true });
 
   const receiptPath = path.join(receiptDirectory, filename);
-  const chainedReceipt = attachHashChainMetadata(receipt, {
+  const receiptWithPolicyProvenance = attachPolicyProvenance(
+    receipt,
+    policyProvenanceContext,
+  );
+  const chainedReceipt = attachHashChainMetadata(receiptWithPolicyProvenance, {
     receiptsDir: receiptDirectory,
     source:
       receiptDirectory === defaultReceiptDirectory ||

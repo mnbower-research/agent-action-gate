@@ -1,6 +1,6 @@
 import path from "node:path";
 
-export const receiptVersion = "1.3.0";
+export const receiptVersion = "1.4.0";
 export const defaultReceiptDirectory = path.join(".aag", "receipts");
 export const defaultConfigPath = path.join(".aag", "config.json");
 

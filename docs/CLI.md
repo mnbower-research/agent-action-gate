@@ -40,7 +40,7 @@ v0.9.0 adds audit verification. Each new receipt includes `receiptVersion`, norm
 
 The audit command scans `.aag/receipts/` by default and verifies that receipts contain the required audit fields and basic integrity markers. It detects missing audit fields, malformed SHA-256 hashes, malformed timestamps, and invalid JSON receipt files.
 
-This is metadata verification for locked policies, MetaGate, and receipt chains. It is not cryptographic signing or a security guarantee. v1.0.0 governance receipts, v1.1.0 MetaGate receipts, and v1.3.0 chained receipts remain audit-compatible with these required fields.
+This is metadata verification for locked policies, MetaGate, receipt chains, and policy provenance. It is not cryptographic signing or a security guarantee. v1.0.0 governance receipts, v1.1.0 MetaGate receipts, v1.3.0 chained receipts, and v1.4.0 policy-provenance receipts remain audit-compatible with these required fields.
 
 ## Verify receipt chains
 
@@ -57,6 +57,38 @@ npx . verify-receipts
 v1.3.0 adds local tamper-evident receipt-chain verification. Each new receipt includes `hashChain` metadata with a SHA-256 payload hash, receipt hash, chain index, and `previousReceiptHash` pointer.
 
 `audit` checks required receipt metadata. `verify-receipts` checks hash-chain integrity. Legacy receipts without `hashChain` metadata are reported as warnings and do not fail verification.
+
+Optional flags:
+
+- `--json`
+- `--source receipts`
+- `--source distribution`
+- `--source all`
+
+## Check policy provenance
+
+```bash
+npx agent-action-gate policy-provenance
+```
+
+Local repository usage:
+
+```bash
+npx . policy-provenance
+```
+
+v1.4.0 adds policy provenance reporting. The command scans local JSON and JSONL receipts and reports:
+
+- total receipts scanned
+- receipts with `policyProvenance`
+- legacy receipts without `policyProvenance`
+- invalid policy provenance entries
+- unique policy IDs
+- unique policy hashes
+- policy sources found
+- latest policy provenance entry
+
+`audit` checks required receipt metadata. `verify-receipts` checks hash-chain integrity. `policy-provenance` checks policy context coverage and validity. Legacy receipts without `policyProvenance` metadata are warnings and do not fail verification.
 
 Optional flags:
 
@@ -283,6 +315,8 @@ A `block` decision is not an error.
 For `audit`, `0` means all scanned receipts passed. Non-zero means one or more receipts failed verification.
 
 For `verify-receipts`, `0` means all chained receipts are valid. Legacy unchained receipts are warnings. Non-zero means invalid JSON, malformed hash-chain metadata, hash mismatch, or a broken chain link was found.
+
+For `policy-provenance`, `0` means all present policy provenance entries are valid. Legacy receipts without policy provenance are warnings. Non-zero means malformed policy provenance or impossible values were found.
 
 For `lock-status`, `0` means the effective config was loaded and printed.
 

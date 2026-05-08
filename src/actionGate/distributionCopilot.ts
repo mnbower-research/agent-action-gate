@@ -1,5 +1,7 @@
 import { appendFileSync, existsSync, mkdirSync, readFileSync, writeFileSync } from "node:fs";
 import path from "node:path";
+import { receiptVersion } from "./aagConfig";
+import { attachPolicyProvenance } from "./policyProvenance";
 import { attachHashChainMetadata } from "./receiptHashChain";
 import { sha256Stable } from "./stableHash";
 import {
@@ -187,9 +189,35 @@ export function writeDistributionLogs(
   };
 
   ensureJsonlFile(paths.outcomes);
+  const reviewWithPolicyProvenance = attachPolicyProvenance(review, {
+    sourceType: "distribution",
+    policyId: "distribution-copilot",
+    policyName: "Distribution Copilot policy",
+    policyVersion: receiptVersion,
+    policySource: "Distribution Copilot policy",
+    policyAppliedAt: review.createdAt,
+    decisionBasis: [
+      `decision:${review.decision}`,
+      `relevanceScore:${review.relevanceScore}`,
+      ...review.riskFlags.map((flag) => `riskFlag:${flag}`),
+      ...review.whyItMattersToAAG,
+      review.reviewPacket.approvalReason,
+      `riskLevel:${review.reviewPacket.riskLevel}`,
+    ],
+    scopeBasis: [
+      `platform:${review.platform}`,
+      `goal:${review.goal}`,
+      ...(review.workflowId ? [`workflowId:${review.workflowId}`] : []),
+    ],
+    snapshot: {
+      riskFlags: review.riskFlags,
+      reviewPacket: review.reviewPacket,
+      whatNotToReveal: review.whatNotToReveal,
+    },
+  });
   appendJsonl(
     paths.receipts,
-    attachHashChainMetadata(review, {
+    attachHashChainMetadata(reviewWithPolicyProvenance, {
       distributionReceiptsPath: paths.receipts,
       source:
         logDirectory === path.join(".aag", "distribution") ||
