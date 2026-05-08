@@ -257,7 +257,7 @@ function createTempDir(): string {
 
 function createReceipt(): Record<string, unknown> {
   return {
-    receiptVersion: "1.4.0",
+    receiptVersion: "1.5.0",
     createdAt: "2026-05-08T00:00:00.000Z",
     timestamp: "2026-05-08T00:00:00.000Z",
     configHash: `sha256:${"a".repeat(64)}`,

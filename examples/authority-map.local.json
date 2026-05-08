@@ -1,0 +1,76 @@
+{
+  "authorityMapVersion": "1.0.0",
+  "defaultMode": "require_explicit_authority",
+  "authorities": [
+    {
+      "authorityId": "local-founder",
+      "authorityName": "Local Founder",
+      "role": "owner",
+      "source": "local_example",
+      "allowedActionTypes": [
+        "comment_on_post",
+        "repost_with_comment",
+        "send_email",
+        "launch_copilot_demo"
+      ],
+      "allowedRiskLevels": ["low", "medium", "high"],
+      "allowedTargets": ["linkedin", "x", "demo", "local"],
+      "allowedScopes": ["distribution", "demo", "governance"],
+      "canApproveIrreversible": false,
+      "canApproveExternalPosting": true,
+      "requiresSecondApprovalAboveRisk": "high",
+      "expiresAt": null,
+      "notes": ["Default local development authority. Replace in production."]
+    },
+    {
+      "authorityId": "marketing-reviewer",
+      "authorityName": "Marketing Reviewer",
+      "role": "marketing",
+      "source": "local_example",
+      "allowedActionTypes": ["comment_on_post", "repost_with_comment"],
+      "allowedRiskLevels": ["low", "medium"],
+      "allowedTargets": ["linkedin", "x"],
+      "allowedScopes": ["distribution"],
+      "canApproveIrreversible": false,
+      "canApproveExternalPosting": true,
+      "requiresSecondApprovalAboveRisk": "medium",
+      "expiresAt": null,
+      "notes": ["Can review normal distribution drafts."]
+    },
+    {
+      "authorityId": "security-reviewer",
+      "authorityName": "Security Reviewer",
+      "role": "security",
+      "source": "local_example",
+      "allowedActionTypes": [
+        "modify_policy",
+        "modify_config",
+        "disable_gate",
+        "delete_receipt"
+      ],
+      "allowedRiskLevels": ["medium", "high", "critical"],
+      "allowedTargets": ["aag.config.json", ".aag/receipts"],
+      "allowedScopes": ["governance"],
+      "canApproveIrreversible": true,
+      "canApproveExternalPosting": false,
+      "requiresSecondApprovalAboveRisk": "high",
+      "expiresAt": null,
+      "notes": ["Can review governance-sensitive changes."]
+    },
+    {
+      "authorityId": "restricted-reviewer",
+      "authorityName": "Restricted Reviewer",
+      "role": "reviewer",
+      "source": "local_example",
+      "allowedActionTypes": ["comment_on_post", "send_email"],
+      "allowedRiskLevels": ["low", "medium"],
+      "allowedTargets": ["linkedin", "local"],
+      "allowedScopes": ["distribution"],
+      "canApproveIrreversible": false,
+      "canApproveExternalPosting": false,
+      "requiresSecondApprovalAboveRisk": "medium",
+      "expiresAt": null,
+      "notes": ["Cannot approve high-risk, irreversible, or external-posting actions."]
+    }
+  ]
+}

@@ -7,6 +7,10 @@ import {
   defaultConfigPath,
   type AagConfigInput,
 } from "./actionGate/aagConfig";
+import {
+  formatApprovalAuthorityCoverage,
+  scanApprovalAuthorityCoverage,
+} from "./actionGate/approvalAuthority";
 import { auditReceipts } from "./actionGate/auditReceipts";
 import { actionGateDetectors, evaluateAction } from "./actionGate/evaluateAction";
 import { formatAuditReport } from "./actionGate/formatAuditReport";
@@ -56,7 +60,7 @@ import {
   writeWorkflowLedgerUpdate,
 } from "./actionGate/workflowScopeLedger";
 
-const cliVersion = "1.4.0";
+const cliVersion = "1.5.0";
 
 type CliActionFile = {
   id?: string;
@@ -115,6 +119,10 @@ function main(args: string[]): number {
 
     if (args[0] === "policy-provenance") {
       return runPolicyProvenanceCommand(args.slice(1));
+    }
+
+    if (args[0] === "authority-map") {
+      return runAuthorityMapCommand(args.slice(1));
     }
 
     if (args[0] === "lock-status") {
@@ -243,6 +251,21 @@ function runPolicyProvenanceCommand(args: string[]): number {
 
   console.log(
     options.json ? JSON.stringify(result, null, 2) : formatPolicyProvenance(result),
+  );
+
+  return result.valid ? 0 : 1;
+}
+
+function runAuthorityMapCommand(args: string[]): number {
+  const options = parseAuthorityMapArgs(args);
+  const result = scanApprovalAuthorityCoverage({
+    source: options.source,
+  });
+
+  console.log(
+    options.json
+      ? JSON.stringify(result, null, 2)
+      : formatApprovalAuthorityCoverage(result),
   );
 
   return result.valid ? 0 : 1;
@@ -534,6 +557,50 @@ function parsePolicyProvenanceArgs(args: string[]): {
 
     throw new Error(
       "Invalid arguments. Use: agent-action-gate policy-provenance [--json] [--source receipts|distribution|all]",
+    );
+  }
+
+  return {
+    json,
+    source,
+  };
+}
+
+function parseAuthorityMapArgs(args: string[]): {
+  json: boolean;
+  source: ReceiptChainSource;
+} {
+  let json = false;
+  let source: ReceiptChainSource = "all";
+  let index = 0;
+
+  while (index < args.length) {
+    const arg = args[index];
+
+    if (arg === "--json") {
+      json = true;
+      index += 1;
+      continue;
+    }
+
+    if (arg === "--source") {
+      const value = args[index + 1];
+
+      if (
+        value !== "receipts" &&
+        value !== "distribution" &&
+        value !== "all"
+      ) {
+        throw new Error("Invalid --source. Use receipts, distribution, or all.");
+      }
+
+      source = value;
+      index += 2;
+      continue;
+    }
+
+    throw new Error(
+      "Invalid arguments. Use: agent-action-gate authority-map [--json] [--source receipts|distribution|all]",
     );
   }
 
@@ -1128,6 +1195,7 @@ Usage:
   agent-action-gate audit [--receipts-dir <dir>]
   agent-action-gate verify-receipts [--json] [--source receipts|distribution|all]
   agent-action-gate policy-provenance [--json] [--source receipts|distribution|all]
+  agent-action-gate authority-map [--json] [--source receipts|distribution|all]
   agent-action-gate lock-status [--config <config.json>]
   agent-action-gate check-config-change --before <before.json> --after <after.json> [--write-receipt]
   agent-action-gate metagate --action <actionType> --target <target> [--before <before.json>] [--after <after.json>] [--requested-by <name>] [--reason <text>] [--write-receipt]
@@ -1142,6 +1210,7 @@ Examples:
   npx agent-action-gate audit
   npx agent-action-gate verify-receipts
   npx agent-action-gate policy-provenance
+  npx agent-action-gate authority-map
   npx agent-action-gate lock-status
   npx agent-action-gate check-config-change --before examples/config/locked-before.json --after examples/config/weakened-after.json --write-receipt
   npx agent-action-gate metagate --action disable_gate --target aag.config.json --write-receipt

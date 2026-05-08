@@ -2,9 +2,9 @@
 
 Agent Action Gate is a TypeScript pre-execution control layer for AI agents. It checks proposed tool actions before they run and returns a structured decision: `allow`, `require_approval`, `revise_action`, or `block`.
 
-**Current version:** v1.4.0
+**Current version:** v1.5.0
 
-**Status:** TypeScript compile passing, action-gate evals passing, high-impact recommendation evals passing, logging smoke test passing, Launch Copilot demo passing, Review Packets included, Policy Profiles included, CLI audit foundation included, Locked Policy Mode included, MetaGate included, Workflow Scope Ledger included, Receipt Hash Chain included, Policy Provenance included
+**Status:** TypeScript compile passing, action-gate evals passing, high-impact recommendation evals passing, logging smoke test passing, Launch Copilot demo passing, Review Packets included, Policy Profiles included, CLI audit foundation included, Locked Policy Mode included, MetaGate included, Workflow Scope Ledger included, Receipt Hash Chain included, Policy Provenance included, Approval Authority Map included
 
 ▶️ Watch the v0.5.0 Launch Copilot demo: https://youtu.be/YpEOIQ_v15Q
 
@@ -69,6 +69,7 @@ See [CLI docs](docs/CLI.md).
 - [Workflow Scope Ledger](docs/WORKFLOW_SCOPE_LEDGER.md) - local workflow/session scope tracking across multiple agent actions.
 - [Receipt Hash Chain](docs/RECEIPT_HASH_CHAIN.md) - local tamper-evident receipt-chain verification.
 - [Policy Provenance](docs/POLICY_PROVENANCE.md) - local policy context preserved in receipts.
+- [Approval Authority Map](docs/APPROVAL_AUTHORITY_MAP.md) - local approval authority context preserved in receipts.
 - [CLI](docs/CLI.md) - run the gate locally before an agent acts.
 
 ## Audit Foundation
@@ -128,6 +129,26 @@ npx . policy-provenance
 ```
 
 `audit` checks receipt metadata. `verify-receipts` checks receipt-chain integrity. `policy-provenance` checks policy context coverage and validity. Legacy receipts are reported but do not fail verification.
+
+## Approval Authority Map
+
+v1.5.0 adds approval authority metadata to new AAG receipts. Each new receipt can now preserve whether an approver had authority for the action class, target, scope, and risk level at the time of decision.
+
+This strengthens the receipt trail by distinguishing approval from authority.
+
+Run:
+
+```bash
+npx agent-action-gate authority-map
+```
+
+or locally:
+
+```bash
+npx . authority-map
+```
+
+`audit` checks receipt metadata. `verify-receipts` checks receipt-chain integrity. `policy-provenance` checks policy context coverage and validity. `authority-map` checks approval authority coverage and validity. Legacy receipts are reported but do not fail verification.
 
 ## Locked Policy Mode
 
@@ -629,6 +650,29 @@ Agent Action Gate runs heuristic detectors:
 | v1.2.0 | Workflow Scope Ledger | Tracks workflow/session scope across multi-action chains |
 | v1.3.0 | Receipt Hash Chain | New receipts include hash-chain metadata and local verification detects tampering |
 | v1.4.0 | Policy Provenance | New receipts preserve policy source, snapshot hash, matched rules, and decision basis |
+| v1.5.0 | Approval Authority Map | New receipts preserve authority validity for action class, target, scope, and risk context |
+
+## v1.5.0 - Approval Authority Map
+
+This release adds local approval authority context to new receipts.
+
+### Added
+
+- Approval Authority module
+- `approvalAuthority` metadata on new receipts
+- local authority map support
+- authority snapshot hashing
+- missing, expired, out-of-scope, and second-approval-required detection
+- Distribution Copilot authority metadata
+- MetaGate authority metadata
+- `aag authority-map`
+- Approval Authority Map docs and tests
+
+### Why this matters
+
+v1.4.0 preserved which policy context governed a decision. v1.5.0 preserves whether the approver had valid authority for the action class, target, scope, and risk context.
+
+This is not IAM, authentication, enterprise identity integration, multi-gate routing, signing, or a full permissions platform.
 
 ## v1.4.0 - Policy Provenance
 
@@ -786,6 +830,7 @@ Locked Policy Mode: included
 MetaGate: included
 Receipt Hash Chain: included
 Policy Provenance: included
+Approval Authority Map: included
 GET /health: working
 POST /evaluate: working
 ```
@@ -806,7 +851,6 @@ It is a pre-execution control layer that evaluates proposed tool actions before 
 
 Next:
 
-- v1.5.0 Approval Authority Map
 - v1.6.0 Multi-Gate Registry
 - v1.7.0 Local Approval Dashboard
 - v1.8.0 Incident Reconstruction Reports

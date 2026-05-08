@@ -40,7 +40,7 @@ v0.9.0 adds audit verification. Each new receipt includes `receiptVersion`, norm
 
 The audit command scans `.aag/receipts/` by default and verifies that receipts contain the required audit fields and basic integrity markers. It detects missing audit fields, malformed SHA-256 hashes, malformed timestamps, and invalid JSON receipt files.
 
-This is metadata verification for locked policies, MetaGate, receipt chains, and policy provenance. It is not cryptographic signing or a security guarantee. v1.0.0 governance receipts, v1.1.0 MetaGate receipts, v1.3.0 chained receipts, and v1.4.0 policy-provenance receipts remain audit-compatible with these required fields.
+This is metadata verification for locked policies, MetaGate, receipt chains, policy provenance, and approval authority. It is not cryptographic signing or a security guarantee. v1.0.0 governance receipts, v1.1.0 MetaGate receipts, v1.3.0 chained receipts, v1.4.0 policy-provenance receipts, and v1.5.0 authority-map receipts remain audit-compatible with these required fields.
 
 ## Verify receipt chains
 
@@ -57,6 +57,42 @@ npx . verify-receipts
 v1.3.0 adds local tamper-evident receipt-chain verification. Each new receipt includes `hashChain` metadata with a SHA-256 payload hash, receipt hash, chain index, and `previousReceiptHash` pointer.
 
 `audit` checks required receipt metadata. `verify-receipts` checks hash-chain integrity. Legacy receipts without `hashChain` metadata are reported as warnings and do not fail verification.
+
+Optional flags:
+
+- `--json`
+- `--source receipts`
+- `--source distribution`
+- `--source all`
+
+## Check approval authority
+
+```bash
+npx agent-action-gate authority-map
+```
+
+Local repository usage:
+
+```bash
+npx . authority-map
+```
+
+v1.5.0 adds approval authority reporting. The command scans local JSON and JSONL receipts and reports:
+
+- total receipts scanned
+- receipts with `approvalAuthority`
+- legacy receipts without `approvalAuthority`
+- invalid approval authority entries
+- valid authority decisions
+- missing authority decisions
+- out-of-scope authority decisions
+- expired authority decisions
+- second-approval-required decisions
+- unique authority IDs
+- authority sources found
+- latest authority entry
+
+`audit` checks required receipt metadata. `verify-receipts` checks hash-chain integrity. `policy-provenance` checks policy context coverage and validity. `authority-map` checks approval authority coverage and validity. Legacy receipts without `approvalAuthority` metadata are warnings and do not fail verification.
 
 Optional flags:
 
@@ -317,6 +353,8 @@ For `audit`, `0` means all scanned receipts passed. Non-zero means one or more r
 For `verify-receipts`, `0` means all chained receipts are valid. Legacy unchained receipts are warnings. Non-zero means invalid JSON, malformed hash-chain metadata, hash mismatch, or a broken chain link was found.
 
 For `policy-provenance`, `0` means all present policy provenance entries are valid. Legacy receipts without policy provenance are warnings. Non-zero means malformed policy provenance or impossible values were found.
+
+For `authority-map`, `0` means all present approval authority entries are valid. Legacy receipts without approval authority are warnings. Non-zero means malformed approval authority or impossible values were found.
 
 For `lock-status`, `0` means the effective config was loaded and printed.
 

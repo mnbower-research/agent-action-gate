@@ -296,7 +296,7 @@ runTest("check-config-change path still detects weakening through MetaGate", () 
   assert.ok(decision.detectorsTriggered.includes("governanceWeakening"));
 });
 
-runTest("written receipts include v1.4.0 audit metadata", () => {
+runTest("written receipts include v1.5.0 audit metadata", () => {
   const receiptsDir = createTempDir();
   const input = createActionInput();
   const result = evaluateAction(input, {
@@ -318,7 +318,7 @@ runTest("written receipts include v1.4.0 audit metadata", () => {
     unknown
   >;
 
-  assert.equal(receipt.receiptVersion, "1.4.0");
+  assert.equal(receipt.receiptVersion, "1.5.0");
   assert.equal(typeof receipt.createdAt, "string");
   assert.match(String(receipt.configHash), /^sha256:[a-f0-9]{64}$/);
   assert.match(String(receipt.policyHash), /^sha256:[a-f0-9]{64}$/);
@@ -484,6 +484,16 @@ runTest("audit accepts receiptVersion 1.4.0", () => {
   assert.equal(auditReceipts({ receiptsDir }).failed, 0);
 });
 
+runTest("audit accepts receiptVersion 1.5.0", () => {
+  const receiptsDir = createTempDir();
+  writeReceipt(receiptsDir, "valid-v1-5.json", {
+    ...createValidReceipt(),
+    receiptVersion: "1.5.0",
+  });
+
+  assert.equal(auditReceipts({ receiptsDir }).failed, 0);
+});
+
 runTest("valid receipts pass audit", () => {
   const receiptsDir = createTempDir();
   writeReceipt(receiptsDir, "valid.json", createValidReceipt());
@@ -580,7 +590,7 @@ function writeReceipt(
 
 function createValidReceipt(): Record<string, unknown> {
   return {
-    receiptVersion: "1.4.0",
+    receiptVersion: "1.5.0",
     createdAt: "2026-05-06T00:00:00.000Z",
     configHash: validHash,
     policyHash: validPolicyHash,

@@ -6,6 +6,10 @@ import {
   defaultReceiptDirectory,
   receiptVersion,
 } from "./aagConfig";
+import {
+  attachApprovalAuthority,
+  type ApprovalAuthorityInput,
+} from "./approvalAuthority";
 import { actionGateDetectors } from "./evaluateAction";
 import type { GovernanceCheckResult } from "./governanceWeakening";
 import type { MetaGateDecision, MetaGateInput } from "./metaGate";
@@ -44,6 +48,7 @@ type EvaluationReceiptParams = {
   sourceFile?: string;
   policyProfile?: PolicyProfile;
   receiptDirectory?: string;
+  approvalAuthority?: ApprovalAuthorityInput;
 };
 
 type DemoReceiptParams = {
@@ -55,6 +60,7 @@ type DemoReceiptParams = {
   };
   actions: DemoReceiptAction[];
   receiptDirectory?: string;
+  approvalAuthority?: ApprovalAuthorityInput;
 };
 
 type GovernanceReceiptParams = {
@@ -64,6 +70,7 @@ type GovernanceReceiptParams = {
   result: GovernanceCheckResult;
   policyProfile?: PolicyProfile;
   receiptDirectory?: string;
+  approvalAuthority?: ApprovalAuthorityInput;
 };
 
 type MetaGateReceiptParams = {
@@ -74,6 +81,7 @@ type MetaGateReceiptParams = {
   nextConfig?: EffectiveAagConfig;
   policyProfile?: PolicyProfile;
   receiptDirectory?: string;
+  approvalAuthority?: ApprovalAuthorityInput;
 };
 
 export type DemoReceiptAction = {
@@ -127,22 +135,37 @@ export function writeEvaluationReceipt(params: EvaluationReceiptParams): string 
     params.input.proposedAction.actionType,
   )}.json`;
 
-  return writeJsonReceipt(receipt, filename, params.receiptDirectory, {
-    sourceType: "profile",
-    profile: effectivePolicyProfile,
-    result: params.result,
-    policyHash,
-    configHash,
-    policyAppliedAt: createdAt,
-    scopeBasis: [
-      ...(params.input.context?.workflowId
-        ? [`workflowId:${params.input.context.workflowId}`]
-        : []),
-      ...(params.input.context?.environment
-        ? [`environment:${params.input.context.environment}`]
-        : []),
-    ],
-  });
+  return writeJsonReceipt(
+    receipt,
+    filename,
+    params.receiptDirectory,
+    {
+      sourceType: "profile",
+      profile: effectivePolicyProfile,
+      result: params.result,
+      policyHash,
+      configHash,
+      policyAppliedAt: createdAt,
+      scopeBasis: [
+        ...(params.input.context?.workflowId
+          ? [`workflowId:${params.input.context.workflowId}`]
+          : []),
+        ...(params.input.context?.environment
+          ? [`environment:${params.input.context.environment}`]
+          : []),
+      ],
+    },
+    {
+      ...params.approvalAuthority,
+      authorityAppliedAt: createdAt,
+      actionType: params.input.proposedAction.actionType,
+      target: params.input.proposedAction.target,
+      riskLevel: params.result.riskLevel,
+      scope: params.input.context?.workflowId ? "workflow" : "local",
+      irreversible: params.input.proposedAction.reversible === false,
+      externalPosting: params.input.proposedAction.externalFacing === true,
+    },
+  );
 }
 
 export function writeDemoReceipt(params: DemoReceiptParams): string {
@@ -183,22 +206,38 @@ export function writeDemoReceipt(params: DemoReceiptParams): string {
   };
   const filename = `${toFilenameTimestamp(createdAt)}-launch-copilot-demo.json`;
 
-  return writeJsonReceipt(receipt, filename, params.receiptDirectory, {
-    sourceType: "profile",
-    profile: params.policyProfile,
-    policyHash,
-    configHash,
-    policyAppliedAt: createdAt,
-    matchedRules: params.actions
-      .map((action) => action.policyProfile?.matchedRule)
-      .filter((rule): rule is string => Boolean(rule)),
-    decisionBasis: [
-      "decision:allow",
-      "Launch Copilot demo evaluated all sample actions.",
-      `matchedExpected:${params.summary.matchedExpected}`,
-      `total:${params.summary.total}`,
-    ],
-  });
+  return writeJsonReceipt(
+    receipt,
+    filename,
+    params.receiptDirectory,
+    {
+      sourceType: "profile",
+      profile: params.policyProfile,
+      policyHash,
+      configHash,
+      policyAppliedAt: createdAt,
+      matchedRules: params.actions
+        .map((action) => action.policyProfile?.matchedRule)
+        .filter((rule): rule is string => Boolean(rule)),
+      decisionBasis: [
+        "decision:allow",
+        "Launch Copilot demo evaluated all sample actions.",
+        `matchedExpected:${params.summary.matchedExpected}`,
+        `total:${params.summary.total}`,
+      ],
+    },
+    {
+      ...params.approvalAuthority,
+      authorityId: params.approvalAuthority?.authorityId ?? "local-founder",
+      authorityAppliedAt: createdAt,
+      actionType: "launch_copilot_demo",
+      target: "demo",
+      riskLevel: "low",
+      scope: "demo",
+      irreversible: false,
+      externalPosting: false,
+    },
+  );
 }
 
 export function writeGovernanceReceipt(params: GovernanceReceiptParams): string {
@@ -235,26 +274,41 @@ export function writeGovernanceReceipt(params: GovernanceReceiptParams): string 
   };
   const filename = `${toFilenameTimestamp(createdAt)}-governance-change.json`;
 
-  return writeJsonReceipt(receipt, filename, params.receiptDirectory, {
-    sourceType: "metagate",
-    policyId: "metagate",
-    policyName: "MetaGate policy",
-    policySource: "MetaGate policy",
-    policyHash,
-    configHash: nextConfigHash,
-    policyAppliedAt: createdAt,
-    matchedRules: params.result.detectorsTriggered,
-    decisionBasis: [
-      `decision:${params.result.decision}`,
-      `locked:${params.result.locked}`,
-      ...params.result.changes,
-    ],
-    snapshot: {
-      previousConfigHash,
-      nextConfigHash,
-      governanceChangeType: params.result.governanceChangeType,
+  return writeJsonReceipt(
+    receipt,
+    filename,
+    params.receiptDirectory,
+    {
+      sourceType: "metagate",
+      policyId: "metagate",
+      policyName: "MetaGate policy",
+      policySource: "MetaGate policy",
+      policyHash,
+      configHash: nextConfigHash,
+      policyAppliedAt: createdAt,
+      matchedRules: params.result.detectorsTriggered,
+      decisionBasis: [
+        `decision:${params.result.decision}`,
+        `locked:${params.result.locked}`,
+        ...params.result.changes,
+      ],
+      snapshot: {
+        previousConfigHash,
+        nextConfigHash,
+        governanceChangeType: params.result.governanceChangeType,
+      },
     },
-  });
+    {
+      ...params.approvalAuthority,
+      authorityAppliedAt: createdAt,
+      actionType: params.result.governanceChangeType,
+      target: "aag.config.json",
+      riskLevel: params.result.decision === "allow" ? "medium" : "high",
+      scope: "governance",
+      irreversible: true,
+      externalPosting: false,
+    },
+  );
 }
 
 export function writeMetaGateReceipt(params: MetaGateReceiptParams): string {
@@ -298,28 +352,43 @@ export function writeMetaGateReceipt(params: MetaGateReceiptParams): string {
   };
   const filename = `${toFilenameTimestamp(createdAt)}-metagate-decision.json`;
 
-  return writeJsonReceipt(receipt, filename, params.receiptDirectory, {
-    sourceType: "metagate",
-    policyId: "metagate",
-    policyName: "MetaGate policy",
-    policySource: "MetaGate policy",
-    policyHash,
-    configHash,
-    policyAppliedAt: createdAt,
-    matchedRules: params.decision.detectorsTriggered,
-    decisionBasis: [
-      `decision:${params.decision.decision}`,
-      `locked:${params.decision.locked}`,
-      ...params.decision.reasons,
-    ],
-    snapshot: {
-      previousConfigHash,
-      nextConfigHash,
+  return writeJsonReceipt(
+    receipt,
+    filename,
+    params.receiptDirectory,
+    {
+      sourceType: "metagate",
+      policyId: "metagate",
+      policyName: "MetaGate policy",
+      policySource: "MetaGate policy",
+      policyHash,
+      configHash,
+      policyAppliedAt: createdAt,
+      matchedRules: params.decision.detectorsTriggered,
+      decisionBasis: [
+        `decision:${params.decision.decision}`,
+        `locked:${params.decision.locked}`,
+        ...params.decision.reasons,
+      ],
+      snapshot: {
+        previousConfigHash,
+        nextConfigHash,
+        actionType: params.input.actionType,
+        target: params.input.target,
+        governanceChangeType: params.decision.governanceChangeType,
+      },
+    },
+    {
+      ...params.approvalAuthority,
+      authorityAppliedAt: createdAt,
       actionType: params.input.actionType,
       target: params.input.target,
-      governanceChangeType: params.decision.governanceChangeType,
+      riskLevel: params.decision.decision === "allow" ? "medium" : "high",
+      scope: "governance",
+      irreversible: true,
+      externalPosting: false,
     },
-  });
+  );
 }
 
 function writeJsonReceipt(
@@ -327,6 +396,7 @@ function writeJsonReceipt(
   filename: string,
   receiptDirectory = defaultReceiptDirectory,
   policyProvenanceContext: AttachPolicyProvenanceContext = {},
+  approvalAuthorityContext: ApprovalAuthorityInput = {},
 ): string {
   mkdirSync(receiptDirectory, { recursive: true });
 
@@ -335,7 +405,11 @@ function writeJsonReceipt(
     receipt,
     policyProvenanceContext,
   );
-  const chainedReceipt = attachHashChainMetadata(receiptWithPolicyProvenance, {
+  const receiptWithApprovalAuthority = attachApprovalAuthority(
+    receiptWithPolicyProvenance,
+    approvalAuthorityContext,
+  );
+  const chainedReceipt = attachHashChainMetadata(receiptWithApprovalAuthority, {
     receiptsDir: receiptDirectory,
     source:
       receiptDirectory === defaultReceiptDirectory ||

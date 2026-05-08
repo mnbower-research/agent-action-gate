@@ -1,6 +1,7 @@
 import { appendFileSync, existsSync, mkdirSync, readFileSync, writeFileSync } from "node:fs";
 import path from "node:path";
 import { receiptVersion } from "./aagConfig";
+import { attachApprovalAuthority } from "./approvalAuthority";
 import { attachPolicyProvenance } from "./policyProvenance";
 import { attachHashChainMetadata } from "./receiptHashChain";
 import { sha256Stable } from "./stableHash";
@@ -215,9 +216,25 @@ export function writeDistributionLogs(
       whatNotToReveal: review.whatNotToReveal,
     },
   });
+  const reviewWithApprovalAuthority = attachApprovalAuthority(
+    reviewWithPolicyProvenance,
+    {
+      authorityId: "local-founder",
+      authorityAppliedAt: review.createdAt,
+      actionType: review.reviewPacket.proposedAction,
+      target: review.platform.toLowerCase(),
+      riskLevel: review.reviewPacket.riskLevel,
+      scope: "distribution",
+      irreversible: false,
+      externalPosting: false,
+      notes: [
+        "Distribution Copilot records local review authority only; it does not post externally.",
+      ],
+    },
+  );
   appendJsonl(
     paths.receipts,
-    attachHashChainMetadata(reviewWithPolicyProvenance, {
+    attachHashChainMetadata(reviewWithApprovalAuthority, {
       distributionReceiptsPath: paths.receipts,
       source:
         logDirectory === path.join(".aag", "distribution") ||
