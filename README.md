@@ -399,6 +399,8 @@ Agent Action Gate is not:
 
 It is a pre-execution control layer that evaluates proposed tool actions before they run.
 
+See [AAG Threat Model](docs/THREAT_MODEL.md) for current scope, bypass assumptions, and production hardening limits.
+
 ## Roadmap
 
 Next:
