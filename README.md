@@ -1,10 +1,20 @@
 # Agent Action Gate
 
-Agent Action Gate is a TypeScript pre-execution control layer for AI agents. It checks proposed tool actions before they run and returns a structured decision: `allow`, `require_approval`, `revise_action`, or `block`.
+Agent Action Gate is a minimal TypeScript reference implementation of the Governance Gate Invariant:
+
+> No external signal becomes internal consequence without authorized discernment.
+
+AAG is a pre-execution control layer for AI agents. It checks proposed tool actions before they run and returns a structured decision: `allow`, `require_approval`, `revise_action`, or `block`.
+
+Short form:
+
+> Action must not outrun discernment.
 
 **Current version:** v1.5.0
 
-**Status:** TypeScript compile passing, action-gate evals passing, high-impact recommendation evals passing, logging smoke test passing, Launch Copilot demo passing, Review Packets included, Policy Profiles included, CLI audit foundation included, Locked Policy Mode included, MetaGate included, Workflow Scope Ledger included, Receipt Hash Chain included, Policy Provenance included, Approval Authority Map included
+**Status:** TypeScript compile passing, action-gate evals passing, high-impact recommendation evals passing, logging smoke test passing, Launch Copilot demo passing, Approved Execution demo included, Review Packets included, Policy Profiles included, CLI audit foundation included, Locked Policy Mode included, MetaGate included, Workflow Scope Ledger included, Receipt Hash Chain included, Policy Provenance included, Approval Authority Map included
+
+AAG v1.5.0 includes Review Packets, Policy Profiles, Workflow Scope Ledger, Receipt Hash Chain, Policy Provenance, Approval Authority Map, Locked Policy Mode, MetaGate, CLI audit tooling, and n8n demo workflows.
 
 ▶️ Watch the v0.5.0 Launch Copilot demo: https://youtu.be/YpEOIQ_v15Q
 
@@ -14,6 +24,23 @@ Agent proposes a tool action
 -> Action is allowed / requires approval / revised / blocked
 -> Decision is logged as an audit-style receipt
 ```
+
+## The Six Gate Questions
+
+Every real gate must answer six questions before consequence:
+
+1. Is this action authorized?
+2. Is it within scope?
+3. Is it reversible?
+4. Who is accountable?
+5. Does it require human judgment?
+6. What proof remains?
+
+AAG v1.5.0 contains local primitives for each question: Approval Authority Map, Workflow Scope Ledger, irreversible-action detection, Review Packets, audit receipts, Receipt Hash Chain, and Policy Provenance.
+
+If a system cannot answer these questions before execution, it is not a gate. It is a speed bump.
+
+See [Governance Gate Invariant](docs/GATE_INVARIANT.md), [Six Gate Questions](docs/SIX_GATE_QUESTIONS.md), [What Is Not a Gate](docs/WHAT_IS_NOT_A_GATE.md), and [Human Agency Infrastructure](docs/HUMAN_AGENCY_INFRASTRUCTURE.md).
 
 ## CLI
 
@@ -63,6 +90,10 @@ See [CLI docs](docs/CLI.md).
 
 ## Core Concepts
 
+- [Governance Gate Invariant](docs/GATE_INVARIANT.md) - the structural invariant AAG implements for AI-agent tool actions.
+- [Six Gate Questions](docs/SIX_GATE_QUESTIONS.md) - the six pre-execution questions every real gate must answer before consequence.
+- [What Is Not a Gate](docs/WHAT_IS_NOT_A_GATE.md) - distinctions between gates, filters, monitors, dashboards, approval forms, and post-hoc reports.
+- [Human Agency Infrastructure](docs/HUMAN_AGENCY_INFRASTRUCTURE.md) - the category of systems that preserve human judgment, authority, memory, and accountability inside automation.
 - [Integration Bypass](docs/INTEGRATION_BYPASS.md) - the failure mode where an AI agent closes an action loop before meaningful human review can occur.
 - [Article 14 Oversight](docs/ARTICLE_14_OVERSIGHT.md) - how Agent Action Gate can support Article 14-style human oversight without claiming to guarantee legal compliance.
 - [Policy Profiles](docs/POLICY_PROFILES.md) - workflow-specific approval, revision, and block rules for proposed AI-agent actions.
@@ -70,6 +101,7 @@ See [CLI docs](docs/CLI.md).
 - [Receipt Hash Chain](docs/RECEIPT_HASH_CHAIN.md) - local tamper-evident receipt-chain verification.
 - [Policy Provenance](docs/POLICY_PROVENANCE.md) - local policy context preserved in receipts.
 - [Approval Authority Map](docs/APPROVAL_AUTHORITY_MAP.md) - local approval authority context preserved in receipts.
+- [Approved Execution Demo](docs/APPROVED_EXECUTION_DEMO.md) - local-only approval, authority check, simulated execution, and receipt verification.
 - [CLI](docs/CLI.md) - run the gate locally before an agent acts.
 
 ## Audit Foundation
@@ -149,6 +181,22 @@ npx . authority-map
 ```
 
 `audit` checks receipt metadata. `verify-receipts` checks receipt-chain integrity. `policy-provenance` checks policy context coverage and validity. `authority-map` checks approval authority coverage and validity. Legacy receipts are reported but do not fail verification.
+
+## Approved Execution Demo
+
+AAG includes a local approved-execution demo that shows a risky external-facing action moving through review before any execution path is allowed:
+
+```txt
+propose -> evaluate -> review -> approve -> authority check -> simulated execute -> receipt -> verify
+```
+
+Run it with:
+
+```bash
+npm run demo:approved-execution
+```
+
+The demo uses a LinkedIn comment-style payload, but it does not post to LinkedIn, scrape, send email, schedule, or call external APIs. It writes a local simulated execution record and an AAG receipt with policy provenance, approval authority, and hash-chain metadata.
 
 ## Locked Policy Mode
 
@@ -851,9 +899,15 @@ It is a pre-execution control layer that evaluates proposed tool actions before 
 
 Next:
 
-- v1.6.0 Multi-Gate Registry
-- v1.7.0 Local Approval Dashboard
-- v1.8.0 Incident Reconstruction Reports
+- v1.6.0 Governance Gate Invariant
+  - canonical invariant docs
+  - six gate questions
+  - "what is not a gate" criteria
+  - Human Agency Infrastructure category framing
+  - README restructuring around the invariant
+- v1.7.0 Multi-Gate Registry
+- v1.8.0 Local Approval Dashboard
+- v1.9.0 Incident Reconstruction Reports
 - v2.0.0 Signed Receipts / Cryptographic Trust
 
 ## Compliance Note

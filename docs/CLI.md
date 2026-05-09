@@ -2,6 +2,10 @@
 
 Agent Action Gate can be run locally from the command line.
 
+The CLI is the local command surface for the [Governance Gate Invariant](GATE_INVARIANT.md): no external signal becomes internal consequence without authorized discernment. It evaluates proposed actions before execution and preserves local evidence through receipts, receipt-chain verification, policy provenance, and approval authority metadata.
+
+For the conceptual frame, see [Six Gate Questions](SIX_GATE_QUESTIONS.md), [What Is Not a Gate](WHAT_IS_NOT_A_GATE.md), and [Human Agency Infrastructure](HUMAN_AGENCY_INFRASTRUCTURE.md).
+
 ## Demo
 
 ```bash
@@ -9,6 +13,16 @@ npx agent-action-gate demo
 ```
 
 Runs the Launch Copilot demo and prints gate decisions, Review Packets, Policy Profile metadata, and local receipt output.
+
+## Approved execution demo
+
+```bash
+npm run demo:approved-execution
+```
+
+Runs a local-only approved-execution demo. The demo evaluates a risky LinkedIn comment-style action, requires approval, simulates local human approval by `local-founder`, checks authority, writes a local simulated execution record, and writes an AAG receipt.
+
+It does not post, email, scrape, schedule, or call external APIs.
 
 ## Evaluate an action
 
