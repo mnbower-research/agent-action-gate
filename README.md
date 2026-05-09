@@ -410,6 +410,8 @@ Next:
 - v1.9.0 Incident Reconstruction Reports
 - v2.0.0 Signed Receipts / Cryptographic Trust
 
+See [AAG v2 Roadmap](docs/V2_ROADMAP.md) for the maturity path from local reference implementation to runtime-bound, cryptographically verifiable enforcement architecture.
+
 ## Research lineage
 
 Agent Runtime Alignment is the practical business category: translating company values, policies, permissions, approval rules, and risk boundaries into runtime controls for AI agents.
