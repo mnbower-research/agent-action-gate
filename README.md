@@ -10,6 +10,10 @@ Short form:
 
 > "Action must not outrun discernment."
 
+Principle: Score systems, not souls.
+
+AAG evaluates proposed system actions, not the moral worth of people.
+
 **Current version:** v1.6.1
 
 **Status:** TypeScript compile passing, evals passing, logging smoke test passing, fresh-clone local CLI path passing, CLI audit tooling included, Review Packets included, Policy Profiles included, Workflow Scope Ledger included, Receipt Hash Chain included, Policy Provenance included, Approval Authority Map included, Locked Policy Mode included, MetaGate included, n8n demo workflows included.
@@ -58,6 +62,8 @@ Every real gate must answer six questions before consequence:
 
 AAG v1.6.1 contains local primitives for each question: Approval Authority Map, Workflow Scope Ledger, irreversible-action detection, Review Packets, audit receipts, Receipt Hash Chain, and Policy Provenance.
 
+These six questions are the difference between a gate and compliance theater.
+
 If a system cannot answer these questions before execution, it is not a gate. It is a speed bump.
 
 See [Governance Gate Invariant](docs/GATE_INVARIANT.md), [Six Gate Questions](docs/SIX_GATE_QUESTIONS.md), [What Is Not a Gate](docs/WHAT_IS_NOT_A_GATE.md), and [Human Agency Infrastructure](docs/HUMAN_AGENCY_INFRASTRUCTURE.md).
@@ -77,6 +83,8 @@ to:
 ```txt
 Should this action be allowed before it affects the world?
 ```
+
+AAG is not trying to stop automation. It is trying to stop automation from replacing human agency while calling it progress.
 
 Agent Action Gate explores a general-purpose pre-execution oversight layer for AI-agent workflows. It evaluates proposed actions before external effects occur.
 
