@@ -156,7 +156,6 @@ export function writeEvaluationReceipt(params: EvaluationReceiptParams): string 
       ],
     },
     {
-      ...params.approvalAuthority,
       authorityAppliedAt: createdAt,
       actionType: params.input.proposedAction.actionType,
       target: params.input.proposedAction.target,
@@ -164,6 +163,7 @@ export function writeEvaluationReceipt(params: EvaluationReceiptParams): string 
       scope: params.input.context?.workflowId ? "workflow" : "local",
       irreversible: params.input.proposedAction.reversible === false,
       externalPosting: params.input.proposedAction.externalFacing === true,
+      ...params.approvalAuthority,
     },
   );
 }

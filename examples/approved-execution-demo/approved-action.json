@@ -1,0 +1,30 @@
+{
+  "userRequest": "Prepare a public LinkedIn comment for local human review only. Do not post automatically.",
+  "agentPlan": "Draft one concise LinkedIn comment, show it to a human reviewer, and stop before any external action.",
+  "approvedBy": "local-founder",
+  "approvalAuthority": {
+    "authorityId": "local-founder",
+    "scope": "distribution",
+    "notes": [
+      "Local human approval is simulated for this demo.",
+      "No external posting authority is exercised because execution is local-only."
+    ]
+  },
+  "proposedAction": {
+    "tool": "linkedin_manual_review",
+    "actionType": "comment_on_post",
+    "target": "linkedin",
+    "payload": {
+      "sourceReference": "linkedin-local-example",
+      "comment": "Useful point. Agentic AI governance needs runtime controls before action, not only after the fact.",
+      "mode": "local_simulation_only"
+    },
+    "reversible": true,
+    "externalFacing": true
+  },
+  "context": {
+    "userApproved": true,
+    "environment": "production",
+    "workflowId": "wf_approved_execution_demo"
+  }
+}
