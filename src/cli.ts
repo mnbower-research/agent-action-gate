@@ -60,7 +60,7 @@ import {
   writeWorkflowLedgerUpdate,
 } from "./actionGate/workflowScopeLedger";
 
-const cliVersion = "1.5.0";
+const cliVersion = "1.6.1";
 
 type CliActionFile = {
   id?: string;
@@ -1217,6 +1217,12 @@ Examples:
   npx agent-action-gate workflow-start --intent "Distribute AAG safely" --allow "research public posts" --allow "draft comments" --deny "auto-post"
   npx agent-action-gate workflow-add-action --workflow wf_example --action draft_comment --decision allow --summary "Drafted LinkedIn comment"
   npx agent-action-gate workflow-status --workflow wf_example
+
+Fresh-clone local examples:
+  npm run cli -- demo
+  npm run cli -- evaluate examples/actions/send-email.json --profile strict-external-actions
+  npm run cli -- audit
+  npm run cli -- verify-receipts
 
 Profiles:
 ${builtInPolicyProfiles.map((profile) => `  ${profile.id}`).join("\n")}`);

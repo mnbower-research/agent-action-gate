@@ -10,11 +10,11 @@ Short form:
 
 > Action must not outrun discernment.
 
-**Current version:** v1.6.0
+**Current version:** v1.6.1
 
 **Status:** TypeScript compile passing, action-gate evals passing, high-impact recommendation evals passing, logging smoke test passing, Launch Copilot demo passing, Approved Execution demo included, Review Packets included, Policy Profiles included, CLI audit foundation included, Locked Policy Mode included, MetaGate included, Workflow Scope Ledger included, Receipt Hash Chain included, Policy Provenance included, Approval Authority Map included
 
-AAG v1.6.0 includes Review Packets, Policy Profiles, Workflow Scope Ledger, Receipt Hash Chain, Policy Provenance, Approval Authority Map, Locked Policy Mode, MetaGate, CLI audit tooling, n8n demo workflows, and Governance Gate Invariant documentation.
+AAG v1.6.1 includes Review Packets, Policy Profiles, Workflow Scope Ledger, Receipt Hash Chain, Policy Provenance, Approval Authority Map, Locked Policy Mode, MetaGate, CLI audit tooling, n8n demo workflows, Governance Gate Invariant documentation, and a fresh-clone local CLI path.
 
 ▶️ Watch the v0.5.0 Launch Copilot demo: https://youtu.be/YpEOIQ_v15Q
 
@@ -36,7 +36,7 @@ Every real gate must answer six questions before consequence:
 5. Does it require human judgment?
 6. What proof remains?
 
-AAG v1.6.0 contains local primitives for each question: Approval Authority Map, Workflow Scope Ledger, irreversible-action detection, Review Packets, audit receipts, Receipt Hash Chain, and Policy Provenance.
+AAG v1.6.1 contains local primitives for each question: Approval Authority Map, Workflow Scope Ledger, irreversible-action detection, Review Packets, audit receipts, Receipt Hash Chain, and Policy Provenance.
 
 If a system cannot answer these questions before execution, it is not a gate. It is a speed bump.
 
@@ -44,16 +44,26 @@ See [Governance Gate Invariant](docs/GATE_INVARIANT.md), [Six Gate Questions](do
 
 ## CLI
 
-Run the gate locally:
+npm-published usage:
 
 ```bash
 npx agent-action-gate demo
 ```
 
+Fresh-clone local usage:
+
+```bash
+npm install
+npm run cli -- demo
+```
+
+The fresh-clone local CLI path runs the TypeScript entrypoint with the repo's `tsx` dev dependency, so it does not require a global install or npm publishing. `npm run build` is only needed when you want to generate `dist/` for the package `bin` entrypoint.
+
 Evaluate a proposed action:
 
 ```bash
 npx agent-action-gate evaluate examples/actions/send-email.json --profile strict-external-actions
+npm run cli -- evaluate examples/actions/send-email.json --profile strict-external-actions
 ```
 
 The CLI prints the gate decision, Review Packet context when present, and writes local receipts to `.aag/receipts/`.
@@ -62,6 +72,14 @@ Audit local receipts:
 
 ```bash
 npx agent-action-gate audit
+npm run cli -- audit
+```
+
+Verify receipt chains:
+
+```bash
+npx agent-action-gate verify-receipts
+npm run cli -- verify-receipts
 ```
 
 Check locked policy mode:
@@ -102,6 +120,7 @@ See [CLI docs](docs/CLI.md).
 - [Policy Provenance](docs/POLICY_PROVENANCE.md) - local policy context preserved in receipts.
 - [Approval Authority Map](docs/APPROVAL_AUTHORITY_MAP.md) - local approval authority context preserved in receipts.
 - [Approved Execution Demo](docs/APPROVED_EXECUTION_DEMO.md) - local-only approval, authority check, simulated execution, and receipt verification.
+- [Five-Minute Demo](docs/FIVE_MINUTE_DEMO.md) - fresh-clone CLI path with local commands.
 - [CLI](docs/CLI.md) - run the gate locally before an agent acts.
 
 ## Audit Foundation
@@ -137,7 +156,7 @@ npx agent-action-gate verify-receipts
 or locally:
 
 ```bash
-npx . verify-receipts
+npm run cli -- verify-receipts
 ```
 
 `audit` checks receipt metadata. `verify-receipts` checks receipt-chain integrity. Legacy receipts are reported but do not fail verification.
@@ -157,7 +176,7 @@ npx agent-action-gate policy-provenance
 or locally:
 
 ```bash
-npx . policy-provenance
+npm run cli -- policy-provenance
 ```
 
 `audit` checks receipt metadata. `verify-receipts` checks receipt-chain integrity. `policy-provenance` checks policy context coverage and validity. Legacy receipts are reported but do not fail verification.
@@ -177,7 +196,7 @@ npx agent-action-gate authority-map
 or locally:
 
 ```bash
-npx . authority-map
+npm run cli -- authority-map
 ```
 
 `audit` checks receipt metadata. `verify-receipts` checks receipt-chain integrity. `policy-provenance` checks policy context coverage and validity. `authority-map` checks approval authority coverage and validity. Legacy receipts are reported but do not fail verification.
@@ -265,7 +284,7 @@ AAG can track a workflow/session across multiple agent actions. This helps detec
 Run:
 
 ```bash
-npx . workflow-start --intent "Distribute AAG safely" --allow "research public posts" --allow "draft comments" --deny "auto-post"
+npm run cli -- workflow-start --intent "Distribute AAG safely" --allow "research public posts" --allow "draft comments" --deny "auto-post"
 ```
 
 See [Workflow Scope Ledger docs](docs/WORKFLOW_SCOPE_LEDGER.md).
@@ -700,6 +719,7 @@ Agent Action Gate runs heuristic detectors:
 | v1.4.0 | Policy Provenance | New receipts preserve policy source, snapshot hash, matched rules, and decision basis |
 | v1.5.0 | Approval Authority Map | New receipts preserve authority validity for action class, target, scope, and risk context |
 | v1.6.0 | Governance Gate Invariant | Defines the invariant, six gate questions, what is not a gate, and Human Agency Infrastructure framing |
+| v1.6.1 | Fresh-clone CLI stabilization | Adds `npm run cli -- ...` for unpublished local clone usage |
 
 ## v1.5.0 - Approval Authority Map
 
