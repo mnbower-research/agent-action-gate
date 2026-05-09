@@ -2,21 +2,21 @@
 
 Agent Action Gate is a minimal TypeScript reference implementation of the Governance Gate Invariant:
 
-> No external signal becomes internal consequence without authorized discernment.
+> "No external signal becomes internal consequence without authorized discernment."
 
 AAG is a pre-execution control layer for AI agents. It checks proposed tool actions before they run and returns a structured decision: `allow`, `require_approval`, `revise_action`, or `block`.
 
 Short form:
 
-> Action must not outrun discernment.
+> "Action must not outrun discernment."
 
 **Current version:** v1.6.1
 
-**Status:** TypeScript compile passing, action-gate evals passing, high-impact recommendation evals passing, logging smoke test passing, Launch Copilot demo passing, Approved Execution demo included, Review Packets included, Policy Profiles included, CLI audit foundation included, Locked Policy Mode included, MetaGate included, Workflow Scope Ledger included, Receipt Hash Chain included, Policy Provenance included, Approval Authority Map included
+**Status:** TypeScript compile passing, evals passing, logging smoke test passing, fresh-clone local CLI path passing, CLI audit tooling included, Review Packets included, Policy Profiles included, Workflow Scope Ledger included, Receipt Hash Chain included, Policy Provenance included, Approval Authority Map included, Locked Policy Mode included, MetaGate included, n8n demo workflows included.
 
-AAG v1.6.1 includes Review Packets, Policy Profiles, Workflow Scope Ledger, Receipt Hash Chain, Policy Provenance, Approval Authority Map, Locked Policy Mode, MetaGate, CLI audit tooling, n8n demo workflows, Governance Gate Invariant documentation, and a fresh-clone local CLI path.
+## What AAG does
 
-▶️ Watch the v0.5.0 Launch Copilot demo: https://youtu.be/YpEOIQ_v15Q
+Agent Action Gate sits between an AI agent and the tool action the agent wants to run.
 
 ```txt
 Agent proposes a tool action
@@ -25,7 +25,27 @@ Agent proposes a tool action
 -> Decision is logged as an audit-style receipt
 ```
 
-## The Six Gate Questions
+It helps automation pause before external effects such as sending emails, deleting files, calling APIs, modifying data, deploying code, publishing content, or exposing sensitive information.
+
+## Five-Minute Demo
+
+```bash
+git clone https://github.com/mnbower-research/agent-action-gate.git
+cd agent-action-gate
+npm install
+npm run typecheck
+npm run eval:action-gate
+npm run cli -- demo
+npm run cli -- evaluate examples/actions/send-email.json --profile strict-external-actions
+npm run cli -- audit
+npm run cli -- verify-receipts
+```
+
+This proves the local gate path: evaluate actions, write receipts, audit them, and verify the receipt hash chain.
+
+See [Five-Minute Demo](docs/FIVE_MINUTE_DEMO.md).
+
+## Six Gate Questions
 
 Every real gate must answer six questions before consequence:
 
@@ -42,344 +62,7 @@ If a system cannot answer these questions before execution, it is not a gate. It
 
 See [Governance Gate Invariant](docs/GATE_INVARIANT.md), [Six Gate Questions](docs/SIX_GATE_QUESTIONS.md), [What Is Not a Gate](docs/WHAT_IS_NOT_A_GATE.md), and [Human Agency Infrastructure](docs/HUMAN_AGENCY_INFRASTRUCTURE.md).
 
-## CLI
-
-npm-published usage:
-
-```bash
-npx agent-action-gate demo
-```
-
-Fresh-clone local usage:
-
-```bash
-npm install
-npm run cli -- demo
-```
-
-The fresh-clone local CLI path runs the TypeScript entrypoint with the repo's `tsx` dev dependency, so it does not require a global install or npm publishing. `npm run build` is only needed when you want to generate `dist/` for the package `bin` entrypoint.
-
-Evaluate a proposed action:
-
-```bash
-npx agent-action-gate evaluate examples/actions/send-email.json --profile strict-external-actions
-npm run cli -- evaluate examples/actions/send-email.json --profile strict-external-actions
-```
-
-The CLI prints the gate decision, Review Packet context when present, and writes local receipts to `.aag/receipts/`.
-
-Audit local receipts:
-
-```bash
-npx agent-action-gate audit
-npm run cli -- audit
-```
-
-Verify receipt chains:
-
-```bash
-npx agent-action-gate verify-receipts
-npm run cli -- verify-receipts
-```
-
-Check locked policy mode:
-
-```bash
-npx agent-action-gate lock-status
-```
-
-Check a proposed config change:
-
-```bash
-npx agent-action-gate check-config-change --before examples/config/locked-before.json --after examples/config/weakened-after.json --write-receipt
-```
-
-Run MetaGate:
-
-```bash
-npx agent-action-gate metagate --action disable_gate --target aag.config.json --write-receipt
-```
-
-v1.1.0 adds MetaGate: a gate for the gate itself. AAG gates risky agent actions. MetaGate gates attempts to weaken, disable, or modify the policy/config controls that govern AAG. MetaGate receipts remain audit-compatible and prepare the project for signed receipts and cryptographic verification; no signing is implemented yet.
-
-AAG also includes high-impact recommendation evals for cases where an agent's technical guidance could influence risky downstream human action. These evals are incident-inspired and are not a claim about any specific company incident.
-
-See [CLI docs](docs/CLI.md).
-
-## Core Concepts
-
-- [Governance Gate Invariant](docs/GATE_INVARIANT.md) - the structural invariant AAG implements for AI-agent tool actions.
-- [Six Gate Questions](docs/SIX_GATE_QUESTIONS.md) - the six pre-execution questions every real gate must answer before consequence.
-- [What Is Not a Gate](docs/WHAT_IS_NOT_A_GATE.md) - distinctions between gates, filters, monitors, dashboards, approval forms, and post-hoc reports.
-- [Human Agency Infrastructure](docs/HUMAN_AGENCY_INFRASTRUCTURE.md) - the category of systems that preserve human judgment, authority, memory, and accountability inside automation.
-- [Integration Bypass](docs/INTEGRATION_BYPASS.md) - the failure mode where an AI agent closes an action loop before meaningful human review can occur.
-- [Article 14 Oversight](docs/ARTICLE_14_OVERSIGHT.md) - how Agent Action Gate can support Article 14-style human oversight without claiming to guarantee legal compliance.
-- [Policy Profiles](docs/POLICY_PROFILES.md) - workflow-specific approval, revision, and block rules for proposed AI-agent actions.
-- [Workflow Scope Ledger](docs/WORKFLOW_SCOPE_LEDGER.md) - local workflow/session scope tracking across multiple agent actions.
-- [Receipt Hash Chain](docs/RECEIPT_HASH_CHAIN.md) - local tamper-evident receipt-chain verification.
-- [Policy Provenance](docs/POLICY_PROVENANCE.md) - local policy context preserved in receipts.
-- [Approval Authority Map](docs/APPROVAL_AUTHORITY_MAP.md) - local approval authority context preserved in receipts.
-- [Approved Execution Demo](docs/APPROVED_EXECUTION_DEMO.md) - local-only approval, authority check, simulated execution, and receipt verification.
-- [Five-Minute Demo](docs/FIVE_MINUTE_DEMO.md) - fresh-clone CLI path with local commands.
-- [CLI](docs/CLI.md) - run the gate locally before an agent acts.
-
-## Audit Foundation
-
-v0.9.0 made local decision receipts auditable.
-
-Each new receipt includes:
-
-- `receiptVersion`
-- `createdAt` as a normalized ISO timestamp
-- `configHash` for the effective AAG config state
-- `policyHash` for the effective policy profile used during evaluation
-- `decision`
-
-Run:
-
-```bash
-npx agent-action-gate audit
-```
-
-The audit command scans `.aag/receipts/`, verifies required audit metadata, detects malformed SHA-256 hashes and timestamps, reports invalid JSON receipt files, and exits non-zero when any receipt fails. This provides basic receipt metadata verification for locked policies, MetaGate, and tamper-evident receipt chains. It does not claim cryptographic signing.
-
-## Receipt Hash Chain
-
-v1.3.0 adds tamper-evident local receipt chains. Each new receipt includes a SHA-256 hash and a pointer to the previous chained receipt hash. This allows AAG to verify whether the local receipt history has been silently altered.
-
-Run:
-
-```bash
-npx agent-action-gate verify-receipts
-```
-
-or locally:
-
-```bash
-npm run cli -- verify-receipts
-```
-
-`audit` checks receipt metadata. `verify-receipts` checks receipt-chain integrity. Legacy receipts are reported but do not fail verification.
-
-## Policy Provenance
-
-v1.4.0 adds policy provenance to new AAG receipts. Each new receipt can now preserve the policy source, policy version, policy hash, policy snapshot hash, matched rules, and decision basis that governed the action at decision time.
-
-This strengthens the receipt trail by preserving not only evidence integrity, but policy context.
-
-Run:
-
-```bash
-npx agent-action-gate policy-provenance
-```
-
-or locally:
-
-```bash
-npm run cli -- policy-provenance
-```
-
-`audit` checks receipt metadata. `verify-receipts` checks receipt-chain integrity. `policy-provenance` checks policy context coverage and validity. Legacy receipts are reported but do not fail verification.
-
-## Approval Authority Map
-
-v1.5.0 adds approval authority metadata to new AAG receipts. Each new receipt can now preserve whether an approver had authority for the action class, target, scope, and risk level at the time of decision.
-
-This strengthens the receipt trail by distinguishing approval from authority.
-
-Run:
-
-```bash
-npx agent-action-gate authority-map
-```
-
-or locally:
-
-```bash
-npm run cli -- authority-map
-```
-
-`audit` checks receipt metadata. `verify-receipts` checks receipt-chain integrity. `policy-provenance` checks policy context coverage and validity. `authority-map` checks approval authority coverage and validity. Legacy receipts are reported but do not fail verification.
-
-## Approved Execution Demo
-
-AAG includes a local approved-execution demo that shows a risky external-facing action moving through review before any execution path is allowed:
-
-```txt
-propose -> evaluate -> review -> approve -> authority check -> simulated execute -> receipt -> verify
-```
-
-Run it with:
-
-```bash
-npm run demo:approved-execution
-```
-
-The demo uses a LinkedIn comment-style payload, but it does not post to LinkedIn, scrape, send email, schedule, or call external APIs. It writes a local simulated execution record and an AAG receipt with policy provenance, approval authority, and hash-chain metadata.
-
-## Locked Policy Mode
-
-v1.0.0 introduces locked policy mode.
-
-Effective AAG config can now include:
-
-- `locked`
-- `lockReason`
-- `lockedAt`
-- `lockedBy`
-
-If no config exists, `locked` defaults to `false`. When locked mode is active, AAG can detect simple risky governance changes such as disabling receipts, changing `defaultDecision` to `allow`, turning locked mode off, or disabling AAG itself.
-
-Check status:
-
-```bash
-npx agent-action-gate lock-status
-```
-
-Check a proposed change:
-
-```bash
-npx agent-action-gate check-config-change --before examples/config/locked-before.json --after examples/config/weakened-after.json --write-receipt
-```
-
-Governance/config-change receipts use `receiptType: "governance_change"` and include previous and next config hashes, lock status, detected governance weakening, and the decision. These receipts are audit-compatible and create the foundation for MetaGate, where policy/config changes become first-class gated actions.
-
-## MetaGate
-
-MetaGate is a gate for the gate itself.
-
-AAG gates risky agent actions before execution. MetaGate gates attempts to weaken, disable, or modify the policy/config controls that govern AAG itself.
-
-It evaluates governance-sensitive actions such as:
-
-- disabling the gate
-- unlocking locked policy mode
-- disabling audit or receipts
-- deleting receipts
-- changing default decisions
-- adding broad allowlists
-- modifying policy/config files
-- removing detectors or weakening sensitive-action rules
-
-Run:
-
-```bash
-npx agent-action-gate metagate --action disable_gate --target aag.config.json --write-receipt
-```
-
-With config context:
-
-```bash
-npx agent-action-gate metagate --action modify_policy --target aag.config.json --before examples/config/locked-before.json --after examples/config/weakened-after.json --write-receipt
-```
-
-MetaGate builds on locked policy mode and governance receipts. It adds a recursive governance layer: oversight for the oversight controls. MetaGate receipts use `receiptType: "metagate_decision"` and include `metaGate: true`, action metadata, lock state, config hashes, detected controls, and reasons.
-
-This is not cryptographic signing, Sigstore, hosted governance, auth, or a database. It is a focused foundation for signed receipts and stronger cryptographic verification.
-
-## Workflow Scope Ledger
-
-AAG can track a workflow/session across multiple agent actions. This helps detect when a chain of individually allowed actions begins to drift outside the original intent or authorized scope.
-
-Run:
-
-```bash
-npm run cli -- workflow-start --intent "Distribute AAG safely" --allow "research public posts" --allow "draft comments" --deny "auto-post"
-```
-
-See [Workflow Scope Ledger docs](docs/WORKFLOW_SCOPE_LEDGER.md).
-
-## Review Packets
-
-`require_approval` without context is approval theater.
-
-Review Packets make the proposed action, scope, preview/diff, rollback path, risk reason, and reviewer question visible before a human approves, revises, or rejects an action.
-
-v0.6.0 adds Review Packets to the Launch Copilot demo so approval requests show what is actually being approved before execution.
-
-Reviewer questions change by decision type:
-
-| Decision | Reviewer question purpose |
-|---|---|
-| `allow` | What was allowed, and why was it low risk? |
-| `require_approval` | Do you approve this exact action with this scope and consequence? |
-| `revise_action` | What must change before this can be approved? |
-| `block` | What safer alternative should the agent propose instead? |
-
-## Policy Profiles
-
-Policy Profiles let Agent Action Gate apply different approval, revision, and block rules depending on the workflow context.
-
-Same gate. Different workflow rules.
-
-A sales agent, support agent, coding agent, and CI/CD agent should not all share the same action policy.
-
-v0.7.0 adds a `launch-copilot` policy profile to the demo and introduces a typed profile structure for future workflow-specific governance.
-
-Policy Profiles work with Review Packets:
-
-- the profile decides what the workflow allows
-- the Review Packet explains what is being reviewed before execution
-
-## Launch Copilot Demo
-
-The [Launch Copilot Demo](examples/launch-copilot/README.md) shows AAG governing a simulated business-development agent.
-
-▶️ Watch the demo: https://youtu.be/YpEOIQ_v15Q
-
-It demonstrates:
-
-- internal drafting actions can be allowed
-- external outreach requires approval
-- public posting requires approval
-- destructive lead deletion is blocked
-- private lead export is blocked
-- the `launch-copilot` policy profile applies workflow-specific rules
-- review packets show the proposed action, scope, preview/diff, rollback path, risk reason, and reviewer question
-- audit-style evidence is created
-
-Run it with:
-
-```bash
-npx tsx examples/launch-copilot/run-demo.ts
-```
-
-## Dogfooding: Distribution Copilot
-
-AAG includes a local [Distribution Copilot example](examples/distribution-copilot/README.md) that helps review marketing and comment opportunities before posting. It scores relevance, drafts safer responses, flags overclaim risk, writes review receipts, and keeps human approval in the loop.
-
-Run it with:
-
-```bash
-npm run distribution:copilot -- --input examples/distribution-copilot/inputs/ai-governance-post.json
-```
-
-## Local Dashboard
-
-AAG includes a local [Distribution Copilot dashboard](docs/DASHBOARD.md) for viewing opportunities, approvals, receipts, workflow ledgers, and local human review state. It does not post, DM, scrape, schedule, call social APIs, or use an LLM.
-
-Run it with:
-
-```bash
-npm run dashboard
-```
-
-## Quick demo
-
-The defensive n8n demo shows Agent Action Gate reviewing a terminal-like action that targets an external subnet outside the authorized target scope. The expected gate result is:
-
-```txt
-decision: block
-primaryIssue: unauthorized_cyber_scope
-```
-
-![Defensive n8n demo showing Agent Action Gate routing an out-of-scope terminal-like action to Block Action](docs/assets/n8n-defensive-demo.png)
-
-## Why It Exists
-
-AI agents can send emails, delete files, call APIs, modify data, deploy code, publish content, and expose sensitive information. Agent Action Gate checks what an agent is about to do, so automation tools can allow, pause, revise, or block the action before it runs.
-
-## Why now
+## Why it exists
 
 Agentic AI is moving from answers to actions.
 
@@ -395,18 +78,7 @@ to:
 Should this action be allowed before it affects the world?
 ```
 
-GitHub Agentic Workflows show this safety pattern inside repository automation: read-only defaults, constrained write paths, reviewable outputs, and explicit approval before write operations.
-
-Agent Action Gate explores the same control pattern as a general-purpose pre-execution oversight layer for AI-agent workflows outside GitHub-specific repository automation.
-
-AAG evaluates proposed agent actions and returns:
-
-- `allow`
-- `require_approval`
-- `revise_action`
-- `block`
-
-before external effects occur.
+Agent Action Gate explores a general-purpose pre-execution oversight layer for AI-agent workflows. It evaluates proposed actions before external effects occur.
 
 ## Where it fits
 
@@ -427,32 +99,152 @@ Agent Action Gate can sit in front of:
 - internal automations
 - API/tool-calling agents
 
-## Decisions
+## CLI usage
 
-| Decision | Meaning |
-|---|---|
-| `allow` | The action appears low risk and can proceed. |
-| `require_approval` | The action needs explicit human approval before execution. |
-| `revise_action` | The action is fixable, but should be changed before execution. |
-| `block` | The action should not execute. |
-
-## Quick Start
+npm-published usage:
 
 ```bash
-git clone https://github.com/mnbower-research/agent-action-gate.git
-cd agent-action-gate
-npm install
-npm run typecheck
-npm run eval:action-gate
-npm run test:logging
+npx agent-action-gate demo
+npx agent-action-gate evaluate examples/actions/send-email.json --profile strict-external-actions
+npx agent-action-gate audit
+npx agent-action-gate verify-receipts
+```
+
+Fresh-clone local usage:
+
+```bash
+npm run cli -- demo
+npm run cli -- evaluate examples/actions/send-email.json --profile strict-external-actions
+npm run cli -- audit
+npm run cli -- verify-receipts
+```
+
+The fresh-clone local CLI path runs the TypeScript entrypoint with the repo's `tsx` dev dependency, so it does not require a global install or npm publishing. `npm run build` is only needed when you want to generate `dist/` for the package `bin` entrypoint.
+
+The CLI prints the gate decision, Review Packet context when present, and writes local receipts to `.aag/receipts/`.
+
+Additional CLI commands:
+
+```bash
+npx agent-action-gate lock-status
+npx agent-action-gate check-config-change --before examples/config/locked-before.json --after examples/config/weakened-after.json --write-receipt
+npx agent-action-gate metagate --action disable_gate --target aag.config.json --write-receipt
+npx agent-action-gate policy-provenance
+npx agent-action-gate authority-map
+```
+
+Fresh-clone local equivalents use `npm run cli -- ...`:
+
+```bash
+npm run cli -- lock-status
+npm run cli -- check-config-change --before examples/config/locked-before.json --after examples/config/weakened-after.json --write-receipt
+npm run cli -- metagate --action disable_gate --target aag.config.json --write-receipt
+npm run cli -- policy-provenance
+npm run cli -- authority-map
+```
+
+See [CLI docs](docs/CLI.md).
+
+## Key primitives
+
+### Audit Foundation
+
+AAG writes local audit-style receipts for gate decisions. New receipts include required audit metadata such as `receiptVersion`, normalized `createdAt`, `configHash`, `policyHash`, and `decision`.
+
+The `audit` command scans local receipts for required metadata, malformed SHA-256 hashes, malformed timestamps, and invalid JSON. This is local metadata verification, not cryptographic signing.
+
+### Receipt Hash Chain
+
+AAG can add tamper-evident local hash-chain metadata to new receipts. Each chained receipt includes a SHA-256 receipt hash and a pointer to the previous chained receipt hash.
+
+Run `verify-receipts` to check receipt-chain integrity. Legacy receipts are reported but do not fail verification.
+
+### Policy Provenance
+
+Policy Provenance preserves the policy context that governed a decision. New receipts can include policy source, policy version, policy hash, policy snapshot hash, matched rules, and decision basis.
+
+This helps later reviewers understand not only that a decision happened, but what policy meaning governed it at the time.
+
+### Approval Authority Map
+
+Approval Authority Map records whether an approver had authority for the action class, target, scope, and risk level at decision time. It distinguishes approval from authority.
+
+The `authority-map` command checks local receipts for authority coverage and validity. This is not IAM or a full permissions platform.
+
+### Approved Execution Demo
+
+The approved-execution demo shows a risky external-facing action moving through review before any execution path is allowed.
+
+```txt
+propose -> evaluate -> review -> approve -> authority check -> simulated execute -> receipt -> verify
+```
+
+Run it with `npm run demo:approved-execution`. The demo does not post, scrape, send email, schedule, or call external APIs.
+
+### Locked Policy Mode
+
+Locked Policy Mode lets AAG detect risky governance changes when policy/config governance is locked. It can flag changes such as disabling receipts, changing `defaultDecision` to `allow`, turning locked mode off, or disabling AAG itself.
+
+Governance/config-change receipts use `receiptType: "governance_change"` and remain audit-compatible.
+
+### MetaGate
+
+MetaGate is a gate for the gate itself. AAG gates risky agent actions, and MetaGate gates attempts to weaken, disable, or modify the policy/config controls that govern AAG.
+
+MetaGate evaluates governance-sensitive actions such as disabling the gate, unlocking policy mode, deleting receipts, adding broad allowlists, changing default decisions, or weakening detectors. It is not cryptographic signing, Sigstore, hosted governance, auth, or a database.
+
+### Workflow Scope Ledger
+
+Workflow Scope Ledger tracks a workflow or session across multiple agent actions. It records original intent, allowed scope, prohibited scope, action sequence, scope warnings, scope violations, and cumulative risk.
+
+This helps detect when a chain of individually allowed actions begins to drift outside the original authorized scope.
+
+### Review Packets
+
+`require_approval` without context is approval theater. Review Packets make the proposed action, scope, preview/diff, rollback path, risk reason, and reviewer question visible before a human approves, revises, or rejects an action.
+
+Reviewer questions change by decision type so the human reviewer sees what they are actually deciding.
+
+### Policy Profiles
+
+Policy Profiles let the same gate apply different approval, revision, and block rules depending on workflow context. A sales agent, support agent, coding agent, and CI/CD agent should not all share the same action policy.
+
+Policy Profiles work with Review Packets: the profile decides what the workflow allows, and the Review Packet explains what is being reviewed before execution.
+
+## n8n demos
+
+The repo includes three importable n8n demo workflows:
+
+```txt
+examples/n8n-agent-action-gate-demo.json
+examples/n8n-agent-action-gate-defensive-demo.json
+examples/n8n-agent-action-gate-human-approval-demo.json
+```
+
+The demos show Agent Action Gate sitting between an AI or automation agent and tool execution. They include a manual test trigger, a proposed action node, an Agent Action Gate HTTP request, a decision switch, and branches for `allow`, `require_approval`, `revise_action`, and `block`.
+
+Import one in n8n:
+
+1. Open n8n.
+2. Choose Import from File.
+3. Select one of the workflow JSON files in `examples`.
+4. Update the Agent Action Gate HTTP Request node URL to point at your running API endpoint.
+
+The defensive n8n demo sends a terminal-like action outside the authorized target scope. The expected result is `block` with `primaryIssue: unauthorized_cyber_scope`.
+
+The human approval n8n demo shows how a proposed production or external-facing action can be paused for human review before execution. Its default path is safe: the simulated human review sets `humanApproved: false`, then the workflow routes to Rejected Stop.
+
+Start the local API:
+
+```bash
 npm run dev
 ```
 
-The local HTTP API runs on port `3333` by default.
+The included workflows default to `http://localhost:3333/evaluate`. For n8n Cloud, replace it with your own tunnel or hosted endpoint.
 
 ## HTTP API
 
-The local HTTP API is implemented with Node's built-in `http` module.
+The local HTTP API is implemented with Node's built-in `http` module and runs on port `3333` by default.
 
 ```txt
 GET /health
@@ -502,7 +294,7 @@ HTTP responses:
 - `404` for unknown routes.
 - `405` for unsupported methods on known routes.
 
-## TypeScript Usage
+## TypeScript usage
 
 ```typescript
 import { evaluateAction } from "./src/actionGate/evaluateAction";
@@ -541,161 +333,23 @@ Example result:
 }
 ```
 
-## Decision logging
-
-v0.3.0 writes append-only JSONL receipts for successful `POST /evaluate` calls. Logs are local by default and ignored by git.
-
-Default path:
+## Validation status
 
 ```txt
-logs/action-gate-decisions.jsonl
+TypeScript compile: passing
+Baseline and cyber evals: 19/19 passing
+High-impact recommendation evals: 20/20 passing
+Logging smoke test: passing
+Fresh-clone CLI path: passing
+CLI demo: 6/6 expected decisions
+audit: passing in clean fresh clone
+verify-receipts: passing in clean fresh clone
+Receipt Hash Chain: included
+Policy Provenance: included
+Approval Authority Map: included
 ```
 
-Payloads are summarized and redacted before logging. Raw payloads are not written to the decision log, and credential-like values such as secrets, tokens, passwords, private keys, `.env` content, authorization headers, cookies, SSH keys, and long credential-like strings are redacted.
-
-Disable decision logging:
-
-```bash
-AAG_DISABLE_DECISION_LOGS=true
-```
-
-Set a custom log path:
-
-```bash
-AAG_DECISION_LOG_PATH=some/path/file.jsonl
-```
-
-Compact sample log entry:
-
-```json
-{
-  "timestamp": "2026-05-02T12:00:00.000Z",
-  "decision": "block",
-  "riskLevel": "critical",
-  "primaryIssue": "unauthorized_cyber_scope",
-  "confidence": 0.93,
-  "tool": "terminal",
-  "actionType": "run_command",
-  "target": "external-subnet",
-  "environment": "dev",
-  "userApproved": false,
-  "triggeredDetectors": ["unauthorized_cyber_scope"],
-  "payloadSummary": {
-    "command": "network scan command placeholder"
-  }
-}
-```
-
-## Cyber-capable agent protection
-
-Agent Action Gate does not replace model safety. It acts as a pre-execution control layer before tools run, evaluating the concrete tool action an agent proposes and returning `allow`, `require_approval`, `revise_action`, or `block`.
-
-The cyber-capable layer adds detectors for risky command and infrastructure behavior, including:
-
-- Credential access, such as reading `.env` files, API keys, tokens, SSH keys, or private keys.
-- Unauthorized scanning, recon, exploitation, or other cyber-like actions outside `context.authorizedTargets`.
-- Data exfiltration, such as dumping a database and posting it to an external endpoint.
-- CI/CD, dependency, package, deployment, or build-chain modification.
-- Privilege escalation through user, role, permission, root, admin, or capability changes.
-- Destructive commands, such as recursive deletion, database drops, infrastructure destroy, or disk wipes.
-
-## n8n demo workflows
-
-The repo includes three importable n8n demo workflows:
-
-```txt
-examples/n8n-agent-action-gate-demo.json
-examples/n8n-agent-action-gate-defensive-demo.json
-examples/n8n-agent-action-gate-human-approval-demo.json
-```
-
-The demos show Agent Action Gate sitting between an AI or automation agent and tool execution. They include:
-
-- Manual test trigger
-- Proposed Action node
-- Agent Action Gate HTTP request
-- Route Gate Decision switch
-- Four outcome branches:
-  - `allow` -> Continue Action
-  - `require_approval` -> Human Approval Required
-  - `revise_action` -> Revise Proposed Action
-  - `block` -> Block Action
-
-Import one in n8n:
-
-1. Open n8n.
-2. Choose Import from File.
-3. Select one of the workflow JSON files in `examples`.
-4. Update the Agent Action Gate HTTP Request node URL to point at your running API endpoint.
-
-### Defensive n8n demo
-
-`examples/n8n-agent-action-gate-defensive-demo.json` demonstrates defensive pre-execution review for the cyber-capable layer. It sends a terminal-like action outside the authorized target scope. The expected result is `block` with `primaryIssue: unauthorized_cyber_scope`.
-
-### Human approval n8n demo
-
-`examples/n8n-agent-action-gate-human-approval-demo.json` demonstrates the `require_approval` route. It shows how a proposed production or external-facing action can be paused for human review before execution.
-
-The default path is safe: the simulated human review sets `humanApproved: false`, then the workflow routes to Rejected Stop.
-
-Default flow:
-
-```txt
-Proposed Production Action
--> Agent Action Gate
--> Route Gate Decision
--> Human Approval Required
--> Approval Decision
--> Rejected Stop
-```
-
-Expected gate result:
-
-```txt
-decision: require_approval
-primaryIssue: missing_approval
-```
-
-![Human approval n8n demo showing Agent Action Gate routing an approval-required action through review to Rejected Stop](docs/assets/n8n-human-approval-demo-v2.png)
-
-Start the local API:
-
-```bash
-npm run dev
-```
-
-For n8n Cloud, you can use a temporary tunnel:
-
-```bash
-npx localtunnel --port 3333 --local-host 127.0.0.1
-```
-
-Then replace the HTTP Request URL in n8n with:
-
-```txt
-https://YOUR-TUNNEL-URL/evaluate
-```
-
-The included workflows default to `http://localhost:3333/evaluate`. If you use n8n Cloud, replace it with your own tunnel or hosted endpoint.
-
-## Detectors
-
-Agent Action Gate runs heuristic detectors:
-
-- `wrong_target`: action targets the wrong recipient, file, endpoint, account, or record.
-- `unauthorized_scope`: action is broader than the user requested.
-- `missing_approval`: action requires approval that has not been recorded.
-- `irreversible_action`: action is destructive, costly, or difficult to undo.
-- `sensitive_data_exposure`: action may expose credentials, personal data, or confidential information.
-- `tool_mismatch`: action uses a tool that does not fit the requested operation.
-- `objective_drift`: action no longer serves the original user request or objective.
-- `unauthorized_cyber_scope`: cyber-capable action targets systems outside the authorized context.
-- `credential_access`: action accesses secrets, tokens, `.env` files, SSH keys, or credential-like material.
-- `data_exfiltration`: action dumps, archives, uploads, posts, or transfers data in a suspicious way.
-- `privilege_escalation`: action escalates users, roles, permissions, root access, or admin capabilities.
-- `supply_chain_modification`: action modifies CI/CD, dependencies, packages, deployment, or build-chain config.
-- `destructive_cyber_action`: action runs destructive command patterns such as drops, wipes, or infrastructure destroy.
-- `unapproved_command_execution`: terminal-like command execution is proposed without recorded user approval.
+In the existing working tree, legacy local receipts can fail `audit` if they predate required audit metadata. The clean fresh-clone path passes.
 
 ## Release progression
 
@@ -721,188 +375,7 @@ Agent Action Gate runs heuristic detectors:
 | v1.6.0 | Governance Gate Invariant | Defines the invariant, six gate questions, what is not a gate, and Human Agency Infrastructure framing |
 | v1.6.1 | Fresh-clone CLI stabilization | Adds `npm run cli -- ...` for unpublished local clone usage |
 
-## v1.5.0 - Approval Authority Map
-
-This release adds local approval authority context to new receipts.
-
-### Added
-
-- Approval Authority module
-- `approvalAuthority` metadata on new receipts
-- local authority map support
-- authority snapshot hashing
-- missing, expired, out-of-scope, and second-approval-required detection
-- Distribution Copilot authority metadata
-- MetaGate authority metadata
-- `aag authority-map`
-- Approval Authority Map docs and tests
-
-### Why this matters
-
-v1.4.0 preserved which policy context governed a decision. v1.5.0 preserves whether the approver had valid authority for the action class, target, scope, and risk context.
-
-This is not IAM, authentication, enterprise identity integration, multi-gate routing, signing, or a full permissions platform.
-
-## v1.4.0 - Policy Provenance
-
-This release adds policy context provenance to new receipts.
-
-### Added
-
-- Policy Provenance module
-- `policyProvenance` metadata on new receipts
-- policy source classification
-- policy snapshot hashing
-- decision basis capture
-- profile, MetaGate, and Distribution Copilot provenance support
-- `aag policy-provenance`
-- Policy Provenance docs and tests
-
-### Why this matters
-
-v1.3.0 made receipt trails tamper-evident. v1.4.0 preserves which policy context governed the decision when the receipt was created. This helps future reviewers understand not just that a decision happened, but what policy meaning governed it at the time.
-
-This is not approval authority mapping, multi-gate routing, signing, hosted verification, or external notarization.
-
-## v1.3.0 - Receipt Hash Chain
-
-This release adds local tamper-evident receipt chaining.
-
-### Added
-
-- Receipt Hash Chain module
-- SHA-256 receipt hashing
-- `previousReceiptHash` linkage
-- canonical payload hashing
-- local receipt-chain verification
-- `aag verify-receipts`
-- JSON and JSONL receipt verification
-- Receipt Hash Chain docs and tests
-
-### Why this matters
-
-AAG already writes local decision receipts. v1.3.0 chains each new receipt to the previous receipt hash so local verification can detect silent alteration of chained receipt history.
-
-This is not signing, blockchain, hosted verification, or external notarization.
-
-## v1.2.0 - Workflow Scope Ledger
-
-This release adds workflow-level scope tracking for agentic action chains.
-
-### Added
-
-- Workflow Scope Ledger module
-- Workflow/session intent, allowed scope, and prohibited scope tracking
-- Action sequence entries
-- Scope warning and scope violation detection
-- Cumulative workflow risk
-- `aag workflow-start`
-- `aag workflow-add-action`
-- `aag workflow-status`
-- Distribution Copilot workflow attachment support
-- Workflow Scope Ledger docs and examples
-
-### Why this matters
-
-A single agent action can be allowed while the overall workflow drifts outside the original intent. The Workflow Scope Ledger begins tracking the chain: original intent, scoped authority, action sequence, decisions, risk flags, and whether the workflow remains in scope.
-
-This is the foundation for reconstructible decision chains in governed agentic workflows.
-
-## v1.1.1 - High-Impact Recommendation Evals
-
-This patch release adds an eval suite for high-impact AI-agent recommendations.
-
-### Added
-
-- High-impact recommendation eval suite
-- 20 incident-inspired recommendation-risk cases
-- `npm run eval:high-impact`
-- focused `highImpactRecommendation` detector support
-- README/docs updates for eval coverage
-
-### Why this matters
-
-AAG should not only evaluate direct tool execution. It should also detect risky AI-generated technical guidance that could influence downstream human action, such as advice to bypass approvals, disable security controls, expose credentials, or weaken governance controls.
-
-This is an eval/coverage release, not a new architecture layer.
-
-## v1.1.0 - MetaGate
-
-This release adds MetaGate: a gate for the gate itself.
-
-### Added
-
-- MetaGate evaluation module
-- `aag metagate` CLI command
-- first-class gating for policy/config governance actions
-- MetaGate receipts with `receiptType: "metagate_decision"`
-- MetaGate terminal formatter
-- audit compatibility for v1.1.0 receipts
-- MetaGate examples and docs
-- `check-config-change` integration with MetaGate
-
-### Why this matters
-
-AAG gates risky agent actions before execution. MetaGate gates attempts to weaken, disable, or modify the controls that govern AAG itself.
-
-This moves Agent Action Gate toward recursive governance infrastructure: oversight for the oversight layer.
-
-## v1.0.0 - Locked Policy Mode
-
-This release adds locked policy mode and governance change receipts.
-
-### Added
-
-- `locked` support in effective AAG config
-- lock metadata: `lockReason`, `lockedAt`, `lockedBy`
-- `aag lock-status`
-- governance weakening detection
-- `aag check-config-change`
-- governance/config-change receipts
-- audit compatibility for v1.0.0 receipts
-- examples for locked, weakened, and benign config changes
-
-### Why this matters
-
-AAG can now detect when its own policy/config governance is locked and can escalate risky attempts to weaken the gate. This creates the foundation for MetaGate, where policy/config changes become first-class gated actions.
-
-## v0.9.0 - Audit Foundation
-
-This release adds audit metadata and receipt verification.
-
-### Added
-
-- `configHash` and `policyHash` in receipts
-- `receiptVersion`
-- normalized `createdAt` timestamps
-- `aag audit` CLI command
-- basic receipt validation
-- audit report formatter
-
-### Why this matters
-
-AAG can now show which policy and config state were active when a decision receipt was written. This creates the foundation for locked policies, MetaGate, and future tamper-evident receipt chains.
-
-## Validation Status
-
-```txt
-TypeScript compile: passing
-Baseline and cyber evals: 19/19 passing
-High-impact recommendation evals: 20/20 passing
-Logging smoke test: passing
-Launch Copilot demo: passing
-Review Packets: included
-Policy Profiles: included
-CLI MVP: included
-CLI audit foundation: included
-Locked Policy Mode: included
-MetaGate: included
-Receipt Hash Chain: included
-Policy Provenance: included
-Approval Authority Map: included
-GET /health: working
-POST /evaluate: working
-```
+See [docs/RELEASE_HISTORY.md](docs/RELEASE_HISTORY.md) for detailed release notes.
 
 ## What this is not
 
@@ -913,6 +386,8 @@ Agent Action Gate is not:
 - a replacement for least-privilege credentials
 - a legal compliance guarantee
 - a model safety replacement
+- cryptographic signing yet
+- hosted governance
 
 It is a pre-execution control layer that evaluates proposed tool actions before they run.
 
@@ -925,11 +400,7 @@ Next:
 - v1.9.0 Incident Reconstruction Reports
 - v2.0.0 Signed Receipts / Cryptographic Trust
 
-## Compliance Note
-
-Agent Action Gate can support human-approval workflows for AI agent actions, especially when actions are external-facing, irreversible, sensitive, or broader than requested. It is not legal advice and does not guarantee compliance with any law or framework.
-
-## Research Lineage
+## Research lineage
 
 Agent Runtime Alignment is the practical business category: translating company values, policies, permissions, approval rules, and risk boundaries into runtime controls for AI agents.
 
