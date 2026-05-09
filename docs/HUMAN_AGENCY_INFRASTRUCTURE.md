@@ -10,7 +10,7 @@ Agents can be messengers. The organization is the castle. The gate is the bounda
 
 ## How AAG Fits
 
-AAG checks proposed tool actions before they run and returns `allow`, `require_approval`, `revise_action`, or `block`. Its v1.5.0 primitives preserve approval context, workflow scope, tamper-evident local receipt chains, policy provenance, approval authority, and governance-weakening detection.
+AAG checks proposed tool actions before they run and returns `allow`, `require_approval`, `revise_action`, or `block`. Its v1.6.0 primitives preserve approval context, workflow scope, tamper-evident local receipt chains, policy provenance, approval authority, and governance-weakening detection.
 
 AAG is a minimal reference implementation, not hosted governance or an end-to-end compliance system. It can support human-approval workflows and Article 14-style oversight workflows, but it is not legal advice and does not guarantee compliance.
 

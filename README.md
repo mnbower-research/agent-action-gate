@@ -10,11 +10,11 @@ Short form:
 
 > Action must not outrun discernment.
 
-**Current version:** v1.5.0
+**Current version:** v1.6.0
 
 **Status:** TypeScript compile passing, action-gate evals passing, high-impact recommendation evals passing, logging smoke test passing, Launch Copilot demo passing, Approved Execution demo included, Review Packets included, Policy Profiles included, CLI audit foundation included, Locked Policy Mode included, MetaGate included, Workflow Scope Ledger included, Receipt Hash Chain included, Policy Provenance included, Approval Authority Map included
 
-AAG v1.5.0 includes Review Packets, Policy Profiles, Workflow Scope Ledger, Receipt Hash Chain, Policy Provenance, Approval Authority Map, Locked Policy Mode, MetaGate, CLI audit tooling, and n8n demo workflows.
+AAG v1.6.0 includes Review Packets, Policy Profiles, Workflow Scope Ledger, Receipt Hash Chain, Policy Provenance, Approval Authority Map, Locked Policy Mode, MetaGate, CLI audit tooling, n8n demo workflows, and Governance Gate Invariant documentation.
 
 ▶️ Watch the v0.5.0 Launch Copilot demo: https://youtu.be/YpEOIQ_v15Q
 
@@ -36,7 +36,7 @@ Every real gate must answer six questions before consequence:
 5. Does it require human judgment?
 6. What proof remains?
 
-AAG v1.5.0 contains local primitives for each question: Approval Authority Map, Workflow Scope Ledger, irreversible-action detection, Review Packets, audit receipts, Receipt Hash Chain, and Policy Provenance.
+AAG v1.6.0 contains local primitives for each question: Approval Authority Map, Workflow Scope Ledger, irreversible-action detection, Review Packets, audit receipts, Receipt Hash Chain, and Policy Provenance.
 
 If a system cannot answer these questions before execution, it is not a gate. It is a speed bump.
 
@@ -699,6 +699,7 @@ Agent Action Gate runs heuristic detectors:
 | v1.3.0 | Receipt Hash Chain | New receipts include hash-chain metadata and local verification detects tampering |
 | v1.4.0 | Policy Provenance | New receipts preserve policy source, snapshot hash, matched rules, and decision basis |
 | v1.5.0 | Approval Authority Map | New receipts preserve authority validity for action class, target, scope, and risk context |
+| v1.6.0 | Governance Gate Invariant | Defines the invariant, six gate questions, what is not a gate, and Human Agency Infrastructure framing |
 
 ## v1.5.0 - Approval Authority Map
 
@@ -899,12 +900,6 @@ It is a pre-execution control layer that evaluates proposed tool actions before 
 
 Next:
 
-- v1.6.0 Governance Gate Invariant
-  - canonical invariant docs
-  - six gate questions
-  - "what is not a gate" criteria
-  - Human Agency Infrastructure category framing
-  - README restructuring around the invariant
 - v1.7.0 Multi-Gate Registry
 - v1.8.0 Local Approval Dashboard
 - v1.9.0 Incident Reconstruction Reports

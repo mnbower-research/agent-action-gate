@@ -43,9 +43,9 @@ Agent Action Gate is not:
 
 It provides local pre-execution evaluation, local audit receipts, tamper-evident local receipt chains, policy context preservation, approval authority checks, and governance-weakening detection.
 
-## Existing AAG v1.5.0 Primitives
+## Existing AAG v1.6.0 Primitives
 
-AAG v1.5.0 maps the invariant into local implementation primitives:
+AAG v1.6.0 maps the invariant into local implementation primitives:
 
 - Review Packets preserve meaningful approval context.
 - Workflow Scope Ledger preserves original intent and scope across action chains.
