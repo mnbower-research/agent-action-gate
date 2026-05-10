@@ -1,0 +1,11 @@
+{
+  "decision": "require_approval",
+  "riskLevel": "critical",
+  "reviewPacketPresent": true,
+  "reviewerAnswer": "I approve this critical action.",
+  "reviewerRationale": "The action scope and expected consequence were reviewed.",
+  "timeSpentReviewingMs": 90000,
+  "approverHadAuthority": true,
+  "rejectionSupported": true,
+  "secondReviewerPresent": false
+}

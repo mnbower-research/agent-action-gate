@@ -2,7 +2,7 @@
 
 ## Current Boundary
 
-AAG v1.6.1 is a local reference implementation, not a hardened enterprise enforcement boundary. It demonstrates the Governance Gate Invariant, the Six Gate Questions, local receipts, Policy Provenance, Approval Authority Map, MetaGate, and Receipt Hash Chain verification.
+AAG v1.8.0 is a local reference implementation, not a hardened enterprise enforcement boundary. It demonstrates the Governance Gate Invariant, the Six Gate Questions, local receipts, Policy Provenance, Approval Authority Map, Approval Quality Layer, MetaGate, Multi-Gate Registry, and Receipt Hash Chain verification.
 
 The invariant is:
 
@@ -15,16 +15,14 @@ Short form:
 Current maturity framing:
 
 ```txt
-v1.6.1 asks the questions.
+v1.8.0 asks the questions and records review-process signals.
 v2.0 proves the answers.
 ```
 
 ## The Maturity Ladder
 
-- v1.6.1 Reference Implementation
-- v1.6.2 Threat Model and Enforcement Boundary
 - v1.7.0 Multi-Gate Registry
-- v1.8.0 Agency Preservation Layer
+- v1.8.0 Approval Quality Layer
 - v1.9.0 Signed Receipts and External Verification Design
 - v2.0.0 Runtime Binding and Cryptographic Trust
 
@@ -48,32 +46,31 @@ Example gates:
 
 Each gate should answer the same structural question: can this proposed action become consequence with authorized discernment?
 
-## v1.8.0 Agency Preservation Layer
+## v1.8.0 Approval Quality Layer
 
-The agency preservation layer extends the principle:
+The Approval Quality Layer extends the principle:
 
 ```txt
-Score systems, not souls.
+Approval must not outrun understanding.
 ```
 
-AAG evaluates proposed system actions, not the moral worth of people.
+Approval is not meaningful oversight if the reviewer lacks time, context, authority, or freedom to say no. AAG v1.8.0 records and evaluates review-process signals for approval-gated decisions.
 
-Potential detectors:
+Review-process signals:
 
-- `outsideAuthority`
-- `irreversibleWithoutApproval`
-- `oneWayVisibility`
-- `humanScoringWithoutContestability`
-- `decisionAuthorityRemoved`
-- `auditBecomesSurveillance`
-- `complianceTheater`
-- `integrationBypass`
+- review time
+- Review Packet presence
+- reviewer answer
+- reviewer rationale
+- approval authority
+- supported rejection path
+- second reviewer for critical risk
 
-The goal is to identify workflow structures that reduce human agency, authority, contestability, or accountability before those structures become operational defaults.
+The layer can help detect rubber-stamp approval patterns. It does not prove internal human understanding, eliminate automation bias, or replace HR, legal, compliance, IAM, sandboxing, or runtime enforcement.
 
 ## v1.9.0 Signed Receipts and External Verification Design
 
-v1.9.0 should define the design path toward stronger evidence integrity. These capabilities are not implemented in v1.6.1.
+v1.9.0 should define the design path toward stronger evidence integrity. These capabilities are not implemented in v1.8.0.
 
 Design areas:
 
@@ -121,4 +118,4 @@ These requirements move AAG from a local inspectable reference into a stronger e
 
 ## Closing
 
-AAG v1.6.1 defines and demonstrates the gate invariant. The v2 roadmap focuses on proving the answers and binding the gate to the runtime so consequential action cannot bypass discernment under the documented deployment model.
+AAG v1.8.0 defines and demonstrates the gate invariant, specialized routing, and approval-quality process metadata. The v2 roadmap focuses on proving the answers and binding the gate to the runtime so consequential action cannot bypass discernment under the documented deployment model.

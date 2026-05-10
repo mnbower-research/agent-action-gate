@@ -1,6 +1,6 @@
 {
   "name": "agent-action-gate",
-  "version": "1.7.0",
+  "version": "1.8.0",
   "description": "Pre-execution safety gate for AI agents.",
   "main": "dist/server.js",
   "bin": {
@@ -31,6 +31,7 @@
     "typecheck": "tsc --noEmit",
     "distribution:copilot": "tsx tools/distribution-copilot.ts",
     "eval:action-gate": "tsx src/actionGate/evals/runActionGateEvals.ts",
+    "eval:approval-quality": "tsx src/actionGate/approvalQuality/runApprovalQualityEvals.ts",
     "eval:gates": "tsx src/actionGate/gates/runGateRegistryEvals.ts",
     "eval:high-impact": "tsx evals/high-impact-recommendation.test.ts",
     "test:logging": "tsx src/actionGate/logging/smokeTestDecisionLogger.ts"

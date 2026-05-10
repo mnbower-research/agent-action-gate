@@ -14,9 +14,9 @@ Principle: Score systems, not souls.
 
 AAG evaluates proposed system actions, not the moral worth of people.
 
-**Current version:** v1.7.0
+**Current version:** v1.8.0
 
-**Status:** TypeScript compile passing, evals passing, gate routing evals passing, logging smoke test passing, fresh-clone local CLI path passing, CLI audit tooling included, Multi-Gate Registry included, Review Packets included, Policy Profiles included, Workflow Scope Ledger included, Receipt Hash Chain included, Policy Provenance included, Approval Authority Map included, Locked Policy Mode included, MetaGate included, n8n demo workflows included.
+**Status:** TypeScript compile passing, evals passing, gate routing evals passing, approval quality evals passing, logging smoke test passing, fresh-clone local CLI path passing, CLI audit tooling included, Multi-Gate Registry included, Approval Quality Layer foundation included, Review Packets included, Policy Profiles included, Workflow Scope Ledger included, Receipt Hash Chain included, Policy Provenance included, Approval Authority Map included, Locked Policy Mode included, MetaGate included, n8n demo workflows included.
 
 ## What AAG does
 
@@ -60,7 +60,7 @@ Every real gate must answer six questions before consequence:
 5. Does it require human judgment?
 6. What proof remains?
 
-AAG v1.7.0 contains local primitives for each question: Multi-Gate Registry, Approval Authority Map, Workflow Scope Ledger, irreversible-action detection, Review Packets, audit receipts, Receipt Hash Chain, and Policy Provenance.
+AAG v1.8.0 contains local primitives for each question: Multi-Gate Registry, Approval Quality Layer, Approval Authority Map, Workflow Scope Ledger, irreversible-action detection, Review Packets, audit receipts, Receipt Hash Chain, and Policy Provenance.
 
 These six questions are the difference between a gate and compliance theater.
 
@@ -114,6 +114,7 @@ npm-published usage:
 ```bash
 npx agent-action-gate demo
 npx agent-action-gate evaluate examples/actions/send-email.json --profile strict-external-actions
+npx agent-action-gate approval-quality examples/approval-quality/high-risk-fast-approval.json
 npx agent-action-gate audit
 npx agent-action-gate verify-receipts
 ```
@@ -123,6 +124,7 @@ Fresh-clone local usage:
 ```bash
 npm run cli -- demo
 npm run cli -- evaluate examples/actions/send-email.json --profile strict-external-actions
+npm run cli -- approval-quality examples/approval-quality/high-risk-fast-approval.json
 npm run cli -- audit
 npm run cli -- verify-receipts
 ```
@@ -180,6 +182,14 @@ This helps later reviewers understand not only that a decision happened, but wha
 Approval Authority Map records whether an approver had authority for the action class, target, scope, and risk level at decision time. It distinguishes approval from authority.
 
 The `authority-map` command checks local receipts for authority coverage and validity. This is not IAM or a full permissions platform.
+
+### Approval Quality Layer
+
+AAG can evaluate whether an approval process had minimum conditions for meaningful oversight, including review time, context, reviewer engagement, authority, and ability to say no. This supports the principle: approval must not outrun understanding.
+
+The Approval Quality Layer records and evaluates review-process signals. It can help detect rubber-stamp approval patterns, but it does not prove a human understood the action or eliminate automation bias.
+
+See [Approval Quality Layer](docs/APPROVAL_QUALITY_LAYER.md).
 
 ### Approved Execution Demo
 
@@ -355,6 +365,7 @@ Example result:
 TypeScript compile: passing
 Baseline and cyber evals: 19/19 passing
 High-impact recommendation evals: 20/20 passing
+Approval quality evals: 8/8 passing
 Logging smoke test: passing
 Fresh-clone CLI path: passing
 CLI demo: 6/6 expected decisions
@@ -391,6 +402,7 @@ In the existing working tree, legacy local receipts can fail `audit` if they pre
 | v1.6.0 | Governance Gate Invariant | Defines the invariant, six gate questions, what is not a gate, and Human Agency Infrastructure framing |
 | v1.6.1 | Fresh-clone CLI stabilization | Adds `npm run cli -- ...` for unpublished local clone usage |
 | v1.7.0 | Multi-Gate Registry | Routes proposed actions to specialized gates while preserving the same decision model and invariant |
+| v1.8.0 | Approval Quality Layer | Evaluates review-process signals to detect rubber-stamp approval patterns |
 
 See [docs/RELEASE_HISTORY.md](docs/RELEASE_HISTORY.md) for detailed release notes.
 
@@ -419,7 +431,6 @@ See [AAG Threat Model](docs/THREAT_MODEL.md) for current scope, bypass assumptio
 
 Next:
 
-- v1.8.0 Recommendation Gate MVP
 - v1.9.0 Signed Receipts and External Verification Design
 - v2.0.0 Runtime Binding and Cryptographic Trust
 

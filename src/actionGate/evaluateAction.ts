@@ -10,6 +10,7 @@ import type {
 import { applyPolicyProfile } from "./applyPolicyProfile";
 import { createReviewPacket } from "./createReviewPacket";
 import { decideGateAction } from "./decideGateAction";
+import { evaluateApprovalQuality } from "./approvalQuality/evaluateApprovalQuality";
 import { defaultPolicyProfile, getPolicyProfileById } from "./policyProfiles";
 import { rankGateResults } from "./rankGateResults";
 import { routeActionToGate } from "./gates/gateRegistry";
@@ -79,14 +80,29 @@ export function evaluateAction(
     defaultPolicyProfile;
   const profiledResult = applyPolicyProfile(input, baseResult, policyProfile);
 
+  const reviewPacket = createReviewPacket(
+    input,
+    profiledResult.decision,
+    rankedResults,
+    profiledResult.policyProfile,
+  );
+  const approvalQuality =
+    profiledResult.decision === "require_approval" &&
+    input.context?.approvalQuality
+      ? evaluateApprovalQuality({
+          decision: profiledResult.decision,
+          riskLevel: profiledResult.riskLevel,
+          ...input.context.approvalQuality,
+          reviewPacketPresent:
+            input.context.approvalQuality.reviewPacketPresent ??
+            reviewPacket !== undefined,
+        })
+      : undefined;
+
   return {
     ...profiledResult,
-    reviewPacket: createReviewPacket(
-      input,
-      profiledResult.decision,
-      rankedResults,
-      profiledResult.policyProfile,
-    ),
+    reviewPacket,
+    ...(approvalQuality ? { approvalQuality } : {}),
   };
 }
 

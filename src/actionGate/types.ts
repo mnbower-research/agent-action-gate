@@ -1,4 +1,8 @@
 import type { GateRoute } from "./gates/gateTypes";
+import type {
+  ApprovalQualityResult,
+  ApprovalQualityReviewMetadata,
+} from "./approvalQuality/approvalQualityTypes";
 
 export type GateDecision =
   | "allow"
@@ -134,6 +138,7 @@ export type ActionGateInput = {
     workflowId?: string;
     authorizedTargets?: string[];
     authorizedActionTypes?: string[];
+    approvalQuality?: ApprovalQualityReviewMetadata;
   };
   policyProfile?: PolicyProfile;
   policyProfileId?: string;
@@ -156,6 +161,7 @@ export type ActionGateResult = {
   evidence: string[];
   recommendedAction: string;
   reviewPacket?: ReviewPacket;
+  approvalQuality?: ApprovalQualityResult;
   policyProfile?: PolicyProfileResultMetadata;
   gateRoute?: GateRoute;
   detectorResults: GateDetectorResult[];

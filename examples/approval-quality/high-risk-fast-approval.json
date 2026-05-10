@@ -1,0 +1,11 @@
+{
+  "decision": "require_approval",
+  "riskLevel": "high",
+  "reviewPacketPresent": true,
+  "reviewerAnswer": "I approve this action.",
+  "reviewerRationale": "The customer account and message scope match the request.",
+  "timeSpentReviewingMs": 2000,
+  "approverHadAuthority": true,
+  "rejectionSupported": true,
+  "secondReviewerPresent": false
+}

@@ -11,6 +11,8 @@ import {
   formatApprovalAuthorityCoverage,
   scanApprovalAuthorityCoverage,
 } from "./actionGate/approvalAuthority";
+import { evaluateApprovalQuality } from "./actionGate/approvalQuality/evaluateApprovalQuality";
+import type { ApprovalQualityInput } from "./actionGate/approvalQuality/approvalQualityTypes";
 import { auditReceipts } from "./actionGate/auditReceipts";
 import { actionGateDetectors, evaluateAction } from "./actionGate/evaluateAction";
 import { formatAuditReport } from "./actionGate/formatAuditReport";
@@ -61,7 +63,7 @@ import {
   writeWorkflowLedgerUpdate,
 } from "./actionGate/workflowScopeLedger";
 
-const cliVersion = "1.7.0";
+const cliVersion = "1.8.0";
 
 type CliActionFile = {
   id?: string;
@@ -108,6 +110,10 @@ function main(args: string[]): number {
 
     if (args[0] === "route") {
       return runRouteCommand(args.slice(1));
+    }
+
+    if (args[0] === "approval-quality") {
+      return runApprovalQualityCommand(args.slice(1));
     }
 
     if (args[0] === "evaluate") {
@@ -191,6 +197,28 @@ function runRouteCommand(args: string[]): number {
   const route = routeActionToGate(input);
 
   printRouteResult(loadedAction.displayName, input, route);
+
+  return 0;
+}
+
+function runApprovalQualityCommand(args: string[]): number {
+  const inputFile = args[0];
+
+  if (!inputFile || inputFile.startsWith("-")) {
+    throw new Error("Missing approval quality JSON file.");
+  }
+
+  if (args.length > 1) {
+    throw new Error(
+      "Invalid arguments. Use: agent-action-gate approval-quality <approval-quality.json>",
+    );
+  }
+
+  const sourceFile = path.resolve(inputFile);
+  const input = loadApprovalQualityInput(sourceFile);
+  const result = evaluateApprovalQuality(input);
+
+  printApprovalQualityResult(input, result);
 
   return 0;
 }
@@ -1018,6 +1046,28 @@ function loadConfigInput(configFile: string | undefined): AagConfigInput {
   return parsed;
 }
 
+function loadApprovalQualityInput(sourceFile: string): ApprovalQualityInput {
+  let parsed: unknown;
+
+  try {
+    parsed = JSON.parse(readFileSync(sourceFile, "utf8"));
+  } catch (error) {
+    if (error instanceof SyntaxError) {
+      throw new Error(`Invalid JSON in ${sourceFile}.`);
+    }
+
+    throw new Error(`Unable to read approval quality file: ${sourceFile}`);
+  }
+
+  if (!isApprovalQualityInput(parsed)) {
+    throw new Error(
+      "Approval quality file must include decision, riskLevel, and optional review-process metadata.",
+    );
+  }
+
+  return parsed;
+}
+
 function loadActionInput(sourceFile: string, profileId: string): LoadedAction {
   let parsed: unknown;
 
@@ -1086,6 +1136,28 @@ function toActionGateInput(
     },
     policyProfileId: profileId,
   };
+}
+
+function printApprovalQualityResult(
+  input: ApprovalQualityInput,
+  result: ReturnType<typeof evaluateApprovalQuality>,
+): void {
+  console.log(`Agent Action Gate CLI v${cliVersion}`);
+  console.log("Approval Quality");
+  console.log("");
+  console.log(`Decision: ${input.decision}`);
+  console.log(`Risk level: ${input.riskLevel}`);
+  console.log(`Status: ${result.status}`);
+  console.log(`Score: ${result.score}`);
+  console.log(
+    `Issues: ${result.issues.length > 0 ? result.issues.join(", ") : "none"}`,
+  );
+  console.log(`Minimum review time ms: ${result.minimumReviewTimeMs}`);
+  console.log(
+    `Actual review time ms: ${result.actualReviewTimeMs ?? "unknown"}`,
+  );
+  console.log(`Reason: ${result.reason}`);
+  console.log(`Recommended action: ${result.recommendedAction}`);
 }
 
 function printEvaluationResult(
@@ -1217,6 +1289,37 @@ function isGateDecision(value: string): value is GateDecision {
   );
 }
 
+function isApprovalQualityInput(
+  value: unknown,
+): value is ApprovalQualityInput {
+  if (!isRecord(value)) {
+    return false;
+  }
+
+  return (
+    typeof value.decision === "string" &&
+    isGateDecision(value.decision) &&
+    typeof value.riskLevel === "string" &&
+    isActionRiskLevel(value.riskLevel) &&
+    optionalBoolean(value.reviewPacketPresent) &&
+    optionalString(value.reviewerAnswer) &&
+    optionalString(value.reviewerRationale) &&
+    optionalNumber(value.timeSpentReviewingMs) &&
+    optionalBoolean(value.approverHadAuthority) &&
+    optionalBoolean(value.rejectionSupported) &&
+    optionalBoolean(value.secondReviewerPresent)
+  );
+}
+
+function isActionRiskLevel(value: string): value is ApprovalQualityInput["riskLevel"] {
+  return (
+    value === "low" ||
+    value === "medium" ||
+    value === "high" ||
+    value === "critical"
+  );
+}
+
 function isCliActionFile(value: unknown): value is CliActionFile {
   return (
     isRecord(value) &&
@@ -1224,6 +1327,18 @@ function isCliActionFile(value: unknown): value is CliActionFile {
     typeof value.actionType === "string" &&
     (value.payload === undefined || isRecord(value.payload))
   );
+}
+
+function optionalBoolean(value: unknown): boolean {
+  return value === undefined || typeof value === "boolean";
+}
+
+function optionalNumber(value: unknown): boolean {
+  return value === undefined || typeof value === "number";
+}
+
+function optionalString(value: unknown): boolean {
+  return value === undefined || typeof value === "string";
 }
 
 function isRecord(value: unknown): value is Record<string, unknown> {
@@ -1244,6 +1359,7 @@ function printHelp(): void {
 Usage:
   agent-action-gate demo
   agent-action-gate route <action.json>
+  agent-action-gate approval-quality <approval-quality.json>
   agent-action-gate evaluate <action.json> [--profile <profileId>] [--write-receipt]
   agent-action-gate audit [--receipts-dir <dir>]
   agent-action-gate verify-receipts [--json] [--source receipts|distribution|all]
@@ -1260,6 +1376,7 @@ Usage:
 Examples:
   npx agent-action-gate demo
   npx agent-action-gate route examples/actions/send-email.json
+  npx agent-action-gate approval-quality examples/approval-quality/high-risk-fast-approval.json
   npx agent-action-gate evaluate examples/actions/send-email.json --profile strict-external-actions
   npx agent-action-gate audit
   npx agent-action-gate verify-receipts
@@ -1275,6 +1392,7 @@ Examples:
 Fresh-clone local examples:
   npm run cli -- demo
   npm run cli -- route examples/actions/send-email.json
+  npm run cli -- approval-quality examples/approval-quality/high-risk-fast-approval.json
   npm run cli -- evaluate examples/actions/send-email.json --profile strict-external-actions
   npm run cli -- audit
   npm run cli -- verify-receipts

@@ -1,0 +1,11 @@
+{
+  "decision": "require_approval",
+  "riskLevel": "high",
+  "reviewPacketPresent": true,
+  "reviewerAnswer": "I approve this exact action with this scope.",
+  "reviewerRationale": "The Review Packet shows the recipient, content, rollback limits, and external effect.",
+  "timeSpentReviewingMs": 45000,
+  "approverHadAuthority": true,
+  "rejectionSupported": true,
+  "secondReviewerPresent": false
+}
