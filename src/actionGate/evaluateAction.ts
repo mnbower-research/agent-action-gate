@@ -12,6 +12,7 @@ import { createReviewPacket } from "./createReviewPacket";
 import { decideGateAction } from "./decideGateAction";
 import { defaultPolicyProfile, getPolicyProfileById } from "./policyProfiles";
 import { rankGateResults } from "./rankGateResults";
+import { routeActionToGate } from "./gates/gateRegistry";
 import { detectCredentialAccess } from "./detectors/credentialAccess";
 import { detectDataExfiltration } from "./detectors/dataExfiltration";
 import { detectDestructiveCyberAction } from "./detectors/destructiveCyberAction";
@@ -55,6 +56,7 @@ export function evaluateAction(
   input: ActionGateInput,
   options: EvaluateActionOptions = {},
 ): ActionGateResult {
+  const gateRoute = routeActionToGate(input);
   const detectorResults = actionGateDetectors.map((detector) =>
     detector(input),
   );
@@ -67,6 +69,7 @@ export function evaluateAction(
     confidence: getDecisionConfidence(decision, rankedResults),
     evidence: getEvidence(rankedResults),
     recommendedAction: getRecommendedAction(decision, rankedResults),
+    gateRoute,
     detectorResults,
   };
   const policyProfile =

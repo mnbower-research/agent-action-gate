@@ -1,3 +1,5 @@
+import type { GateRoute } from "./gates/gateTypes";
+
 export type GateDecision =
   | "allow"
   | "require_approval"
@@ -155,6 +157,7 @@ export type ActionGateResult = {
   recommendedAction: string;
   reviewPacket?: ReviewPacket;
   policyProfile?: PolicyProfileResultMetadata;
+  gateRoute?: GateRoute;
   detectorResults: GateDetectorResult[];
 };
 

@@ -221,6 +221,12 @@ Policy Profiles let the same gate apply different approval, revision, and block 
 
 Policy Profiles work with Review Packets: the profile decides what the workflow allows, and the Review Packet explains what is being reviewed before execution.
 
+### Multi-Gate Registry
+
+Multi-Gate Registry routes different action classes to specialized gates while preserving the same decision model and Governance Gate Invariant.
+
+See [Multi-Gate Registry](docs/MULTI_GATE_REGISTRY.md).
+
 ## n8n demos
 
 The repo includes three importable n8n demo workflows:

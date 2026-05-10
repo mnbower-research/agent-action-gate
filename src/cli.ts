@@ -18,6 +18,7 @@ import { formatGovernanceCheck } from "./actionGate/formatGovernanceCheck";
 import { formatLockStatus } from "./actionGate/formatLockStatus";
 import { formatMetaGateReport } from "./actionGate/formatMetaGateReport";
 import { printReviewPacket } from "./actionGate/formatReviewPacket";
+import { routeActionToGate } from "./actionGate/gates/gateRegistry";
 import type { GovernanceCheckResult } from "./actionGate/governanceWeakening";
 import { runLaunchCopilotDemo } from "./actionGate/launchCopilotDemo";
 import {
@@ -105,6 +106,10 @@ function main(args: string[]): number {
       return runDemoCommand();
     }
 
+    if (args[0] === "route") {
+      return runRouteCommand(args.slice(1));
+    }
+
     if (args[0] === "evaluate") {
       return runEvaluateCommand(args.slice(1));
     }
@@ -167,6 +172,27 @@ function runDemoCommand(): number {
   });
 
   return run.matchedExpected === run.actions.length ? 0 : 1;
+}
+
+function runRouteCommand(args: string[]): number {
+  const actionFile = args[0];
+
+  if (!actionFile || actionFile.startsWith("-")) {
+    throw new Error("Missing action JSON file.");
+  }
+
+  if (args.length > 1) {
+    throw new Error("Invalid arguments. Use: agent-action-gate route <action.json>");
+  }
+
+  const sourceFile = path.resolve(actionFile);
+  const loadedAction = loadActionInput(sourceFile, "default");
+  const input = loadedAction.input;
+  const route = routeActionToGate(input);
+
+  printRouteResult(loadedAction.displayName, input, route);
+
+  return 0;
 }
 
 function runEvaluateCommand(args: string[]): number {
@@ -1081,6 +1107,9 @@ function printEvaluationResult(
   }
 
   console.log(`Policy Profile: ${profileId}`);
+  if (result.gateRoute) {
+    console.log(`Gate Route: ${result.gateRoute.gateId}`);
+  }
   console.log(`Decision: ${result.decision}`);
   console.log(`Reason: ${reason}`);
 
@@ -1100,6 +1129,29 @@ function printEvaluationResult(
   console.log("");
   console.log("Receipt written to:");
   console.log(receiptPath.replace(/\\/g, "/"));
+}
+
+function printRouteResult(
+  displayName: string,
+  input: ActionGateInput,
+  route: ReturnType<typeof routeActionToGate>,
+): void {
+  console.log(`Agent Action Gate CLI v${cliVersion}`);
+  console.log("Gate Route");
+  console.log("");
+  console.log(`Action: ${displayName}`);
+  console.log(`Action type: ${input.proposedAction.actionType}`);
+  console.log(`Tool: ${input.proposedAction.tool}`);
+
+  if (input.proposedAction.target) {
+    console.log(`Target: ${input.proposedAction.target}`);
+  }
+
+  console.log(`Selected gate: ${route.gateId}`);
+  console.log(`Category: ${route.category}`);
+  console.log(`Reason: ${route.reason}`);
+  console.log(`Matched signals: ${route.matchedSignals.join(", ")}`);
+  console.log(`Confidence: ${route.confidence}`);
 }
 
 function getHumanDecision(decision: string): HumanDecision {
@@ -1191,6 +1243,7 @@ function printHelp(): void {
 
 Usage:
   agent-action-gate demo
+  agent-action-gate route <action.json>
   agent-action-gate evaluate <action.json> [--profile <profileId>] [--write-receipt]
   agent-action-gate audit [--receipts-dir <dir>]
   agent-action-gate verify-receipts [--json] [--source receipts|distribution|all]
@@ -1206,6 +1259,7 @@ Usage:
 
 Examples:
   npx agent-action-gate demo
+  npx agent-action-gate route examples/actions/send-email.json
   npx agent-action-gate evaluate examples/actions/send-email.json --profile strict-external-actions
   npx agent-action-gate audit
   npx agent-action-gate verify-receipts
@@ -1220,6 +1274,7 @@ Examples:
 
 Fresh-clone local examples:
   npm run cli -- demo
+  npm run cli -- route examples/actions/send-email.json
   npm run cli -- evaluate examples/actions/send-email.json --profile strict-external-actions
   npm run cli -- audit
   npm run cli -- verify-receipts
