@@ -23,7 +23,7 @@ v2.0 proves the answers.
 
 - v1.7.0 Multi-Gate Registry
 - v1.8.0 Approval Quality Layer
-- v1.9.0 Signed Receipts and External Verification Design
+- v1.9.0 Signed Receipts MVP
 - v2.0.0 Runtime Binding and Cryptographic Trust
 
 ## v1.7.0 Multi-Gate Registry
@@ -68,22 +68,28 @@ Review-process signals:
 
 The layer can help detect rubber-stamp approval patterns. It does not prove internal human understanding, eliminate automation bias, or replace HR, legal, compliance, IAM, sandboxing, or runtime enforcement.
 
-## v1.9.0 Signed Receipts and External Verification Design
+## v1.9.0 Signed Receipts MVP
 
-v1.9.0 should define the design path toward stronger evidence integrity. These capabilities are not implemented in v1.8.0.
+v1.9.0 adds a local Ed25519 signing MVP for AAG receipts. Signed receipts provide cryptographically verifiable local receipt integrity: the receipt content matches the signature and public key, and modified signed receipt content invalidates the signature.
 
-Design areas:
+Implemented MVP areas:
 
-- signed receipts
+- local Ed25519 keypair initialization
+- automatic signing after local keys exist
+- `signatureMetadata` on new signed receipts
+- local signature verification
+
+Future production areas:
+
 - signed policy profiles
 - external append-only verification
 - WORM or hosted verification adapters
 - CI receipt verification
 - policy drift alerts
 
-Signed receipts are intended to move from local tamper-evidence toward verifiable receipt integrity. They do not by themselves solve deletion unless paired with external append-only verification or protected storage.
+Signed receipts move from local tamper-evidence toward verifiable receipt integrity. They do not by themselves solve deletion unless paired with external append-only verification or protected storage. The v1.9.0 MVP does not implement external append-only verification, HSM, KMS, TPM, SSO, legal compliance, or runtime binding.
 
-The design should preserve AAG's local reference implementation while specifying how stronger verification could be layered on for deployments that need independent evidence of what policy governed an action, who approved it, and what receipt history remained intact.
+The design should preserve AAG's local reference implementation while allowing stronger verification to be layered on for deployments that need independent evidence of what policy governed an action, who approved it, and what receipt history remained intact.
 
 ## v2.0.0 Runtime Binding and Cryptographic Trust
 
@@ -118,4 +124,4 @@ These requirements move AAG from a local inspectable reference into a stronger e
 
 ## Closing
 
-AAG v1.8.0 defines and demonstrates the gate invariant, specialized routing, and approval-quality process metadata. The v2 roadmap focuses on proving the answers and binding the gate to the runtime so consequential action cannot bypass discernment under the documented deployment model.
+AAG v1.9.0 defines and demonstrates the gate invariant, specialized routing, approval-quality process metadata, and local signed receipt integrity. The v2 roadmap focuses on proving the answers and binding the gate to the runtime so consequential action cannot bypass discernment under the documented deployment model.

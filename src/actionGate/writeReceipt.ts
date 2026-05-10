@@ -19,6 +19,8 @@ import {
   type AttachPolicyProvenanceContext,
 } from "./policyProvenance";
 import { attachHashChainMetadata } from "./receiptHashChain";
+import { signReceipt } from "./receipts/signReceipt";
+import { loadSigningKeypair } from "./receipts/signingKeys";
 import { sha256Stable } from "./stableHash";
 import type {
   ActionGateInput,
@@ -417,10 +419,14 @@ function writeJsonReceipt(
         ? "all"
         : "receipts",
   });
+  const signingKeypair = loadSigningKeypair();
+  const finalReceipt = signingKeypair
+    ? signReceipt(chainedReceipt, signingKeypair)
+    : chainedReceipt;
 
   writeFileSync(
     receiptPath,
-    `${JSON.stringify(chainedReceipt, null, 2)}\n`,
+    `${JSON.stringify(finalReceipt, null, 2)}\n`,
     "utf8",
   );
 

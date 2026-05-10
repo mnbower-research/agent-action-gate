@@ -42,6 +42,14 @@ import {
   verifyReceiptHashChain,
   type ReceiptChainSource,
 } from "./actionGate/receiptHashChain";
+import {
+  ensureSigningKeypair,
+  getDefaultAagKeyDir,
+} from "./actionGate/receipts/signingKeys";
+import {
+  formatSignedReceiptVerification,
+  verifySignedReceiptsInDirectory,
+} from "./actionGate/receipts/verifySignedReceipt";
 import type { ActionGateInput, GateDecision } from "./actionGate/types";
 import {
   createConfigHash,
@@ -126,6 +134,14 @@ function main(args: string[]): number {
 
     if (args[0] === "verify-receipts") {
       return runVerifyReceiptsCommand(args.slice(1));
+    }
+
+    if (args[0] === "init-signing") {
+      return runInitSigningCommand(args.slice(1));
+    }
+
+    if (args[0] === "verify-signed-receipts") {
+      return runVerifySignedReceiptsCommand(args.slice(1));
     }
 
     if (args[0] === "policy-provenance") {
@@ -293,6 +309,48 @@ function runVerifyReceiptsCommand(args: string[]): number {
       ? JSON.stringify(result, null, 2)
       : formatReceiptHashChainVerification(result),
   );
+
+  return result.valid ? 0 : 1;
+}
+
+function runInitSigningCommand(args: string[]): number {
+  if (args.length > 0) {
+    throw new Error("Invalid arguments. Use: agent-action-gate init-signing");
+  }
+
+  const keypair = ensureSigningKeypair();
+  const keyDir = getDefaultAagKeyDir();
+
+  console.log(`Agent Action Gate CLI v${cliVersion}`);
+  console.log("Signing initialized");
+  console.log("");
+  console.log(`Key directory: ${keyDir.replace(/\\/g, "/")}`);
+  console.log(
+    `Public key path: ${keypair.metadata.publicKeyPath?.replace(/\\/g, "/") ?? "unknown"}`,
+  );
+  console.log(`Key ID: ${keypair.metadata.keyId}`);
+  console.log(`Public key fingerprint: ${keypair.metadata.publicKeyFingerprint}`);
+  console.log("");
+  console.log(
+    "Warning: local signing keys are for developer use and are not protected production key management.",
+  );
+  console.log(
+    "Production use requires protected keys, a separate user or process, KMS, HSM, TPM, or an external signing service.",
+  );
+
+  return 0;
+}
+
+function runVerifySignedReceiptsCommand(args: string[]): number {
+  if (args.length > 0) {
+    throw new Error(
+      "Invalid arguments. Use: agent-action-gate verify-signed-receipts",
+    );
+  }
+
+  const result = verifySignedReceiptsInDirectory();
+
+  console.log(formatSignedReceiptVerification(result));
 
   return result.valid ? 0 : 1;
 }
@@ -1363,6 +1421,8 @@ Usage:
   agent-action-gate evaluate <action.json> [--profile <profileId>] [--write-receipt]
   agent-action-gate audit [--receipts-dir <dir>]
   agent-action-gate verify-receipts [--json] [--source receipts|distribution|all]
+  agent-action-gate init-signing
+  agent-action-gate verify-signed-receipts
   agent-action-gate policy-provenance [--json] [--source receipts|distribution|all]
   agent-action-gate authority-map [--json] [--source receipts|distribution|all]
   agent-action-gate lock-status [--config <config.json>]
@@ -1380,6 +1440,8 @@ Examples:
   npx agent-action-gate evaluate examples/actions/send-email.json --profile strict-external-actions
   npx agent-action-gate audit
   npx agent-action-gate verify-receipts
+  npx agent-action-gate init-signing
+  npx agent-action-gate verify-signed-receipts
   npx agent-action-gate policy-provenance
   npx agent-action-gate authority-map
   npx agent-action-gate lock-status
@@ -1396,6 +1458,8 @@ Fresh-clone local examples:
   npm run cli -- evaluate examples/actions/send-email.json --profile strict-external-actions
   npm run cli -- audit
   npm run cli -- verify-receipts
+  npm run cli -- init-signing
+  npm run cli -- verify-signed-receipts
 
 Profiles:
 ${builtInPolicyProfiles.map((profile) => `  ${profile.id}`).join("\n")}`);

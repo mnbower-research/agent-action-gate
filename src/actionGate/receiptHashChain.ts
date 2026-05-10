@@ -152,7 +152,13 @@ export function stripHashChainForPayload(
     return {};
   }
 
-  const { hashChain: _hashChain, ...payload } = receipt;
+  const {
+    hashChain: _hashChain,
+    signatureMetadata: _signatureMetadata,
+    signedReceipt: _signedReceipt,
+    signature: _signature,
+    ...payload
+  } = receipt;
   return sortObjectKeysDeep(payload) as Record<string, unknown>;
 }
 

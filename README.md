@@ -115,6 +115,8 @@ npm-published usage:
 npx agent-action-gate demo
 npx agent-action-gate evaluate examples/actions/send-email.json --profile strict-external-actions
 npx agent-action-gate approval-quality examples/approval-quality/high-risk-fast-approval.json
+npx agent-action-gate init-signing
+npx agent-action-gate verify-signed-receipts
 npx agent-action-gate audit
 npx agent-action-gate verify-receipts
 ```
@@ -125,6 +127,8 @@ Fresh-clone local usage:
 npm run cli -- demo
 npm run cli -- evaluate examples/actions/send-email.json --profile strict-external-actions
 npm run cli -- approval-quality examples/approval-quality/high-risk-fast-approval.json
+npm run cli -- init-signing
+npm run cli -- verify-signed-receipts
 npm run cli -- audit
 npm run cli -- verify-receipts
 ```
@@ -170,6 +174,16 @@ AAG can add tamper-evident local hash-chain metadata to new receipts. Each chain
 Run `verify-receipts` to check receipt-chain integrity. Legacy receipts are reported but do not fail verification.
 
 Local receipt hash chains are tamper-evident, not tamper-proof. They can detect changes to chained receipts that remain present, but they do not protect against a privileged user or compromised runtime deleting `.aag/receipts/`, regenerating receipt history, or controlling the local filesystem.
+
+### Signed Receipts
+
+AAG can sign new local receipts with Ed25519 after a local signing keypair has been initialized. Signed receipts provide cryptographically verifiable local receipt integrity: modified signed receipt content invalidates the signature.
+
+Initialize local developer signing keys with `npm run cli -- init-signing`. Verify signatures with `npm run cli -- verify-signed-receipts`.
+
+This is stronger proof than unsigned local hash chains, but it is not adversary-resistant storage, external append-only verification, HSM/KMS integration, enterprise readiness, legal compliance, or runtime binding. Production threat models require protected keys and external verification.
+
+See [Signed Receipts](docs/SIGNED_RECEIPTS.md).
 
 ### Policy Provenance
 
@@ -403,6 +417,7 @@ In the existing working tree, legacy local receipts can fail `audit` if they pre
 | v1.6.1 | Fresh-clone CLI stabilization | Adds `npm run cli -- ...` for unpublished local clone usage |
 | v1.7.0 | Multi-Gate Registry | Routes proposed actions to specialized gates while preserving the same decision model and invariant |
 | v1.8.0 | Approval Quality Layer | Evaluates review-process signals to detect rubber-stamp approval patterns |
+| v1.9.0 | Signed Receipts MVP | Adds Ed25519 receipt signing and local signature verification |
 
 See [docs/RELEASE_HISTORY.md](docs/RELEASE_HISTORY.md) for detailed release notes.
 
@@ -431,7 +446,6 @@ See [AAG Threat Model](docs/THREAT_MODEL.md) for current scope, bypass assumptio
 
 Next:
 
-- v1.9.0 Signed Receipts and External Verification Design
 - v2.0.0 Runtime Binding and Cryptographic Trust
 
 See [AAG v2 Roadmap](docs/V2_ROADMAP.md) for the maturity path from local reference implementation to runtime-bound, cryptographically verifiable enforcement architecture.
