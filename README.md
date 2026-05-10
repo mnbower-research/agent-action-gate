@@ -14,9 +14,9 @@ Principle: Score systems, not souls.
 
 AAG evaluates proposed system actions, not the moral worth of people.
 
-**Current version:** v1.6.1
+**Current version:** v1.7.0
 
-**Status:** TypeScript compile passing, evals passing, logging smoke test passing, fresh-clone local CLI path passing, CLI audit tooling included, Review Packets included, Policy Profiles included, Workflow Scope Ledger included, Receipt Hash Chain included, Policy Provenance included, Approval Authority Map included, Locked Policy Mode included, MetaGate included, n8n demo workflows included.
+**Status:** TypeScript compile passing, evals passing, gate routing evals passing, logging smoke test passing, fresh-clone local CLI path passing, CLI audit tooling included, Multi-Gate Registry included, Review Packets included, Policy Profiles included, Workflow Scope Ledger included, Receipt Hash Chain included, Policy Provenance included, Approval Authority Map included, Locked Policy Mode included, MetaGate included, n8n demo workflows included.
 
 ## What AAG does
 
@@ -60,7 +60,7 @@ Every real gate must answer six questions before consequence:
 5. Does it require human judgment?
 6. What proof remains?
 
-AAG v1.6.1 contains local primitives for each question: Approval Authority Map, Workflow Scope Ledger, irreversible-action detection, Review Packets, audit receipts, Receipt Hash Chain, and Policy Provenance.
+AAG v1.7.0 contains local primitives for each question: Multi-Gate Registry, Approval Authority Map, Workflow Scope Ledger, irreversible-action detection, Review Packets, audit receipts, Receipt Hash Chain, and Policy Provenance.
 
 These six questions are the difference between a gate and compliance theater.
 
@@ -390,6 +390,7 @@ In the existing working tree, legacy local receipts can fail `audit` if they pre
 | v1.5.0 | Approval Authority Map | New receipts preserve authority validity for action class, target, scope, and risk context |
 | v1.6.0 | Governance Gate Invariant | Defines the invariant, six gate questions, what is not a gate, and Human Agency Infrastructure framing |
 | v1.6.1 | Fresh-clone CLI stabilization | Adds `npm run cli -- ...` for unpublished local clone usage |
+| v1.7.0 | Multi-Gate Registry | Routes proposed actions to specialized gates while preserving the same decision model and invariant |
 
 See [docs/RELEASE_HISTORY.md](docs/RELEASE_HISTORY.md) for detailed release notes.
 
@@ -418,10 +419,9 @@ See [AAG Threat Model](docs/THREAT_MODEL.md) for current scope, bypass assumptio
 
 Next:
 
-- v1.7.0 Multi-Gate Registry
-- v1.8.0 Local Approval Dashboard
-- v1.9.0 Incident Reconstruction Reports
-- v2.0.0 Signed Receipts / Cryptographic Trust
+- v1.8.0 Recommendation Gate MVP
+- v1.9.0 Signed Receipts and External Verification Design
+- v2.0.0 Runtime Binding and Cryptographic Trust
 
 See [AAG v2 Roadmap](docs/V2_ROADMAP.md) for the maturity path from local reference implementation to runtime-bound, cryptographically verifiable enforcement architecture.
 

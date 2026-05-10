@@ -61,7 +61,7 @@ import {
   writeWorkflowLedgerUpdate,
 } from "./actionGate/workflowScopeLedger";
 
-const cliVersion = "1.6.1";
+const cliVersion = "1.7.0";
 
 type CliActionFile = {
   id?: string;
