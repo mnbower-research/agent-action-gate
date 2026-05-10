@@ -84,6 +84,8 @@ Design areas:
 - CI receipt verification
 - policy drift alerts
 
+Signed receipts are intended to move from local tamper-evidence toward verifiable receipt integrity. They do not by themselves solve deletion unless paired with external append-only verification or protected storage.
+
 The design should preserve AAG's local reference implementation while specifying how stronger verification could be layered on for deployments that need independent evidence of what policy governed an action, who approved it, and what receipt history remained intact.
 
 ## v2.0.0 Runtime Binding and Cryptographic Trust

@@ -47,11 +47,19 @@ AAG v1.6.1 does not protect against:
 - SIEM integration
 - legal compliance guarantees
 
+## Receipt Hash Chain Boundary
+
+Local receipt hash chains can detect alteration of chained receipts that remain present. They help show whether local receipt history has been changed after receipts were written.
+
+Local hash chains do not prevent deletion, regeneration, or replacement of the full receipt directory. They do not prove history against an adversary who controls the filesystem.
+
+This is why signed receipts, protected keys, and external append-only verification are on the v2 roadmap.
+
 ## Tamper-Evident vs Tamper-Proof
 
-Local receipt hash chains can detect alteration of chained local receipts. They help show whether local receipt history has been changed after receipts were written.
+Local receipt hash chains are useful for local developer discipline, accidental modification detection, and review trails. They are not tamper-proof against a user who can delete directories, regenerate history, or control the full local filesystem.
 
-They are not tamper-proof against a user who can delete directories, regenerate history, or control the full local filesystem. Stronger guarantees require signed receipts, external append-only logs, WORM storage, hosted verification, or similar independent trust anchors.
+Stronger guarantees require signed receipts, protected keys, external append-only logs, WORM storage, hosted verification, or similar independent trust anchors.
 
 ## Advisory vs Enforced Deployment
 

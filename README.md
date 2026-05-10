@@ -167,6 +167,8 @@ AAG can add tamper-evident local hash-chain metadata to new receipts. Each chain
 
 Run `verify-receipts` to check receipt-chain integrity. Legacy receipts are reported but do not fail verification.
 
+Local receipt hash chains are tamper-evident, not tamper-proof. They can detect changes to chained receipts that remain present, but they do not protect against a privileged user or compromised runtime deleting `.aag/receipts/`, regenerating receipt history, or controlling the local filesystem.
+
 ### Policy Provenance
 
 Policy Provenance preserves the policy context that governed a decision. New receipts can include policy source, policy version, policy hash, policy snapshot hash, matched rules, and decision basis.
@@ -395,9 +397,14 @@ Agent Action Gate is not:
 - a legal compliance guarantee
 - a model safety replacement
 - cryptographic signing yet
+- cryptographically signed receipts yet
+- adversary-resistant receipt storage
+- external append-only verification
 - hosted governance
 
 It is a pre-execution control layer that evaluates proposed tool actions before they run.
+
+Production threat models require signed receipts, protected keys, runtime separation, and external append-only verification.
 
 See [AAG Threat Model](docs/THREAT_MODEL.md) for current scope, bypass assumptions, and production hardening limits.
 
