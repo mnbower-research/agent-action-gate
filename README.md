@@ -425,6 +425,8 @@ Agent Runtime Alignment is the practical business category: translating company 
 
 Alignment Theory remains the research framework. Agent Action Gate is the open-source pre-execution control implementation. Related research is available at [AlignmentTheory.org](https://alignmenttheory.org).
 
+See [Human Agency Stack](docs/HUMAN_AGENCY_STACK.md) for the broader Human Agency Infrastructure direction.
+
 ## License
 
 MIT
