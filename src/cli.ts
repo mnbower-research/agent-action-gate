@@ -71,7 +71,7 @@ import {
   writeWorkflowLedgerUpdate,
 } from "./actionGate/workflowScopeLedger";
 
-const cliVersion = "1.8.0";
+const cliVersion = readPackageVersion() ?? "1.9.1";
 
 type CliActionFile = {
   id?: string;
@@ -1102,6 +1102,22 @@ function loadConfigInput(configFile: string | undefined): AagConfigInput {
   }
 
   return parsed;
+}
+
+function readPackageVersion(): string | undefined {
+  const packageJsonPath = path.resolve(__dirname, "..", "package.json");
+
+  try {
+    const parsed: unknown = JSON.parse(readFileSync(packageJsonPath, "utf8"));
+
+    if (isRecord(parsed) && typeof parsed.version === "string") {
+      return parsed.version;
+    }
+  } catch {
+    return undefined;
+  }
+
+  return undefined;
 }
 
 function loadApprovalQualityInput(sourceFile: string): ApprovalQualityInput {
