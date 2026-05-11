@@ -18,6 +18,14 @@ AAG evaluates proposed system actions, not the moral worth of people.
 
 **Status:** TypeScript compile passing, evals passing, gate routing evals passing, approval quality evals passing, logging smoke test passing, fresh-clone local CLI path passing, CLI audit tooling included, Multi-Gate Registry included, Approval Quality Layer foundation included, Review Packets included, Policy Profiles included, Workflow Scope Ledger included, Receipt Hash Chain included, Signed Receipts MVP included, Policy Provenance included, Approval Authority Map included, Locked Policy Mode included, MetaGate included, n8n demo workflows included.
 
+## Start here
+
+- [Quickstart](docs/QUICKSTART.md): fresh-clone 5-minute local path.
+- [Integration Guide](docs/INTEGRATION_GUIDE.md): how to place AAG before tool execution.
+- [Production Hardening](docs/PRODUCTION_HARDENING.md): what v1.9.x does and does not replace.
+
+v1.9.1 focuses on adoption polish, documentation, examples, and making the v1.9 signed receipt path easier to understand.
+
 ## What AAG does
 
 Agent Action Gate sits between an AI agent and the tool action the agent wants to run.
