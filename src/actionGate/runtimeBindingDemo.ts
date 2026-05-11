@@ -88,6 +88,8 @@ export function runRuntimeBindingDemo(): string {
     return lines.join("\n");
   }
 
+  // This receipt records the pre-execution gate decision; the later protected
+  // executor step is simulated and does not touch real tools or systems.
   const receiptPath = writeEvaluationReceipt({
     command: "evaluate",
     input: runtimeBindingDemoAction,
