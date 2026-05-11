@@ -14,17 +14,18 @@ Principle: Score systems, not souls.
 
 AAG evaluates proposed system actions, not the moral worth of people.
 
-**Current version:** v1.9.1
+**Current version:** v2.0.0
 
-**Status:** TypeScript compile passing, evals passing, gate routing evals passing, approval quality evals passing, logging smoke test passing, fresh-clone local CLI path passing, CLI audit tooling included, Multi-Gate Registry included, Approval Quality Layer foundation included, Review Packets included, Policy Profiles included, Workflow Scope Ledger included, Receipt Hash Chain included, Signed Receipts MVP included, Policy Provenance included, Approval Authority Map included, Locked Policy Mode included, MetaGate included, n8n demo workflows included.
+**Status:** TypeScript compile passing, evals passing, gate routing evals passing, approval quality evals passing, logging smoke test passing, fresh-clone local CLI path passing, CLI audit tooling included, v1.9.1 adoption docs included, Multi-Gate Registry included, Approval Quality Layer foundation included, Review Packets included, Policy Profiles included, Workflow Scope Ledger included, Receipt Hash Chain included, Signed Receipts MVP included, Runtime Binding MVP included, Policy Provenance included, Approval Authority Map included, Locked Policy Mode included, MetaGate included, n8n demo workflows included.
 
 ## Start here
 
 - [Quickstart](docs/QUICKSTART.md): fresh-clone 5-minute local path.
 - [Integration Guide](docs/INTEGRATION_GUIDE.md): how to place AAG before tool execution.
-- [Production Hardening](docs/PRODUCTION_HARDENING.md): what v1.9.x does and does not replace.
+- [Production Hardening](docs/PRODUCTION_HARDENING.md): what AAG does and does not replace.
+- [Runtime Binding MVP](docs/RUNTIME_BINDING.md): execution permits and simulated protected execution.
 
-v1.9.1 focuses on adoption polish, documentation, examples, and making the v1.9 signed receipt path easier to understand.
+v2.0.0 adds Runtime Binding MVP: execution permits and a simulated protected executor for the local reference path.
 
 ## What AAG does
 
@@ -68,7 +69,7 @@ Every real gate must answer six questions before consequence:
 5. Does it require human judgment?
 6. What proof remains?
 
-AAG v1.9.0 contains local primitives for each question: Multi-Gate Registry, Approval Quality Layer, Approval Authority Map, Workflow Scope Ledger, irreversible-action detection, Review Packets, audit receipts, Receipt Hash Chain, Signed Receipts MVP, and Policy Provenance.
+AAG v2.0.0 contains local primitives for each question: Multi-Gate Registry, Approval Quality Layer, Approval Authority Map, Workflow Scope Ledger, irreversible-action detection, Review Packets, audit receipts, Receipt Hash Chain, Signed Receipts MVP, Runtime Binding MVP, and Policy Provenance.
 
 These six questions are the difference between a gate and compliance theater.
 
@@ -192,6 +193,29 @@ Initialize local developer signing keys with `npm run cli -- init-signing`. Veri
 This is stronger proof than unsigned local hash chains, but it is not production-grade key management, adversary-resistant storage, external append-only verification, hosted governance, or runtime binding.
 
 See [Signed Receipts](docs/SIGNED_RECEIPTS.md).
+
+### Runtime Binding MVP
+
+AAG v2.0.0 adds Runtime Binding MVP. The core invariant is:
+
+```txt
+No tool execution without a valid AAG execution permit.
+```
+
+The local reference flow is:
+
+```txt
+Agent proposes action
+-> AAG evaluates action
+-> if allowed, AAG can issue an execution permit
+-> protected executor verifies permit
+-> no valid permit, no simulated execution
+-> receipt links proposal, decision, permit, and execution path
+```
+
+The protected executor demo denies missing, expired, or wrong-action permits and allows simulated execution only with a valid permit. This is simulated execution only; it does not send email, delete records, call external APIs, deploy code, or touch real systems.
+
+Run it with `npm run demo:runtime-binding`. See [Runtime Binding MVP](docs/RUNTIME_BINDING.md).
 
 ### Policy Provenance
 
@@ -394,6 +418,9 @@ CLI demo: 6/6 expected decisions
 audit: passing in clean fresh clone
 verify-receipts: passing in clean fresh clone
 Receipt Hash Chain: included
+Signed Receipts MVP: included
+Runtime Binding MVP: included
+v1.9.1 adoption docs: included
 Policy Provenance: included
 Approval Authority Map: included
 ```
@@ -426,6 +453,7 @@ In the existing working tree, legacy local receipts can fail `audit` if they pre
 | v1.7.0 | Multi-Gate Registry | Routes proposed actions to specialized gates while preserving the same decision model and invariant |
 | v1.8.0 | Approval Quality Layer | Evaluates review-process signals to detect rubber-stamp approval patterns |
 | v1.9.0 | Signed Receipts MVP | Adds Ed25519 receipt signing and local signature verification |
+| v2.0.0 | Runtime Binding MVP | Adds execution permits and a simulated protected executor that denies missing, expired, or wrong-action permits and allows simulated execution only with a valid permit. |
 
 See [docs/RELEASE_HISTORY.md](docs/RELEASE_HISTORY.md) for detailed release notes.
 
@@ -439,14 +467,15 @@ Agent Action Gate is not:
 - a legal compliance guarantee
 - a model safety replacement
 - production-grade key management
+- runtime separation
 - adversary-resistant receipt storage
-- external append-only verification
+- external append-only storage
 - hosted governance
-- runtime binding
+- production-complete runtime enforcement
 
 It is a pre-execution control layer that evaluates proposed tool actions before they run.
 
-AAG v1.9.0 includes Signed Receipts MVP: local Ed25519 receipt signing and local signature verification. Production threat models require production-grade key management, adversary-resistant storage, external append-only verification, hosted governance, and runtime binding.
+AAG v2.0.0 includes Signed Receipts MVP and Runtime Binding MVP. Production threat models still require IAM, sandboxing, least-privilege credentials, runtime separation, protected key management, external append-only storage, and legal compliance review.
 
 See [AAG Threat Model](docs/THREAT_MODEL.md) for current scope, bypass assumptions, and production hardening limits.
 
@@ -454,13 +483,10 @@ See [AAG Threat Model](docs/THREAT_MODEL.md) for current scope, bypass assumptio
 
 Next:
 
-- v2.0.0 Runtime Binding and Cryptographic Trust
-
-## Roadmap: v2.0 Runtime Binding
-
-The v2.0 Runtime Binding MVP starts from a conservative invariant: no tool execution without a valid AAG execution permit. The current local demo issues short-lived permits only for `allow` decisions and uses a simulated protected executor to deny missing, expired, or wrong-action permits.
-
-This is not production-complete runtime enforcement or enterprise readiness. See [Runtime Binding MVP](docs/RUNTIME_BINDING.md).
+- v2.1.0 Runtime Adapter Examples
+- external append-only receipt/permit export
+- protected key provider interface
+- deeper runtime binding hardening
 
 See [AAG v2 Roadmap](docs/V2_ROADMAP.md) for the maturity path from local reference implementation to runtime-bound, cryptographically verifiable enforcement architecture.
 

@@ -1,6 +1,6 @@
 {
   "name": "agent-action-gate",
-  "version": "1.9.1",
+  "version": "2.0.0",
   "description": "Pre-execution safety gate for AI agents.",
   "main": "dist/server.js",
   "bin": {
