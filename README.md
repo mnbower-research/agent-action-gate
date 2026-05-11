@@ -456,6 +456,12 @@ Next:
 
 - v2.0.0 Runtime Binding and Cryptographic Trust
 
+## Roadmap: v2.0 Runtime Binding
+
+The v2.0 Runtime Binding MVP starts from a conservative invariant: no tool execution without a valid AAG execution permit. The current local demo issues short-lived permits only for `allow` decisions and uses a simulated protected executor to deny missing, expired, or wrong-action permits.
+
+This is not production-complete runtime enforcement or enterprise readiness. See [Runtime Binding MVP](docs/RUNTIME_BINDING.md).
+
 See [AAG v2 Roadmap](docs/V2_ROADMAP.md) for the maturity path from local reference implementation to runtime-bound, cryptographically verifiable enforcement architecture.
 
 ## Research lineage
