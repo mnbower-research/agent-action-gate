@@ -14,9 +14,9 @@ Principle: Score systems, not souls.
 
 AAG evaluates proposed system actions, not the moral worth of people.
 
-**Current version:** v1.8.0
+**Current version:** v1.9.0
 
-**Status:** TypeScript compile passing, evals passing, gate routing evals passing, approval quality evals passing, logging smoke test passing, fresh-clone local CLI path passing, CLI audit tooling included, Multi-Gate Registry included, Approval Quality Layer foundation included, Review Packets included, Policy Profiles included, Workflow Scope Ledger included, Receipt Hash Chain included, Policy Provenance included, Approval Authority Map included, Locked Policy Mode included, MetaGate included, n8n demo workflows included.
+**Status:** TypeScript compile passing, evals passing, gate routing evals passing, approval quality evals passing, logging smoke test passing, fresh-clone local CLI path passing, CLI audit tooling included, Multi-Gate Registry included, Approval Quality Layer foundation included, Review Packets included, Policy Profiles included, Workflow Scope Ledger included, Receipt Hash Chain included, Signed Receipts MVP included, Policy Provenance included, Approval Authority Map included, Locked Policy Mode included, MetaGate included, n8n demo workflows included.
 
 ## What AAG does
 
@@ -60,7 +60,7 @@ Every real gate must answer six questions before consequence:
 5. Does it require human judgment?
 6. What proof remains?
 
-AAG v1.8.0 contains local primitives for each question: Multi-Gate Registry, Approval Quality Layer, Approval Authority Map, Workflow Scope Ledger, irreversible-action detection, Review Packets, audit receipts, Receipt Hash Chain, and Policy Provenance.
+AAG v1.9.0 contains local primitives for each question: Multi-Gate Registry, Approval Quality Layer, Approval Authority Map, Workflow Scope Ledger, irreversible-action detection, Review Packets, audit receipts, Receipt Hash Chain, Signed Receipts MVP, and Policy Provenance.
 
 These six questions are the difference between a gate and compliance theater.
 
@@ -181,7 +181,7 @@ AAG can sign new local receipts with Ed25519 after a local signing keypair has b
 
 Initialize local developer signing keys with `npm run cli -- init-signing`. Verify signatures with `npm run cli -- verify-signed-receipts`.
 
-This is stronger proof than unsigned local hash chains, but it is not adversary-resistant storage, external append-only verification, HSM/KMS integration, enterprise readiness, legal compliance, or runtime binding. Production threat models require protected keys and external verification.
+This is stronger proof than unsigned local hash chains, but it is not production-grade key management, adversary-resistant storage, external append-only verification, hosted governance, or runtime binding.
 
 See [Signed Receipts](docs/SIGNED_RECEIPTS.md).
 
@@ -430,15 +430,15 @@ Agent Action Gate is not:
 - a replacement for least-privilege credentials
 - a legal compliance guarantee
 - a model safety replacement
-- cryptographic signing yet
-- cryptographically signed receipts yet
+- production-grade key management
 - adversary-resistant receipt storage
 - external append-only verification
 - hosted governance
+- runtime binding
 
 It is a pre-execution control layer that evaluates proposed tool actions before they run.
 
-Production threat models require signed receipts, protected keys, runtime separation, and external append-only verification.
+AAG v1.9.0 includes Signed Receipts MVP: local Ed25519 receipt signing and local signature verification. Production threat models require production-grade key management, adversary-resistant storage, external append-only verification, hosted governance, and runtime binding.
 
 See [AAG Threat Model](docs/THREAT_MODEL.md) for current scope, bypass assumptions, and production hardening limits.
 
