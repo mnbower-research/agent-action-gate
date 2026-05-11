@@ -14,7 +14,7 @@ Principle: Score systems, not souls.
 
 AAG evaluates proposed system actions, not the moral worth of people.
 
-**Current version:** v1.9.0
+**Current version:** v1.9.1
 
 **Status:** TypeScript compile passing, evals passing, gate routing evals passing, approval quality evals passing, logging smoke test passing, fresh-clone local CLI path passing, CLI audit tooling included, Multi-Gate Registry included, Approval Quality Layer foundation included, Review Packets included, Policy Profiles included, Workflow Scope Ledger included, Receipt Hash Chain included, Signed Receipts MVP included, Policy Provenance included, Approval Authority Map included, Locked Policy Mode included, MetaGate included, n8n demo workflows included.
 
