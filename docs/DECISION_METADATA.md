@@ -6,13 +6,13 @@ AAG remains a small pre-execution action gate. It answers:
 
 > "May this proposed agent action proceed under the current rules?"
 
-AGA asks:
+Broader governance stacks ask:
 
 > "Can the whole governance chain prove that delegated agent action remained authorized, bounded, reviewable, runtime-faithful, and accountable?"
 
-AAG is the gate. AGA is the auditor.
+AAG is the focused pre-execution action gate. Downstream governance systems can consume its structured decision metadata.
 
-This metadata makes AAG decisions easier to feed into receipts, runtime binding, decision closure artifacts, and external audit systems. It does not turn AAG into the broader auditor stack.
+This metadata makes AAG decisions easier to feed into receipts, runtime binding, decision closure artifacts, and external audit/reporting layers. It does not turn AAG into a full auditor system.
 
 ## Response Shape
 
@@ -147,4 +147,4 @@ npm run cli -- evaluate examples/decision-metadata/runtime-target-mismatch.json 
 
 AAG is not a full auditor system. It does not replace IAM, receipts, runtime binding, legal review, policy authoring, approval quality, or full governance audits.
 
-AAG can serve as one runtime enforcement component underneath AGA by producing stable decision evidence before execution.
+AAG can serve as one runtime enforcement component underneath broader governance stacks by producing stable decision evidence before execution.

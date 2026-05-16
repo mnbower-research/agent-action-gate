@@ -10,7 +10,7 @@ Expanded form:
 
 > "No signal, memory, recommendation, or agent action should become operational consequence without the appropriate authority, scope, contestability, accountability, and proof."
 
-Agent Action Gate v2.1.0 currently implements the Action Gate and Receipt Gate portions of this broader Human Agency Infrastructure direction, plus decision metadata hooks that can feed downstream auditor systems. This document describes a future-direction architecture, not a claim that AAG currently implements all five gates.
+Agent Action Gate v2.1.0 currently implements the Action Gate and Receipt Gate portions of this broader Human Agency Infrastructure direction, plus decision metadata hooks that can feed downstream governance systems. This document describes a future-direction architecture, not a claim that AAG currently implements all five gates.
 
 ## Five-Gate Stack
 

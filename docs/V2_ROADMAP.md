@@ -112,7 +112,7 @@ This target does not mean every bypass path disappears in all environments. It m
 
 v2.1.0 adds additive `decisionMetadata` to AAG evaluation results. It includes reason codes, policy IDs, hard-boundary IDs, authority and approval status, runtime permit requirement metadata, a stable decision hash, a receipt candidate, and a decision closure candidate.
 
-AAG remains the pre-execution gate. It does not become the full auditor stack.
+AAG remains the pre-execution gate. It does not become a full external audit/reporting layer.
 
 ## Production Hardening Requirements
 

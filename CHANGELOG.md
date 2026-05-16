@@ -6,7 +6,7 @@
 - Added deterministic reason codes, `decisionHash`, `decisionId`, `policyIds`, and `hardBoundaryIds`.
 - Added receipt and decision closure candidate hooks for downstream systems.
 - Added decision metadata examples and tests.
-- Documented the AAG/AGA boundary: AAG is the gate. AGA is the auditor.
+- Documented the architecture boundary: AAG is a focused pre-execution gate, not a full auditor system.
 
 ## Earlier Releases
 

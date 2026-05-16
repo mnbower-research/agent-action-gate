@@ -25,7 +25,7 @@ AAG evaluates proposed system actions, not the moral worth of people.
 - [Production Hardening](docs/PRODUCTION_HARDENING.md): what AAG does and does not replace.
 - [Runtime Binding MVP](docs/RUNTIME_BINDING.md): execution permits and simulated protected execution.
 
-v2.1.0 adds Decision Metadata hooks for receipts, runtime binding, decision closure candidates, and external auditor systems while keeping AAG focused as the pre-execution gate engine.
+v2.1.0 adds Decision Metadata hooks for receipts, runtime binding, decision closure candidates, and external audit/reporting layers while keeping AAG focused as the pre-execution gate engine.
 
 ## What AAG does
 
@@ -44,11 +44,11 @@ AAG answers:
 
 > "May this proposed agent action proceed under the current rules?"
 
-AGA asks:
+Broader governance stacks ask:
 
 > "Can the whole governance chain prove that delegated agent action remained authorized, bounded, reviewable, runtime-faithful, and accountable?"
 
-AAG is the gate. AGA is the auditor.
+AAG is the focused pre-execution action gate. Downstream governance systems can consume its structured decision metadata.
 
 ## Five-Minute Demo
 
@@ -233,7 +233,7 @@ AAG v2.1.0 adds `decisionMetadata` to evaluation results without removing or ren
 
 The metadata includes deterministic reason codes, policy IDs, hard-boundary IDs, authority and approval status, runtime permit requirements, a stable `decisionHash`, a `receiptCandidate`, and a `closureCandidate`.
 
-This lets downstream systems turn AAG decisions into receipts, runtime-binding evidence, or Decision Closure Artifacts. AAG does not implement the full auditor stack here.
+This lets downstream systems turn AAG decisions into receipts, runtime-binding evidence, or Decision Closure Artifacts. AAG does not implement the full external audit/reporting layer here.
 
 See [Decision Metadata](docs/DECISION_METADATA.md).
 
@@ -487,7 +487,7 @@ In the existing working tree, legacy local receipts can fail `audit` if they pre
 | v1.8.0 | Approval Quality Layer | Evaluates review-process signals to detect rubber-stamp approval patterns |
 | v1.9.0 | Signed Receipts MVP | Adds Ed25519 receipt signing and local signature verification |
 | v2.0.0 | Runtime Binding MVP | Adds execution permits and a simulated protected executor that denies missing, expired, or wrong-action permits and allows simulated execution only with a valid permit. |
-| v2.1.0 | Decision Metadata | Adds additive `decisionMetadata`, reason codes, stable decision hashes, receipt candidates, and decision closure candidates for downstream auditor systems. |
+| v2.1.0 | Decision Metadata | Adds additive `decisionMetadata`, reason codes, stable decision hashes, receipt candidates, and decision closure candidates for downstream governance systems. |
 
 See [docs/RELEASE_HISTORY.md](docs/RELEASE_HISTORY.md) for detailed release notes.
 

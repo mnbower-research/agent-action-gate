@@ -10,11 +10,11 @@ AAG answers:
 
 > "May this proposed agent action proceed under the current rules?"
 
-AGA asks:
+Broader governance stacks ask:
 
 > "Can the whole governance chain prove that delegated agent action remained authorized, bounded, reviewable, runtime-faithful, and accountable?"
 
-AAG is the gate. AGA is the auditor.
+AAG is the focused pre-execution action gate. Downstream governance systems can consume its structured decision metadata.
 
 ## Core Assumption
 

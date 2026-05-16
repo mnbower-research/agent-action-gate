@@ -21,15 +21,15 @@ This release adds structured decision metadata while keeping AAG focused as the 
 
 ### Why this matters
 
-AAG is the gate. AGA is the auditor.
+AAG is the focused pre-execution action gate. Downstream governance systems can consume its structured decision metadata.
 
 AAG answers: "May this proposed agent action proceed under the current rules?"
 
-AGA asks: "Can the whole governance chain prove that delegated agent action remained authorized, bounded, reviewable, runtime-faithful, and accountable?"
+Broader governance stacks ask: "Can the whole governance chain prove that delegated agent action remained authorized, bounded, reviewable, runtime-faithful, and accountable?"
 
-This release makes AAG decisions easier to use as evidence underneath an auditor system without adding dashboards, hosted APIs, public-source scanning, Governance Reality Reports, or broad AGA business logic.
+This release makes AAG decisions easier to use as evidence underneath downstream governance systems without adding dashboards, hosted APIs, public-source scanning, Governance Reality Reports, or broad external audit/reporting business logic.
 
-This is not IAM, a full receipt chain, a full Decision Closure Artifact package, legal compliance, regulator approval, or a complete auditor stack.
+This is not IAM, a full receipt chain, a full Decision Closure Artifact package, legal compliance, regulator approval, or a complete external audit/reporting layer.
 
 ## v2.0.0 - Runtime Binding MVP
 
