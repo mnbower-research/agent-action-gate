@@ -14,9 +14,9 @@ Principle: Score systems, not souls.
 
 AAG evaluates proposed system actions, not the moral worth of people.
 
-**Current version:** v2.0.0
+**Current version:** v2.1.0
 
-**Status:** TypeScript compile passing, evals passing, gate routing evals passing, approval quality evals passing, logging smoke test passing, fresh-clone local CLI path passing, CLI audit tooling included, v1.9.1 adoption docs included, Multi-Gate Registry included, Approval Quality Layer foundation included, Review Packets included, Policy Profiles included, Workflow Scope Ledger included, Receipt Hash Chain included, Signed Receipts MVP included, Runtime Binding MVP included, Policy Provenance included, Approval Authority Map included, Locked Policy Mode included, MetaGate included, n8n demo workflows included.
+**Status:** TypeScript compile passing, evals passing, gate routing evals passing, approval quality evals passing, logging smoke test passing, fresh-clone local CLI path passing, CLI audit tooling included, Decision Metadata hooks included, Multi-Gate Registry included, Approval Quality Layer foundation included, Review Packets included, Policy Profiles included, Workflow Scope Ledger included, Receipt Hash Chain included, Signed Receipts MVP included, Runtime Binding MVP included, Policy Provenance included, Approval Authority Map included, Locked Policy Mode included, MetaGate included, n8n demo workflows included.
 
 ## Start here
 
@@ -25,7 +25,7 @@ AAG evaluates proposed system actions, not the moral worth of people.
 - [Production Hardening](docs/PRODUCTION_HARDENING.md): what AAG does and does not replace.
 - [Runtime Binding MVP](docs/RUNTIME_BINDING.md): execution permits and simulated protected execution.
 
-v2.0.0 adds Runtime Binding MVP: execution permits and a simulated protected executor for the local reference path.
+v2.1.0 adds Decision Metadata hooks for receipts, runtime binding, decision closure candidates, and external auditor systems while keeping AAG focused as the pre-execution gate engine.
 
 ## What AAG does
 
@@ -39,6 +39,16 @@ Agent proposes a tool action
 ```
 
 It helps automation pause before external effects such as sending emails, deleting files, calling APIs, modifying data, deploying code, publishing content, or exposing sensitive information.
+
+AAG answers:
+
+> "May this proposed agent action proceed under the current rules?"
+
+AGA asks:
+
+> "Can the whole governance chain prove that delegated agent action remained authorized, bounded, reviewable, runtime-faithful, and accountable?"
+
+AAG is the gate. AGA is the auditor.
 
 ## Five-Minute Demo
 
@@ -69,7 +79,7 @@ Every real gate must answer six questions before consequence:
 5. Does it require human judgment?
 6. What proof remains?
 
-AAG v2.0.0 contains local primitives for each question: Multi-Gate Registry, Approval Quality Layer, Approval Authority Map, Workflow Scope Ledger, irreversible-action detection, Review Packets, audit receipts, Receipt Hash Chain, Signed Receipts MVP, Runtime Binding MVP, and Policy Provenance.
+AAG v2.1.0 contains local primitives for each question: Multi-Gate Registry, Approval Quality Layer, Approval Authority Map, Workflow Scope Ledger, irreversible-action detection, Review Packets, audit receipts, Decision Metadata, Receipt Hash Chain, Signed Receipts MVP, Runtime Binding MVP, and Policy Provenance.
 
 These six questions are the difference between a gate and compliance theater.
 
@@ -196,7 +206,7 @@ See [Signed Receipts](docs/SIGNED_RECEIPTS.md).
 
 ### Runtime Binding MVP
 
-AAG v2.0.0 adds Runtime Binding MVP. The core invariant is:
+AAG v2.0.0 introduced Runtime Binding MVP. The core invariant is:
 
 ```txt
 No tool execution without a valid AAG execution permit.
@@ -216,6 +226,16 @@ Agent proposes action
 The protected executor demo denies missing, expired, or wrong-action permits and allows simulated execution only with a valid permit. This is simulated execution only; it does not send email, delete records, call external APIs, deploy code, or touch real systems.
 
 Run it with `npm run demo:runtime-binding`. See [Runtime Binding MVP](docs/RUNTIME_BINDING.md).
+
+### Decision Metadata
+
+AAG v2.1.0 adds `decisionMetadata` to evaluation results without removing or renaming existing response fields.
+
+The metadata includes deterministic reason codes, policy IDs, hard-boundary IDs, authority and approval status, runtime permit requirements, a stable `decisionHash`, a `receiptCandidate`, and a `closureCandidate`.
+
+This lets downstream systems turn AAG decisions into receipts, runtime-binding evidence, or Decision Closure Artifacts. AAG does not implement the full auditor stack here.
+
+See [Decision Metadata](docs/DECISION_METADATA.md).
 
 ### Policy Provenance
 
@@ -329,7 +349,7 @@ POST /evaluate
 { "ok": true, "service": "agent-action-gate" }
 ```
 
-`POST /evaluate` accepts an `ActionGateInput` JSON object and returns an `ActionGateResult`.
+`POST /evaluate` accepts an `ActionGateInput` JSON object and returns an `ActionGateResult`. Existing response fields remain stable; v2.1.0 adds `decisionMetadata` as an additive field.
 
 PowerShell example:
 
@@ -401,7 +421,20 @@ Example result:
   "riskLevel": "critical",
   "primaryIssue": "irreversible_action",
   "confidence": 0.89,
-  "recommendedAction": "Request explicit user approval before execution; primary issue: irreversible_action."
+  "recommendedAction": "Request explicit user approval before execution; primary issue: irreversible_action.",
+  "decisionMetadata": {
+    "decisionId": "aag_decision_...",
+    "decisionVersion": "2.1.0",
+    "decisionHash": "sha256:...",
+    "reasonCodes": ["AAG-BLOCK-IRREVERSIBLE-WITHOUT-APPROVAL"],
+    "policyIds": ["policy:default"],
+    "hardBoundaryIds": [],
+    "authorityStatus": "approval_required",
+    "approvalStatus": "required",
+    "runtimePermitRequired": false,
+    "receiptCandidate": {},
+    "closureCandidate": {}
+  }
 }
 ```
 
@@ -420,7 +453,7 @@ verify-receipts: passing in clean fresh clone
 Receipt Hash Chain: included
 Signed Receipts MVP: included
 Runtime Binding MVP: included
-v1.9.1 adoption docs: included
+Decision Metadata hooks: included
 Policy Provenance: included
 Approval Authority Map: included
 ```
@@ -454,6 +487,7 @@ In the existing working tree, legacy local receipts can fail `audit` if they pre
 | v1.8.0 | Approval Quality Layer | Evaluates review-process signals to detect rubber-stamp approval patterns |
 | v1.9.0 | Signed Receipts MVP | Adds Ed25519 receipt signing and local signature verification |
 | v2.0.0 | Runtime Binding MVP | Adds execution permits and a simulated protected executor that denies missing, expired, or wrong-action permits and allows simulated execution only with a valid permit. |
+| v2.1.0 | Decision Metadata | Adds additive `decisionMetadata`, reason codes, stable decision hashes, receipt candidates, and decision closure candidates for downstream auditor systems. |
 
 See [docs/RELEASE_HISTORY.md](docs/RELEASE_HISTORY.md) for detailed release notes.
 
@@ -475,7 +509,7 @@ Agent Action Gate is not:
 
 It is a pre-execution control layer that evaluates proposed tool actions before they run.
 
-AAG v2.0.0 includes Signed Receipts MVP and Runtime Binding MVP. Production threat models still require IAM, sandboxing, least-privilege credentials, runtime separation, protected key management, external append-only storage, and legal compliance review.
+AAG v2.1.0 includes Signed Receipts MVP, Runtime Binding MVP, and Decision Metadata hooks. Production threat models still require IAM, sandboxing, least-privilege credentials, runtime separation, protected key management, external append-only storage, and legal compliance review.
 
 See [AAG Threat Model](docs/THREAT_MODEL.md) for current scope, bypass assumptions, and production hardening limits.
 
@@ -483,7 +517,7 @@ See [AAG Threat Model](docs/THREAT_MODEL.md) for current scope, bypass assumptio
 
 Next:
 
-- v2.1.0 Runtime Adapter Examples
+- v2.2.0 Runtime Adapter Examples
 - external append-only receipt/permit export
 - protected key provider interface
 - deeper runtime binding hardening

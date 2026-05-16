@@ -4,11 +4,23 @@
 
 AAG evaluates proposed AI-agent tool actions before execution and returns `allow`, `require_approval`, `revise_action`, or `block`.
 
-AAG v1.6.1 is a minimal TypeScript reference implementation of the Governance Gate Invariant. It is not a hardened enterprise enforcement boundary by itself.
+AAG v2.1.0 is a minimal TypeScript reference implementation of the Governance Gate Invariant. It is not a hardened enterprise enforcement boundary by itself.
+
+AAG answers:
+
+> "May this proposed agent action proceed under the current rules?"
+
+AGA asks:
+
+> "Can the whole governance chain prove that delegated agent action remained authorized, bounded, reviewable, runtime-faithful, and accountable?"
+
+AAG is the gate. AGA is the auditor.
 
 ## Core Assumption
 
 AAG must sit in the execution path. If an agent or developer can bypass AAG and still access tools directly, the gate is not enforcing the invariant.
+
+AAG helps prevent unauthorized action when it is actually integrated into the action path.
 
 ## Protects Against
 
@@ -26,14 +38,21 @@ AAG can help protect against:
 - local receipt tampering detection through Receipt Hash Chain
 - policy context loss through Policy Provenance
 - approval without authority through Approval Authority Map
+- decision metadata for downstream receipts, runtime binding, decision closure candidates, and external audit systems
 
-## Does Not Protect Against Yet
+## Does Not Prevent
 
-AAG v1.6.1 does not protect against:
+AAG v2.1.0 does not prevent:
 
 - developers intentionally not calling the gate
+- developers bypassing the gate and calling tools directly
 - runtimes that ignore the gate decision
 - agents with direct tool access outside AAG
+- misconfigured IAM permissions
+- malicious infrastructure operators
+- incomplete policy definitions
+- weak human review quality by itself
+- receipt tampering unless receipts/signing are separately implemented
 - compromised approvers
 - forged JSON context
 - local receipt deletion by a privileged user
@@ -42,10 +61,10 @@ AAG v1.6.1 does not protect against:
 - kernel-level attacks
 - supply-chain compromise
 - production enforcement without integration
-- cryptographic signing or external notarization
+- production-grade signing, protected keys, or external notarization by itself
 - full IAM/RBAC
 - SIEM integration
-- legal compliance guarantees
+- legal compliance by itself
 
 ## Receipt Hash Chain Boundary
 
@@ -85,4 +104,4 @@ Future hardening areas include:
 
 ## Closing
 
-AAG v1.6.1 is a reference implementation of the gate invariant. It is designed to make the structure inspectable, testable, and runnable locally. Production enforcement requires binding the gate to the runtime so action cannot bypass discernment.
+AAG v2.1.0 is a reference implementation of the gate invariant. It is designed to make the structure inspectable, testable, and runnable locally. Production enforcement requires binding the gate to the runtime so action cannot bypass discernment.

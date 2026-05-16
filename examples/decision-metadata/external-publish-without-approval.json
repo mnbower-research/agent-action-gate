@@ -1,0 +1,18 @@
+{
+  "userRequest": "Publish the launch update to LinkedIn.",
+  "proposedAction": {
+    "actionId": "act_publish_launch",
+    "tool": "social.post",
+    "actionType": "publish_public_post",
+    "target": "linkedin",
+    "payload": {
+      "postText": "Launch update is ready for review."
+    },
+    "reversible": true,
+    "externalFacing": true
+  },
+  "context": {
+    "environment": "production",
+    "userApproved": false
+  }
+}

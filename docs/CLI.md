@@ -67,6 +67,18 @@ The CLI writes a receipt by default. The local repository command also accepts t
 npm run cli -- evaluate examples/actions/delete-record.json --write-receipt
 ```
 
+v2.1.0 also prints `Decision metadata` for the evaluation. This is an additive hook for downstream systems and includes `decisionId`, `decisionVersion`, `decisionHash`, `reasonCodes`, `policyIds`, `hardBoundaryIds`, authority and approval status, runtime permit requirement, `receiptCandidate`, and `closureCandidate`.
+
+Decision metadata examples:
+
+```bash
+npm run cli -- evaluate examples/decision-metadata/safe-internal-action.json
+npm run cli -- evaluate examples/decision-metadata/external-publish-without-approval.json --profile strict-external-actions
+npm run cli -- evaluate examples/decision-metadata/production-delete.json --profile strict-external-actions
+npm run cli -- evaluate examples/decision-metadata/irreversible-without-approval.json --profile strict-external-actions
+npm run cli -- evaluate examples/decision-metadata/runtime-target-mismatch.json --profile strict-external-actions
+```
+
 ## Audit receipts
 
 ```bash

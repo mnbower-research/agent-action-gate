@@ -10,6 +10,7 @@ import type {
 import { applyPolicyProfile } from "./applyPolicyProfile";
 import { createReviewPacket } from "./createReviewPacket";
 import { decideGateAction } from "./decideGateAction";
+import { buildDecisionMetadata } from "./decisionMetadata";
 import { evaluateApprovalQuality } from "./approvalQuality/evaluateApprovalQuality";
 import { defaultPolicyProfile, getPolicyProfileById } from "./policyProfiles";
 import { rankGateResults } from "./rankGateResults";
@@ -51,6 +52,7 @@ export const actionGateDetectors: GateDetector[] = [
 export type EvaluateActionOptions = {
   policyProfile?: PolicyProfile;
   policyProfileId?: string;
+  evaluatedAt?: Date | string;
 };
 
 export function evaluateAction(
@@ -99,10 +101,20 @@ export function evaluateAction(
         })
       : undefined;
 
-  return {
+  const resultWithoutMetadata = {
     ...profiledResult,
     reviewPacket,
     ...(approvalQuality ? { approvalQuality } : {}),
+  };
+  const decisionMetadata = buildDecisionMetadata({
+    input,
+    result: resultWithoutMetadata,
+    evaluatedAt: options.evaluatedAt,
+  });
+
+  return {
+    ...resultWithoutMetadata,
+    decisionMetadata,
   };
 }
 

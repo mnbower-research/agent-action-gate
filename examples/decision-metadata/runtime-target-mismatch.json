@@ -1,0 +1,18 @@
+{
+  "userRequest": "Email alex@example.com with the status update.",
+  "proposedAction": {
+    "actionId": "act_wrong_target",
+    "tool": "email.send",
+    "actionType": "send_email",
+    "target": "jordan@example.com",
+    "payload": {
+      "body": "The work is complete."
+    },
+    "reversible": true,
+    "externalFacing": true
+  },
+  "context": {
+    "environment": "dev",
+    "userApproved": true
+  }
+}

@@ -2,6 +2,54 @@
 
 Detailed historical notes moved from the README so the project front page stays focused on the fastest path to understanding and running Agent Action Gate.
 
+## v2.1.0 - Decision Metadata
+
+This release adds structured decision metadata while keeping AAG focused as the pre-execution action gate.
+
+### Added
+
+- additive `decisionMetadata` on action evaluations
+- deterministic reason codes
+- stable `decisionHash` over deterministic decision material
+- deterministic `decisionId`
+- policy IDs and hard-boundary IDs
+- authority and approval status fields
+- runtime permit requirement metadata
+- `receiptCandidate` hook for downstream receipt systems
+- `closureCandidate` hook for downstream Decision Closure Artifacts
+- decision metadata examples and tests
+
+### Why this matters
+
+AAG is the gate. AGA is the auditor.
+
+AAG answers: "May this proposed agent action proceed under the current rules?"
+
+AGA asks: "Can the whole governance chain prove that delegated agent action remained authorized, bounded, reviewable, runtime-faithful, and accountable?"
+
+This release makes AAG decisions easier to use as evidence underneath an auditor system without adding dashboards, hosted APIs, public-source scanning, Governance Reality Reports, or broad AGA business logic.
+
+This is not IAM, a full receipt chain, a full Decision Closure Artifact package, legal compliance, regulator approval, or a complete auditor stack.
+
+## v2.0.0 - Runtime Binding MVP
+
+This release adds local execution permits and a simulated protected executor.
+
+### Added
+
+- execution permit module
+- action hash binding
+- permit expiry checks
+- wrong-action permit denial
+- simulated protected executor
+- runtime-binding demo and tests
+
+### Why this matters
+
+Receipts show what AAG decided. Runtime binding makes the execution path check for a valid AAG permit before a permitted action can run in the local reference flow.
+
+This is not IAM, sandboxing, mandatory sidecar enforcement, protected key management, or production-complete runtime enforcement.
+
 ## v1.5.0 - Approval Authority Map
 
 This release adds local approval authority context to new receipts.

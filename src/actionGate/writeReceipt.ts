@@ -128,6 +128,7 @@ export function writeEvaluationReceipt(params: EvaluationReceiptParams): string 
     reason: params.reason,
     primaryIssue: params.result.primaryIssue,
     policyMetadata: params.result.policyProfile,
+    decisionMetadata: params.result.decisionMetadata,
     reviewPacket: params.result.reviewPacket,
     finalOutcome: params.finalOutcome,
     humanDecision: params.humanDecision,

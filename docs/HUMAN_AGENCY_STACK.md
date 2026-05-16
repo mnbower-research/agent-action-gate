@@ -10,7 +10,7 @@ Expanded form:
 
 > "No signal, memory, recommendation, or agent action should become operational consequence without the appropriate authority, scope, contestability, accountability, and proof."
 
-Agent Action Gate v1.6.1 currently implements the Action Gate and Receipt Gate portions of this broader Human Agency Infrastructure direction. This document describes a future-direction architecture, not a claim that AAG currently implements all five gates.
+Agent Action Gate v2.1.0 currently implements the Action Gate and Receipt Gate portions of this broader Human Agency Infrastructure direction, plus decision metadata hooks that can feed downstream auditor systems. This document describes a future-direction architecture, not a claim that AAG currently implements all five gates.
 
 ## Five-Gate Stack
 
@@ -46,13 +46,13 @@ Risk: no audit trail, weak local proof, deleted records, unverifiable approvals,
 
 ## Current AAG Scope
 
-AAG v1.6.1 focuses on Action Gate and Receipt Gate.
+AAG v2.1.0 focuses on Action Gate and Receipt Gate.
 
 The Action Gate evaluates proposed AI-agent tool actions before execution and returns `allow`, `require_approval`, `revise_action`, or `block`.
 
 The Receipt Gate direction is represented by local receipts, audit metadata, Receipt Hash Chain verification, Policy Provenance, and Approval Authority Map metadata.
 
-AAG v1.6.1 does not yet implement Memory Gate, Retrieval Gate, or Recommendation Gate as standalone gate layers. Those are future directions.
+AAG v2.1.0 does not yet implement Memory Gate, Retrieval Gate, or Recommendation Gate as standalone gate layers. Those are future directions.
 
 ## Why Recommendation Gate Is Likely Next
 

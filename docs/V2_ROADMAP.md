@@ -2,7 +2,7 @@
 
 ## Current Boundary
 
-AAG v1.8.0 is a local reference implementation, not a hardened enterprise enforcement boundary. It demonstrates the Governance Gate Invariant, the Six Gate Questions, local receipts, Policy Provenance, Approval Authority Map, Approval Quality Layer, MetaGate, Multi-Gate Registry, and Receipt Hash Chain verification.
+AAG v2.1.0 is a local reference implementation, not a hardened enterprise enforcement boundary. It demonstrates the Governance Gate Invariant, the Six Gate Questions, local receipts, Policy Provenance, Approval Authority Map, Approval Quality Layer, MetaGate, Multi-Gate Registry, Receipt Hash Chain verification, Signed Receipts MVP, Runtime Binding MVP, and Decision Metadata hooks.
 
 The invariant is:
 
@@ -16,7 +16,8 @@ Current maturity framing:
 
 ```txt
 v1.8.0 asks the questions and records review-process signals.
-v2.0 proves the answers.
+v2.0 binds allowed actions to a local execution permit.
+v2.1 makes decisions easier to feed into receipts, runtime binding, decision closure artifacts, and external audit systems.
 ```
 
 ## The Maturity Ladder
@@ -25,6 +26,7 @@ v2.0 proves the answers.
 - v1.8.0 Approval Quality Layer
 - v1.9.0 Signed Receipts MVP
 - v2.0.0 Runtime Binding and Cryptographic Trust
+- v2.1.0 Decision Metadata
 
 ## v1.7.0 Multi-Gate Registry
 
@@ -93,7 +95,7 @@ The design should preserve AAG's local reference implementation while allowing s
 
 ## v2.0.0 Runtime Binding and Cryptographic Trust
 
-v2.0.0 targets a stronger runtime-bound architecture:
+v2.0.0 introduced a local Runtime Binding MVP and points toward a stronger runtime-bound architecture:
 
 - mandatory proxy or sidecar
 - capability tokens
@@ -105,6 +107,12 @@ v2.0.0 targets a stronger runtime-bound architecture:
 Under the documented deployment model, direct tool access should fail unless the action has passed through AAG.
 
 This target does not mean every bypass path disappears in all environments. It means the deployment model should bind tool access to the gate so the normal execution path cannot skip authorized discernment.
+
+## v2.1.0 Decision Metadata
+
+v2.1.0 adds additive `decisionMetadata` to AAG evaluation results. It includes reason codes, policy IDs, hard-boundary IDs, authority and approval status, runtime permit requirement metadata, a stable decision hash, a receipt candidate, and a decision closure candidate.
+
+AAG remains the pre-execution gate. It does not become the full auditor stack.
 
 ## Production Hardening Requirements
 
@@ -124,4 +132,4 @@ These requirements move AAG from a local inspectable reference into a stronger e
 
 ## Closing
 
-AAG v1.9.0 defines and demonstrates the gate invariant, specialized routing, approval-quality process metadata, and local signed receipt integrity. The v2 roadmap focuses on proving the answers and binding the gate to the runtime so consequential action cannot bypass discernment under the documented deployment model.
+AAG v2.1.0 defines and demonstrates the gate invariant, specialized routing, approval-quality process metadata, local signed receipt integrity, runtime binding, and decision metadata hooks. The v2 roadmap focuses on proving the answers and binding the gate to the runtime so consequential action cannot bypass discernment under the documented deployment model.

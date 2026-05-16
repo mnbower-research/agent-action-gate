@@ -120,6 +120,7 @@ export type ActionGateInput = {
   userRequest: string;
   agentPlan?: string;
   proposedAction: {
+    actionId?: string;
     tool: string;
     actionType: string;
     target?: string;
@@ -138,6 +139,9 @@ export type ActionGateInput = {
     workflowId?: string;
     authorizedTargets?: string[];
     authorizedActionTypes?: string[];
+    approvedBy?: string;
+    reviewerRole?: string;
+    runtimePermitId?: string;
     approvalQuality?: ApprovalQualityReviewMetadata;
   };
   policyProfile?: PolicyProfile;
@@ -153,6 +157,93 @@ export type GateDetectorResult = {
   recommendedDecision: GateDecision;
 };
 
+export type AagReasonCode =
+  | "AAG-ALLOW-SAFE-INTERNAL"
+  | "AAG-REQUIRE-APPROVAL-HIGH-SENSITIVITY"
+  | "AAG-REQUIRE-APPROVAL-EXTERNAL-ACTION"
+  | "AAG-BLOCK-HARD-BOUNDARY"
+  | "AAG-BLOCK-IRREVERSIBLE-WITHOUT-APPROVAL"
+  | "AAG-REVISE-TO-REVIEW-PACKET"
+  | "AAG-BLOCK-SENSITIVE-DATA-EXPOSURE"
+  | "AAG-BLOCK-RUNTIME-TARGET-MISMATCH"
+  | "AAG-BLOCK-TOOL-MISMATCH"
+  | "AAG-ESCALATE-AUTHORITY-UNCLEAR";
+
+export type DecisionAuthorityStatus =
+  | "not_required"
+  | "approved"
+  | "approval_required"
+  | "unclear";
+
+export type DecisionApprovalStatus =
+  | "not_required"
+  | "present"
+  | "required"
+  | "missing";
+
+export type ReceiptCandidate = {
+  decisionId: string;
+  actionSummary: string;
+  outcome: GateDecision;
+  reasonCodes: AagReasonCode[];
+  policyIds: string[];
+  hardBoundaryIds: string[];
+  approvedBy?: string;
+  runtimePermitRequired: boolean;
+  runtimePermitId?: string;
+  evaluatedAt: string;
+  decisionHash: string;
+};
+
+export type DecisionClosureCandidate = {
+  action: {
+    actionId?: string;
+    actionType: string;
+    summary: string;
+    toolName?: string;
+    target?: string;
+    sensitivity?: "low" | "medium" | "high";
+    reversibility?: boolean;
+  };
+  decision: {
+    outcome: GateDecision;
+    reason: string;
+    reasonCodes: AagReasonCode[];
+    policyIds: string[];
+    hardBoundaryIds: string[];
+    humanReviewRequired: boolean;
+    humanReviewPresent?: boolean;
+  };
+  authority: {
+    authorityStatus: DecisionAuthorityStatus;
+    authorityReason?: string;
+    reviewerRole?: string;
+  };
+  executionBoundary: {
+    runtimePermitRequired: boolean;
+    runtimePermitId?: string;
+  };
+  proof: {
+    decisionHash: string;
+  };
+};
+
+export type DecisionMetadata = {
+  decisionId: string;
+  decisionVersion: "2.1.0";
+  evaluatedAt: string;
+  decisionHash: string;
+  reasonCodes: AagReasonCode[];
+  policyIds: string[];
+  hardBoundaryIds: string[];
+  authorityStatus: DecisionAuthorityStatus;
+  approvalStatus: DecisionApprovalStatus;
+  runtimePermitRequired: boolean;
+  runtimePermitId?: string;
+  receiptCandidate?: ReceiptCandidate;
+  closureCandidate?: DecisionClosureCandidate;
+};
+
 export type ActionGateResult = {
   decision: GateDecision;
   riskLevel: ActionRiskLevel;
@@ -164,6 +255,7 @@ export type ActionGateResult = {
   approvalQuality?: ApprovalQualityResult;
   policyProfile?: PolicyProfileResultMetadata;
   gateRoute?: GateRoute;
+  decisionMetadata?: DecisionMetadata;
   detectorResults: GateDetectorResult[];
 };
 

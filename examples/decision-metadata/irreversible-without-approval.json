@@ -1,0 +1,15 @@
+{
+  "userRequest": "Delete the temporary cache file from the dev workspace.",
+  "proposedAction": {
+    "actionId": "act_irreversible_cache_delete",
+    "tool": "filesystem.deleteFile",
+    "actionType": "delete_file",
+    "target": "temp/cache.json",
+    "reversible": false,
+    "externalFacing": false
+  },
+  "context": {
+    "environment": "dev",
+    "userApproved": false
+  }
+}

@@ -89,4 +89,4 @@ An invalid result means verification found at least one problem, such as invalid
 - Not external notarization.
 - Not proof that the original action was safe.
 - Not a replacement for IAM, sandboxing, logs, SIEM, least privilege, or legal review.
-- Signed receipts are planned later for v2.0.0.
+- Signed receipts are implemented separately from the local receipt hash chain.

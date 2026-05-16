@@ -1,6 +1,6 @@
 {
   "name": "agent-action-gate",
-  "version": "2.0.0",
+  "version": "2.1.0",
   "description": "Pre-execution safety gate for AI agents.",
   "main": "dist/server.js",
   "bin": {
@@ -22,7 +22,7 @@
     "dev": "tsx src/server.ts",
     "dashboard": "tsx src/dashboard/server.ts",
     "dashboard:dev": "tsx src/dashboard/server.ts",
-    "test": "tsx src/actionGate/tests/runAuditFoundationTests.ts && tsx src/actionGate/tests/runDistributionCopilotTests.ts && tsx src/actionGate/tests/runWorkflowScopeLedgerTests.ts && tsx src/actionGate/tests/runReceiptHashChainTests.ts && tsx src/actionGate/tests/runPolicyProvenanceTests.ts && tsx src/actionGate/tests/runApprovalAuthorityTests.ts && tsx src/actionGate/tests/runApprovedExecutionDemoTests.ts && tsx src/actionGate/tests/runExecutionPermitTests.ts && tsx src/dashboard/tests/runDashboardTests.ts",
+    "test": "tsx src/actionGate/tests/runAuditFoundationTests.ts && tsx src/actionGate/tests/runDistributionCopilotTests.ts && tsx src/actionGate/tests/runWorkflowScopeLedgerTests.ts && tsx src/actionGate/tests/runReceiptHashChainTests.ts && tsx src/actionGate/tests/runPolicyProvenanceTests.ts && tsx src/actionGate/tests/runApprovalAuthorityTests.ts && tsx src/actionGate/tests/runApprovedExecutionDemoTests.ts && tsx src/actionGate/tests/runExecutionPermitTests.ts && tsx src/actionGate/tests/runDecisionMetadataTests.ts && tsx src/dashboard/tests/runDashboardTests.ts",
     "test:receipt-chain": "tsx src/actionGate/tests/runReceiptHashChainTests.ts",
     "test:policy-provenance": "tsx src/actionGate/tests/runPolicyProvenanceTests.ts",
     "test:authority-map": "tsx src/actionGate/tests/runApprovalAuthorityTests.ts",

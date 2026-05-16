@@ -1,0 +1,15 @@
+{
+  "userRequest": "Remove customer-123 from the CRM.",
+  "proposedAction": {
+    "actionId": "act_delete_customer",
+    "tool": "crm.delete",
+    "actionType": "delete_record",
+    "target": "production/customer-123",
+    "reversible": false,
+    "externalFacing": false
+  },
+  "context": {
+    "environment": "production",
+    "userApproved": false
+  }
+}

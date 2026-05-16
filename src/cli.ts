@@ -71,7 +71,7 @@ import {
   writeWorkflowLedgerUpdate,
 } from "./actionGate/workflowScopeLedger";
 
-const cliVersion = readPackageVersion() ?? "1.9.1";
+const cliVersion = readPackageVersion() ?? "2.1.0";
 
 type CliActionFile = {
   id?: string;
@@ -1265,6 +1265,23 @@ function printEvaluationResult(
 
   if (result.policyProfile) {
     console.log(`Policy metadata: ${JSON.stringify(result.policyProfile)}`);
+  }
+
+  if (result.decisionMetadata) {
+    console.log(`Decision metadata: ${JSON.stringify({
+      decisionId: result.decisionMetadata.decisionId,
+      decisionVersion: result.decisionMetadata.decisionVersion,
+      decisionHash: result.decisionMetadata.decisionHash,
+      reasonCodes: result.decisionMetadata.reasonCodes,
+      policyIds: result.decisionMetadata.policyIds,
+      hardBoundaryIds: result.decisionMetadata.hardBoundaryIds,
+      authorityStatus: result.decisionMetadata.authorityStatus,
+      approvalStatus: result.decisionMetadata.approvalStatus,
+      runtimePermitRequired: result.decisionMetadata.runtimePermitRequired,
+      runtimePermitId: result.decisionMetadata.runtimePermitId,
+      receiptCandidate: result.decisionMetadata.receiptCandidate,
+      closureCandidate: result.decisionMetadata.closureCandidate,
+    })}`);
   }
 
   if (result.reviewPacket) {

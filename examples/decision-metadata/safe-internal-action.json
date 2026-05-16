@@ -1,0 +1,14 @@
+{
+  "userRequest": "Read the README and summarize setup steps.",
+  "proposedAction": {
+    "actionId": "act_safe_readme",
+    "tool": "filesystem.readFile",
+    "actionType": "read_file",
+    "target": "README.md",
+    "reversible": true,
+    "externalFacing": false
+  },
+  "context": {
+    "environment": "dev"
+  }
+}
